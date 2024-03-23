@@ -1,18 +1,18 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 )
 
 var headerSet = http.Header{
 	"User-Agent":         {"Mozilla/5.0, (Windows NT 10.0; Win64; x64; rv:72.0), Gecko/20100101, Firefox/72.0"},
-	"Accept":             {"application/json , text/plain, */*"},
+	"Accept":             {"application/json; charset=utf-8 , text/plain, */*"},
 	"Accept-Language":    {"en-US, en;q=0.5firefox-125.0b3.tar.bz2"},
-	"Accept-Encoding":    {"gzip, deflate, br"},
+	"Accept-Encoding":    {"deflate, br"},
 	"x-nba-stats-origin": {"stats"},
 	"x-nba-stats-token":  {"true"},
 	"Connection":         {"keep-alive"},
@@ -59,14 +59,12 @@ func main() {
 		rs.parameterSet.Season, rs.parameterSet.SeasonType)
 
 	c := http.Client{Timeout: time.Duration(5) * time.Second}
-	req, err := http.NewRequest("GET", rs.baselineUrl+parameterSetString, nil)
 
+	req, err := http.NewRequest("GET", rs.baselineUrl+parameterSetString, nil)
 	if err != nil {
 		fmt.Println("err:&s", err)
 		return
 	}
-
-	log.Println(rs.baselineUrl + parameterSetString)
 	req.Header = headerSet
 
 	resp, err := c.Do(req)
@@ -76,5 +74,10 @@ func main() {
 
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(body)
+
+	var v map[string]interface{}
+	err = json.Unmarshal(body, &v)
+	if err != nil {
+		fmt.Printf("err: %s", err)
+	}
 }
