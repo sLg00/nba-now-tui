@@ -48,7 +48,7 @@ func buildRequestSet() (RequestSet, error) {
 	testRequest := RequestSet{
 		baselineUrl:  "https://stats.nba.com/stats/leaguestandingsv3",
 		parameterSet: seasonSetImpl,
-		headers:      HeaderSet,
+		headers:      headerSet,
 	}
 	return testRequest, nil
 }
