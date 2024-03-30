@@ -46,6 +46,7 @@ type RequestComponents struct {
 	PlayerStatsComponents PlayerStatsComponents
 }
 
+// buildRequest is currently a pseudofunction, it just hardcodes the URL
 func buildRequest(i int) string {
 	var requestSignature string
 	if i == 1 {

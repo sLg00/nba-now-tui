@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/sLg00/nba-now-tui/app/internal/client"
+	"reflect"
+	"strconv"
 )
 
 // Parameters struct represents the parameters headers returned with the JSON response from the stats API
@@ -61,31 +63,39 @@ type ResponseSet struct {
 	ResultSet  ResultSet  `json:"resultSet"`
 }
 
-// PopulatePlayerStats unmarshalls the returned JSON and maps the data to the the Player struct
-func PopulatePlayerStats() {
-
-	//unmarshalling
+// unmarshallResponseJSON unmarshalls the returned JSON
+func unmarshallResponseJSON() (ResponseSet, error) {
 	var response ResponseSet
 	jsonData := client.InitiateClient()
 
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
 		fmt.Println("err:", err)
-		return
+		return ResponseSet{}, err
 	}
+	return response, nil
+}
 
+// PopulatePlayerStats maps the data to the the Player struct
+func PopulatePlayerStats() ([]Player, []string, error) {
+	response, err := unmarshallResponseJSON()
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	//unmarshalling
 	// mapping as Player types. the code is ugly with the switch statements, but it works
+	headers := response.ResultSet.Headers
 	var playerStats []Player
 	for _, row := range response.ResultSet.RowSet {
-		if len(row) != len(response.ResultSet.Headers) {
+		if len(row) != len(headers) {
 			fmt.Println("Error: Row length doesn't match headers length")
-			return
+			return nil, nil, err
 		}
 		var player Player
 		for i, value := range row {
 			switch v := value.(type) {
 			case float64:
-				switch response.ResultSet.Headers[i] {
+				switch headers[i] {
 				case "PLAYER_ID":
 					player.PlayerID = int(v)
 				case "RANK":
@@ -134,7 +144,7 @@ func PopulatePlayerStats() {
 					player.EFF = v
 				}
 			case string:
-				switch response.ResultSet.Headers[i] {
+				switch headers[i] {
 				case "PLAYER":
 					player.PlayerName = v
 				case "TEAM":
@@ -145,4 +155,28 @@ func PopulatePlayerStats() {
 		// playerStats contains all player data in a slice. TODO: write the results to a file with the current date!
 		playerStats = append(playerStats, player)
 	}
+	return playerStats, headers, nil
+}
+
+// StructStringer takes the type []Player and does type conversion so that all fields would be of type string.
+// TODO: convert to generic function, that takes any type as input
+func StructStringer(sp []Player) []string {
+	var PlayerStatsString []string
+	for _, row := range sp {
+		var instance string
+		v := reflect.ValueOf(row)
+		for i := 0; i < v.NumField(); i++ {
+			value := v.Field(i)
+			switch value.Interface().(type) {
+			case float64:
+				instance += strconv.FormatFloat(value.Float(), 'E', -1, 64) + ","
+			case int:
+				instance += strconv.Itoa(int(value.Int())) + ","
+			case string:
+				instance += value.String() + ","
+			}
+		}
+		PlayerStatsString = append(PlayerStatsString, instance)
+	}
+	return PlayerStatsString
 }
