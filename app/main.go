@@ -55,9 +55,9 @@ func main() {
 
 	var (
 		columns []table.Column
+		column  table.Column
 		rows    []table.Row
 		row     table.Row
-		column  table.Column
 	)
 
 	for _, h := range headers {
@@ -67,6 +67,7 @@ func main() {
 		}
 		columns = append(columns, column)
 	}
+
 	for _, r := range playerStatsString {
 		row = r
 		rows = append(rows, row)

@@ -82,7 +82,7 @@ func PopulatePlayerStats() ([]Player, []string, error) {
 	if err != nil {
 		fmt.Println("err", err)
 	}
-	//unmarshalling
+
 	// mapping as Player types. the code is ugly with the switch statements, but it works
 	headers := response.ResultSet.Headers
 	var playerStats []Player
@@ -123,7 +123,7 @@ func PopulatePlayerStats() ([]Player, []string, error) {
 				case "FTA":
 					player.FTA = v
 				case "FT_PCT":
-					player.FTA = v
+					player.FTPCT = v
 				case "OREB":
 					player.OREB = v
 				case "DREB":
@@ -158,8 +158,8 @@ func PopulatePlayerStats() ([]Player, []string, error) {
 	return playerStats, headers, nil
 }
 
-// StructStringer takes the type []Player and does type conversion so that all fields would be of type string.
-// TODO: convert to generic function, that takes any type as input
+// StructStringer takes the type []Player and returns it as [][]string
+// TODO: convert to generic function, that takes a slice of any type as input
 func StructStringer(sp []Player) [][]string {
 	var PlayerStatsString [][]string
 
