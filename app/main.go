@@ -63,14 +63,12 @@ func main() {
 	for _, h := range headers {
 		column = table.Column{
 			Title: h,
-			Width: 20,
+			Width: 10,
 		}
 		columns = append(columns, column)
 	}
 	for _, r := range playerStatsString {
-		row = table.Row{
-			r,
-		}
+		row = r
 		rows = append(rows, row)
 	}
 

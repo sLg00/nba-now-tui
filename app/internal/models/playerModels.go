@@ -160,20 +160,23 @@ func PopulatePlayerStats() ([]Player, []string, error) {
 
 // StructStringer takes the type []Player and does type conversion so that all fields would be of type string.
 // TODO: convert to generic function, that takes any type as input
-func StructStringer(sp []Player) []string {
-	var PlayerStatsString []string
+func StructStringer(sp []Player) [][]string {
+	var PlayerStatsString [][]string
+
 	for _, row := range sp {
-		var instance string
+		var instance []string
+
 		v := reflect.ValueOf(row)
+
 		for i := 0; i < v.NumField(); i++ {
 			value := v.Field(i)
 			switch value.Interface().(type) {
 			case float64:
-				instance += strconv.FormatFloat(value.Float(), 'E', -1, 64) + ","
+				instance = append(instance, strconv.FormatFloat(value.Float(), 'f', 2, 64))
 			case int:
-				instance += strconv.Itoa(int(value.Int())) + ","
+				instance = append(instance, strconv.Itoa(int(value.Int())))
 			case string:
-				instance += value.String() + ","
+				instance = append(instance, value.String())
 			}
 		}
 		PlayerStatsString = append(PlayerStatsString, instance)
