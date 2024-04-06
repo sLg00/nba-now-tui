@@ -51,7 +51,7 @@ func main() {
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-	playerStatsString := models.StructStringer(playerStats)
+	playerStatsString := playerStats.ConvertToString()
 
 	var (
 		columns []table.Column

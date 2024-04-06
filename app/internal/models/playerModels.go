@@ -49,6 +49,8 @@ type Player struct {
 	EFF         float64 `json:"EFF"`
 }
 
+type Players []Player
+
 // ResultSet  is the object that represents the actual returned data structure or headers and rows.
 type ResultSet struct {
 	Name    string          `json:"name"`
@@ -76,8 +78,8 @@ func unmarshallResponseJSON() (ResponseSet, error) {
 	return response, nil
 }
 
-// PopulatePlayerStats maps the data to the the Player struct
-func PopulatePlayerStats() ([]Player, []string, error) {
+// PopulatePlayerStats maps the data to the Player struct
+func PopulatePlayerStats() (Players, []string, error) {
 	response, err := unmarshallResponseJSON()
 	if err != nil {
 		fmt.Println("err", err)
@@ -85,7 +87,7 @@ func PopulatePlayerStats() ([]Player, []string, error) {
 
 	// mapping as Player types. the code is ugly with the switch statements, but it works
 	headers := response.ResultSet.Headers
-	var playerStats []Player
+	var playerStats Players
 	for _, row := range response.ResultSet.RowSet {
 		if len(row) != len(headers) {
 			fmt.Println("Error: Row length doesn't match headers length")
@@ -158,12 +160,12 @@ func PopulatePlayerStats() ([]Player, []string, error) {
 	return playerStats, headers, nil
 }
 
-// StructStringer takes the type []Player and returns it as [][]string
-// TODO: convert to generic function, that takes a slice of any type as input
-func StructStringer(sp []Player) [][]string {
+// ConvertToString is a method on the Players type that create
+// a slice of a slice of string representation of Player objects
+func (ps Players) ConvertToString() [][]string {
 	var PlayerStatsString [][]string
 
-	for _, row := range sp {
+	for _, row := range ps {
 		var instance []string
 
 		v := reflect.ValueOf(row)
