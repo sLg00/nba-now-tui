@@ -3,11 +3,16 @@ package tui
 import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/table"
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/sLg00/nba-now-tui/app/datamodels"
-	"os"
+	"slices"
+	"strings"
 )
+
+// removeIndex is a helper function to delete elements from a slice
+func removeIndex[T any](slice []T, s int) []T {
+	return append(slice[:s], slice[s+1:]...)
+}
 
 func createLeagueLeadersTable() table.Model {
 	playerStats, headers, err := datamodels.PopulatePlayerStats()
@@ -28,16 +33,32 @@ func createLeagueLeadersTable() table.Model {
 			Title: h,
 			Width: 10,
 		}
+		if strings.Contains(column.Title, "PLAYER") {
+			column.Width = 25
+		}
 		columns = append(columns, column)
 	}
 
 	for _, r := range playerStatsString {
 		row = r
+		//row = removeIndex(row, 0)
+		//row = removeIndex(row, 2)
+		//delete ID slices
+		row = slices.Delete(row, 0, 1)
+		row = slices.Delete(row, 2, 3)
 		rows = append(rows, row)
 	}
 
+	// or loop to filter out ID column headers
+	var filteredColumns []table.Column
+	for _, c := range columns {
+		if !strings.Contains(c.Title, "ID") {
+			filteredColumns = append(filteredColumns, c)
+		}
+	}
+
 	t := table.New(
-		table.WithColumns(columns),
+		table.WithColumns(filteredColumns),
 		table.WithRows(rows),
 		table.WithFocused(true),
 		table.WithHeight(25),
@@ -56,13 +77,4 @@ func createLeagueLeadersTable() table.Model {
 	t.SetStyles(s)
 
 	return t
-}
-
-func RunTUI() {
-	t := createLeagueLeadersTable()
-	m := model{t}
-	if _, err := tea.NewProgram(m).Run(); err != nil {
-		fmt.Println("Error running program:", err)
-		os.Exit(1)
-	}
 }

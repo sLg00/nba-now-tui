@@ -1,9 +1,11 @@
 package tui
 
 import (
+	"fmt"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"os"
 )
 
 var baseStyle = lipgloss.NewStyle().
@@ -41,4 +43,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	return baseStyle.Render(m.table.View()) + "\n"
+}
+
+// RunTUI initiates the TUI process
+func RunTUI() {
+	t := createLeagueLeadersTable()
+	m := model{t}
+	if _, err := tea.NewProgram(m).Run(); err != nil {
+		fmt.Println("Error running program:", err)
+		os.Exit(1)
+	}
 }
