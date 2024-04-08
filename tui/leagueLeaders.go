@@ -14,6 +14,7 @@ func removeIndex[T any](slice []T, s int) []T {
 	return append(slice[:s], slice[s+1:]...)
 }
 
+// createLeagueLeadersTable returns a table.Model which is populated with the current league leaders (per PPG)
 func createLeagueLeadersTable() table.Model {
 	playerStats, headers, err := datamodels.PopulatePlayerStats()
 	if err != nil {
@@ -49,7 +50,7 @@ func createLeagueLeadersTable() table.Model {
 		rows = append(rows, row)
 	}
 
-	// or loop to filter out ID column headers
+	// for loop to filter out ID column headers
 	var filteredColumns []table.Column
 	for _, c := range columns {
 		if !strings.Contains(c.Title, "ID") {

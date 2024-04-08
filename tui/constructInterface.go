@@ -12,6 +12,17 @@ var baseStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder()).
 	BorderForeground(lipgloss.Color("240"))
 
+//type Model struct {
+//	options			[]string
+// 	selectedIndex	int
+//	leagueLeaders   table.Model
+//	seasonStandings []table.Model
+//	dailyScores     viewport.Model
+//	gameScore       viewport.Model
+//  gameDetails 	[]string
+//	boxScore        []table.Model
+//}
+
 type model struct {
 	table table.Model
 }
@@ -33,7 +44,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "enter":
 			return m, tea.Batch(
-				tea.Printf("Let's go to %s!", m.table.SelectedRow()[1]),
+				tea.Printf("%s is averaging %s PPG this season", m.table.SelectedRow()[1], m.table.SelectedRow()[21]),
 			)
 		}
 	}

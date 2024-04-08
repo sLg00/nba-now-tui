@@ -160,7 +160,7 @@ func PopulatePlayerStats() (Players, []string, error) {
 	return playerStats, headers, nil
 }
 
-// ConvertToString is a method on the Players type that create
+// ConvertToString is a method on the Players type that creates
 // a slice of a slice of string representation of Player objects
 func (ps Players) ConvertToString() [][]string {
 	var PlayerStatsString [][]string
