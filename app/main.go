@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	tui.RunTUI()
+	tui.RenderUI()
 }

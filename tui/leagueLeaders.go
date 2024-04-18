@@ -14,8 +14,10 @@ func removeIndex[T any](slice []T, s int) []T {
 	return append(slice[:s], slice[s+1:]...)
 }
 
+type leagueLeaders table.Model
+
 // createLeagueLeadersTable returns a table.Model which is populated with the current league leaders (per PPG)
-func createLeagueLeadersTable() table.Model {
+func createLeagueLeadersTable() leagueLeaders {
 	playerStats, headers, err := datamodels.PopulatePlayerStats()
 	if err != nil {
 		fmt.Println("error:", err)
@@ -77,5 +79,7 @@ func createLeagueLeadersTable() table.Model {
 		Bold(false)
 	t.SetStyles(s)
 
-	return t
+	l := leagueLeaders(t)
+
+	return l
 }
