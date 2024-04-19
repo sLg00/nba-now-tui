@@ -6,22 +6,25 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// Model acts as the main model of the TUI. It's just to build the initial menu
 type Model struct {
 	menu     list.Model
-	styles   Styles
 	quitting bool
 }
 
+// menuItem is a singular list item within a list
 type menuItem struct {
 	index              int
 	title, description string
 }
 
+// these methods on the menuItem model ensure that the menuItem objects satisfies the requirements of list.Model struct
 func (m menuItem) Title() string       { return m.title }
 func (m menuItem) Index() int          { return m.index }
 func (m menuItem) Description() string { return m.description }
 func (m menuItem) FilterValue() string { return m.title }
 
+// createMenuItems returns a []list.Item with 1-N items to be displayed in a list
 func createMenuItems() ([]list.Item, error) {
 	items := []list.Item{
 		menuItem{
@@ -44,11 +47,11 @@ func createMenuItems() ([]list.Item, error) {
 	return items, nil
 }
 
+// InitMenu creates the list object and returns the model
 func InitMenu() (tea.Model, tea.Cmd) {
 	items, err := createMenuItems()
 	m := Model{
-		menu:   list.New(items, list.NewDefaultDelegate(), 10, 10),
-		styles: ListStyles(),
+		menu: list.New(items, list.NewDefaultDelegate(), 10, 10),
 	}
 	if WindowSize.Height != 0 {
 		top, right, bottom, left := DocStyle.GetMargin()
@@ -79,7 +82,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, Keymap.Enter):
-			//selectedItem := m.menu.SelectedItem()
+			selectedItem := m.menu.SelectedItem()
+			switch {
+			case selectedItem.FilterValue() == "League Leaders":
+				ll := initLeagueLeaders(selectedItem, Program)
+				return ll.Update(WindowSize)
+			case selectedItem.FilterValue() == "Daily Scores":
+				//pseudo
+			case selectedItem.FilterValue() == "Season Standings":
+				//pseudo
+			case selectedItem.FilterValue() == "Recent News":
+				//pseudo
+			}
 			//subPage := InitSubPage(selectedItem, Program)
 			//return subPage.Update(WindowSize)
 		case key.Matches(msg, Keymap.Quit):

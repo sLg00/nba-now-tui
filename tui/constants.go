@@ -22,6 +22,10 @@ type keymap struct {
 
 var DocStyle = lipgloss.NewStyle().Margin(0, 2)
 
+var TableStyle = lipgloss.NewStyle().
+	BorderStyle(lipgloss.DoubleBorder()).
+	BorderForeground(lipgloss.Color("240"))
+
 // HelpStyle styling for help context menu
 var HelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render
 

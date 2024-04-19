@@ -2,7 +2,10 @@ package tui
 
 import (
 	"fmt"
+	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/table"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/sLg00/nba-now-tui/app/datamodels"
 	"slices"
@@ -14,10 +17,15 @@ func removeIndex[T any](slice []T, s int) []T {
 	return append(slice[:s], slice[s+1:]...)
 }
 
-type leagueLeaders table.Model
+type leagueLeaders struct {
+	leaderboard table.Model
+	quitting    bool
+}
 
-// createLeagueLeadersTable returns a table.Model which is populated with the current league leaders (per PPG)
-func createLeagueLeadersTable() leagueLeaders {
+func (m leagueLeaders) Init() tea.Cmd { return nil }
+
+// initLeagueLeadersTable returns a table.Model which is populated with the current league leaders (per PPG)
+func initLeagueLeaders(i list.Item, p *tea.Program) leagueLeaders {
 	playerStats, headers, err := datamodels.PopulatePlayerStats()
 	if err != nil {
 		fmt.Println("error:", err)
@@ -69,17 +77,47 @@ func createLeagueLeadersTable() leagueLeaders {
 
 	s := table.DefaultStyles()
 	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
+		BorderStyle(lipgloss.DoubleBorder()).
 		BorderForeground(lipgloss.Color("240")).
 		BorderBottom(true).
-		Bold(false)
+		Bold(true)
 	s.Selected = s.Selected.
 		Foreground(lipgloss.Color("229")).
 		Background(lipgloss.Color("57")).
 		Bold(false)
 	t.SetStyles(s)
+	m := leagueLeaders{leaderboard: t}
 
-	l := leagueLeaders(t)
+	return m
+}
 
-	return l
+func (m leagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
+	var cmds []tea.Cmd
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch {
+		case key.Matches(msg, Keymap.Back):
+			return InitMenu()
+		case key.Matches(msg, Keymap.Quit):
+			m.quitting = true
+			return m, tea.Quit
+		}
+	}
+	m.leaderboard, cmd = m.leaderboard.Update(msg)
+	cmds = append(cmds, cmd)
+	return m, tea.Batch(cmds...)
+}
+
+func (m leagueLeaders) helpView() string {
+	// TODO: use the keymaps to populate the help string
+	return HelpStyle("\n ↑/↓: navigate  • esc: back • c: create entry • d: delete entry • q: quit\n")
+}
+
+func (m leagueLeaders) View() string {
+	if m.quitting {
+		return ""
+	}
+	renderedLeaders := TableStyle.Render(m.leaderboard.View()) + "\n"
+	comboView := lipgloss.JoinVertical(lipgloss.Left, "\n", renderedLeaders, m.helpView())
+	return DocStyle.Render(comboView)
 }
