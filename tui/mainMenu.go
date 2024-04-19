@@ -43,6 +43,10 @@ func createMenuItems() ([]list.Item, error) {
 			index:       3,
 			title:       "Recent News",
 			description: "Headlines from around the league",
+		}, menuItem{
+			index:       4,
+			title:       "Playoff Bracket",
+			description: "Playoff bracket",
 		}}
 	return items, nil
 }
@@ -94,8 +98,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case selectedItem.FilterValue() == "Recent News":
 				//pseudo
 			}
-			//subPage := InitSubPage(selectedItem, Program)
-			//return subPage.Update(WindowSize)
 		case key.Matches(msg, Keymap.Quit):
 			m.quitting = true
 			return m, tea.Quit

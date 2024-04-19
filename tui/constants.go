@@ -41,6 +41,7 @@ var Keymap = keymap{
 		key.WithHelp("enter", "select")),
 }
 
+// Date is a helper function which returns the current date in a pre-specified format
 func Date() string {
 	date := time.Now().Format("2006-01-02")
 	return date

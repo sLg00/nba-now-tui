@@ -110,7 +110,7 @@ func (m leagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 
 func (m leagueLeaders) helpView() string {
 	// TODO: use the keymaps to populate the help string
-	return HelpStyle("\n ↑/↓: navigate  • esc: back • c: create entry • d: delete entry • q: quit\n")
+	return HelpStyle("\n ↑/↓: navigate  • backspace: back • q: quit\n")
 }
 
 func (m leagueLeaders) View() string {
