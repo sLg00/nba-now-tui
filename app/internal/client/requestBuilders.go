@@ -2,6 +2,9 @@ package client
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // HTTPHeaderSet returns a http header
@@ -21,13 +24,15 @@ func HTTPHeaderSet() http.Header {
 	return headerSet
 }
 
+const LeagueID = "00"
+
 type URL struct {
 	Domain string
 	Path   string
 }
 
 type GeneralComponents struct {
-	LeagueID   string
+	leagueID   string
 	Season     string
 	SeasonType string
 }
@@ -44,6 +49,33 @@ type RequestComponents struct {
 	Headers               http.Header
 	GeneralComponents     GeneralComponents
 	PlayerStatsComponents PlayerStatsComponents
+}
+
+// identifySeason determines what season is currently ongoing
+func identifySeason() string {
+	cyms := strings.Split(time.Now().Format("2006-01"), "-")
+	year := cyms[0]
+	month := cyms[1]
+	yearInt, _ := strconv.Atoi(year)
+	monthInt, _ := strconv.Atoi(month)
+
+	lastYear := yearInt - 1
+	nextYear := yearInt + 1
+
+	if monthInt >= 8 {
+		p1 := strconv.Itoa(yearInt)
+		p2 := strconv.Itoa(nextYear)[2:]
+		s := p1 + "-" + p2
+		return s
+
+	}
+	if monthInt <= 8 {
+		p1 := strconv.Itoa(lastYear)
+		p2 := strconv.Itoa(yearInt)[2:]
+		s := p1 + "-" + p2
+		return s
+	}
+	return ""
 }
 
 // buildRequest is currently a pseudofunction, it just hardcodes the URL
