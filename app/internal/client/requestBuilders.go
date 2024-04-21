@@ -24,6 +24,7 @@ func HTTPHeaderSet() http.Header {
 	return headerSet
 }
 
+// LeagueID is always 00 for the requests going against NBA APIs
 const LeagueID = "00"
 
 type URL struct {
@@ -51,7 +52,7 @@ type RequestComponents struct {
 	PlayerStatsComponents PlayerStatsComponents
 }
 
-// identifySeason determines what season is currently ongoing
+// identifySeason determines what season is currently ongoing and formats it in a way that is needed to query NBA APIs
 func identifySeason() string {
 	cyms := strings.Split(time.Now().Format("2006-01"), "-")
 	year := cyms[0]
@@ -62,14 +63,14 @@ func identifySeason() string {
 	lastYear := yearInt - 1
 	nextYear := yearInt + 1
 
-	if monthInt >= 8 {
+	if monthInt >= 7 {
 		p1 := strconv.Itoa(yearInt)
 		p2 := strconv.Itoa(nextYear)[2:]
 		s := p1 + "-" + p2
 		return s
 
 	}
-	if monthInt <= 8 {
+	if monthInt < 7 {
 		p1 := strconv.Itoa(lastYear)
 		p2 := strconv.Itoa(yearInt)[2:]
 		s := p1 + "-" + p2
