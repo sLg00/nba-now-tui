@@ -33,10 +33,11 @@ func initLeagueLeaders(i list.Item, p *tea.Program) leagueLeaders {
 	playerStatsString := playerStats.ConvertToString()
 
 	var (
-		columns []table.Column
-		column  table.Column
-		rows    []table.Row
-		row     table.Row
+		columns    []table.Column
+		column     table.Column
+		rows       []table.Row
+		row        table.Row
+		sortedRows []table.Row
 	)
 
 	for _, h := range headers {
@@ -50,6 +51,7 @@ func initLeagueLeaders(i list.Item, p *tea.Program) leagueLeaders {
 		columns = append(columns, column)
 	}
 
+	// filter out "ID" slices
 	for _, r := range playerStatsString {
 		row = r
 		//row = removeIndex(row, 0)
@@ -60,6 +62,17 @@ func initLeagueLeaders(i list.Item, p *tea.Program) leagueLeaders {
 		rows = append(rows, row)
 	}
 
+	//sort the data in a logical order with major categories at the front
+	for _, r := range rows {
+		row = r
+		var sortedRow table.Row
+		sortedRow = append(sortedRow, row[0:5]...)
+		sortedRow = append(sortedRow, row[21:23]...)
+		sortedRow = append(sortedRow, row[17:21]...)
+		sortedRow = append(sortedRow, row[5:17]...)
+		sortedRows = append(sortedRows, sortedRow)
+	}
+
 	// for loop to filter out ID column headers
 	var filteredColumns []table.Column
 	for _, c := range columns {
@@ -68,9 +81,16 @@ func initLeagueLeaders(i list.Item, p *tea.Program) leagueLeaders {
 		}
 	}
 
+	//sort columns in a more logical order, with major categories at the beginning
+	var sortedColumns []table.Column
+	sortedColumns = append(sortedColumns, filteredColumns[0:5]...)
+	sortedColumns = append(sortedColumns, filteredColumns[21:23]...)
+	sortedColumns = append(sortedColumns, filteredColumns[17:21]...)
+	sortedColumns = append(sortedColumns, filteredColumns[5:17]...)
+
 	t := table.New(
-		table.WithColumns(filteredColumns),
-		table.WithRows(rows),
+		table.WithColumns(sortedColumns),
+		table.WithRows(sortedRows),
 		table.WithFocused(true),
 		table.WithHeight(25),
 	)

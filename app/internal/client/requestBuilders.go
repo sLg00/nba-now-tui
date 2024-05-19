@@ -25,32 +25,10 @@ func HTTPHeaderSet() http.Header {
 }
 
 // LeagueID is always 00 for the requests going against NBA APIs
-const LeagueID = "00"
-
-type URL struct {
-	Domain string
-	Path   string
-}
-
-type GeneralComponents struct {
-	leagueID   string
-	Season     string
-	SeasonType string
-}
-
-type PlayerStatsComponents struct {
-	PerMode      string
-	StatCategory string
-	Scope        string
-	ActiveFlag   *string
-}
-
-type RequestComponents struct {
-	URL                   URL
-	Headers               http.Header
-	GeneralComponents     GeneralComponents
-	PlayerStatsComponents PlayerStatsComponents
-}
+const (
+	LeagueID = "00"
+	URL      = "https://stats.nba.com/stats/"
+)
 
 // identifySeason determines what season is currently ongoing and formats it in a way that is needed to query NBA APIs
 func identifySeason() string {
@@ -79,7 +57,27 @@ func identifySeason() string {
 	return ""
 }
 
-// buildRequest is currently a pseudofunction, it just hardcodes the URL
+type (
+	leagueLeadersURL   string
+	seasonStandingsURL string
+	dailyScoreBoardURL string
+	boxScoreURL        string
+)
+
+// leagueLeadersAPIRequestBuilder creates the URL for the API request from dynamic- and hardcoded building blocks
+// TODO: SeasonType key can have 2 values, need to add identification for regular season/playoffs
+func leagueLeadersAPIRequestBuilder() leagueLeadersURL {
+	return leagueLeadersURL(URL + "leagueleaders?ActiveFlag=&" +
+		LeagueID + "&Permode=PerGame&Scope=S&Season=" +
+		identifySeason() + "SeasonType=Regular+Season&StatCategory=PTS")
+}
+
+func seasonStandingsAPIRequestBuilder() seasonStandingsURL {
+	return seasonStandingsURL("")
+
+}
+
+// buildRequest is a POC pseudofunction, it just hardcodes the URL
 func buildRequest(i int) string {
 	var requestSignature string
 	if i == 1 {
