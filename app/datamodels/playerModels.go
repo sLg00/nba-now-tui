@@ -74,6 +74,7 @@ func unmarshallResponseJSON() (ResponseSet, error) {
 	data, err := os.ReadFile(client.HOME + "/.config/nba-tui/ll_" + client.Today)
 	if err != nil {
 		log.Println("file could not be found")
+		data = client.LLJson
 	}
 	jsonData := data
 	err = json.Unmarshal(jsonData, &response)
