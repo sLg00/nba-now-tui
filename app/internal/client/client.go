@@ -3,13 +3,16 @@ package client
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 )
 
-func InitiateClient() []byte {
+var LLJson []byte
+
+func InitiateClient(url requestURL) []byte {
 	client := http.Client{Timeout: time.Duration(5) * time.Second}
-	req, _ := http.NewRequest("GET", buildRequest(1), nil)
+	req, _ := http.NewRequest("GET", string(url), nil)
 
 	req.Header = HTTPHeaderSet()
 
@@ -26,4 +29,13 @@ func InitiateClient() []byte {
 	}(resp.Body)
 	body, _ := io.ReadAll(resp.Body)
 	return body
+}
+
+func MakeRequests() {
+	urlMap := BuildRequests()
+	url, ok := urlMap["leagueLeadersURL"]
+	if !ok {
+		log.Fatal("URL not found")
+	}
+	LLJson = InitiateClient(url)
 }

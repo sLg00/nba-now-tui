@@ -7,10 +7,12 @@ import (
 	"time"
 )
 
+var today = time.Now().Format("2006-01-31")
+
 // HTTPHeaderSet returns a http header
 func HTTPHeaderSet() http.Header {
 	var headerSet = http.Header{
-		"User-Agent":         {"Mozilla/5.0, (Windows NT 10.0; Win64; x64; rv:72.0), Gecko/20100101, Firefox/72.0"},
+		"User-Agent":         {"Mozilhttps://stats.nba.com/stats/la/5.0, (Windows NT 10.0; Win64; x64; rv:72.0), Gecko/20100101, Firefox/72.0"},
 		"Accept":             {"application/json; charset=utf-8 , text/plain, */*"},
 		"Accept-Language":    {"en-US, en;q=0.5firefox-125.0b3.tar.bz2"},
 		"Accept-Encoding":    {"deflate, br"},
@@ -58,30 +60,32 @@ func identifySeason() string {
 }
 
 type (
-	leagueLeadersURL   string
-	seasonStandingsURL string
-	dailyScoreBoardURL string
-	boxScoreURL        string
+	requestURL string
 )
 
 // leagueLeadersAPIRequestBuilder creates the URL for the API request from dynamic- and hardcoded building blocks
 // TODO: SeasonType key can have 2 values, need to add identification for regular season/playoffs
-func leagueLeadersAPIRequestBuilder() leagueLeadersURL {
-	return leagueLeadersURL(URL + "leagueleaders?ActiveFlag=&" +
-		LeagueID + "&Permode=PerGame&Scope=S&Season=" +
-		identifySeason() + "SeasonType=Regular+Season&StatCategory=PTS")
+func leagueLeadersAPIRequestBuilder() requestURL {
+	return requestURL(URL + "leagueleaders?ActiveFlag=&LeagueID=" +
+		LeagueID + "&PerMode=PerGame&Scope=S&Season=" +
+		identifySeason() + "&SeasonType=Regular+Season&StatCategory=PTS")
 }
 
-func seasonStandingsAPIRequestBuilder() seasonStandingsURL {
-	return seasonStandingsURL("")
+func seasonStandingsAPIRequestBuilder() requestURL {
+	return requestURL(URL + "leaguestandingsv3?LeagueID=" +
+		LeagueID + "&Season=" + identifySeason() + "&SeasonType=Regular+Season")
 
 }
 
-// buildRequest is a POC pseudofunction, it just hardcodes the URL
-func buildRequest(i int) string {
-	var requestSignature string
-	if i == 1 {
-		requestSignature = "https://stats.nba.com/stats/leagueleaders?ActiveFlag=&LeagueID=00&PerMode=PerGame&Scope=S&Season=2023-24&SeasonType=Regular+Season&StatCategory=PTS"
+func dailyScoreboardAPIRequestBuilder() requestURL {
+	return requestURL(URL + "scoreboardv2?DayOffset=0&GameDate=" + today + "&LeagueID=" + LeagueID)
+}
+
+func BuildRequests() map[string]requestURL {
+	urlMap := map[string]requestURL{
+		"leagueLeadersURL":   leagueLeadersAPIRequestBuilder(),
+		"seasonStandingsURL": seasonStandingsAPIRequestBuilder(),
+		"dailyScoresURL":     dailyScoreboardAPIRequestBuilder(),
 	}
-	return requestSignature
+	return urlMap
 }

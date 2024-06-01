@@ -68,7 +68,7 @@ type ResponseSet struct {
 // unmarshallResponseJSON unmarshalls the returned JSON
 func unmarshallResponseJSON() (ResponseSet, error) {
 	var response ResponseSet
-	jsonData := client.InitiateClient()
+	jsonData := client.LLJson
 
 	err := json.Unmarshal(jsonData, &response)
 	if err != nil {
