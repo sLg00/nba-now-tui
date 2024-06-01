@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var today = time.Now().Format("2006-01-31")
+var Today = time.Now().Format("2006-01-02")
 
 // HTTPHeaderSet returns a http header
 func HTTPHeaderSet() http.Header {
@@ -78,7 +78,7 @@ func seasonStandingsAPIRequestBuilder() requestURL {
 }
 
 func dailyScoreboardAPIRequestBuilder() requestURL {
-	return requestURL(URL + "scoreboardv2?DayOffset=0&GameDate=" + today + "&LeagueID=" + LeagueID)
+	return requestURL(URL + "scoreboardv2?DayOffset=0&GameDate=" + Today + "&LeagueID=" + LeagueID)
 }
 
 func BuildRequests() map[string]requestURL {

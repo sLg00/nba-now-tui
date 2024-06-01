@@ -5,6 +5,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
+	filepath2 "path/filepath"
 	"time"
 )
 
@@ -38,4 +40,30 @@ func MakeRequests() {
 		log.Fatal("URL not found")
 	}
 	LLJson = InitiateClient(url)
+
+	path := HOME + "/.config/nba-tui/"
+	fmt.Println(path)
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) == true {
+		err = os.Mkdir(path, 0777)
+		if err != nil {
+			fmt.Println("Error creating directory", err)
+			return
+		}
+	}
+
+	llFile := "ll_" + Today
+	filePath := filepath2.Join(path, llFile)
+
+	file, err := os.Create(filePath)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer file.Close()
+
+	_, err = file.Write(LLJson)
+	if err != nil {
+		log.Println("could not write to file")
+	}
 }

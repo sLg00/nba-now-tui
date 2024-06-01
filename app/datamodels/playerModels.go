@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/sLg00/nba-now-tui/app/internal/client"
+	"log"
+	"os"
 	"reflect"
 	"strconv"
 )
@@ -68,9 +70,13 @@ type ResponseSet struct {
 // unmarshallResponseJSON unmarshalls the returned JSON
 func unmarshallResponseJSON() (ResponseSet, error) {
 	var response ResponseSet
-	jsonData := client.LLJson
 
-	err := json.Unmarshal(jsonData, &response)
+	data, err := os.ReadFile(client.HOME + "/.config/nba-tui/ll_" + client.Today)
+	if err != nil {
+		log.Println("file could not be found")
+	}
+	jsonData := data
+	err = json.Unmarshal(jsonData, &response)
 	if err != nil {
 		fmt.Println("err:", err)
 		return ResponseSet{}, err
