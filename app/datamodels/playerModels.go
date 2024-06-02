@@ -67,11 +67,11 @@ type ResponseSet struct {
 	ResultSet  ResultSet  `json:"resultSet"`
 }
 
-// unmarshallResponseJSON unmarshalls the returned JSON
+// unmarshallResponseJSON unmarshalls JSON from the appropriate JSON file
 func unmarshallResponseJSON() (ResponseSet, error) {
 	var response ResponseSet
 
-	data, err := os.ReadFile(client.HOME + "/.config/nba-tui/ll_" + client.Today)
+	data, err := os.ReadFile(client.LLFULLPATH)
 	if err != nil {
 		log.Println("file could not be found")
 		data = client.LLJson
@@ -91,7 +91,6 @@ func PopulatePlayerStats() (Players, []string, error) {
 	if err != nil {
 		fmt.Println("err", err)
 	}
-
 	// mapping as Player types. the code is ugly with the switch statements, but it works
 	headers := response.ResultSet.Headers
 	var playerStats Players
@@ -161,7 +160,6 @@ func PopulatePlayerStats() (Players, []string, error) {
 				}
 			}
 		}
-		// playerStats contains all player data in a slice. TODO: write the results to a file with the current date!
 		playerStats = append(playerStats, player)
 	}
 	return playerStats, headers, nil

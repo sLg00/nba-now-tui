@@ -4,17 +4,26 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
+	"runtime"
 )
 
 var (
+	OS      = runtime.GOOS
 	HOME, _ = os.UserHomeDir()
+	PATH    = "/.config/nba-tui/"
+	LLFILE  = Today + "_ll"
+	SSFILE  = Today + "_ss"
+	DSBFILE = Today + "_dsb"
+
+	LLFULLPATH  = HOME + PATH + LLFILE
+	SSFULLPATH  = HOME + PATH + SSFILE
+	DSBFULLPATH = HOME + PATH + DSBFILE
 )
 
 // createDirectory creates the dir to hold daily json files received from the NBA API. If a directory already exists,
 // nothing his done
-func createDirectory() string {
-	path := HOME + "/.config/nba-tui/"
+func createDirectory() (string, error) {
+	path := HOME + PATH
 
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) == true {
@@ -22,16 +31,19 @@ func createDirectory() string {
 		err = os.Mkdir(path, 0777)
 		if err != nil {
 			fmt.Println("Error creating directory", err)
+			return path, err
 		}
 	}
-	return path
+	return path, nil
 }
 
 // WriteToFiles handles the writing of the json responses to the filesystem
 func WriteToFiles() error {
-	path := createDirectory()
-	llFile := "ll_" + Today
-	filePath := filepath.Join(path, llFile)
+	_, err := createDirectory()
+	if err != nil {
+		log.Println(err)
+	}
+	filePath := LLFULLPATH
 
 	file, err := os.Create(filePath)
 	if err != nil {
@@ -46,4 +58,15 @@ func WriteToFiles() error {
 		return err
 	}
 	return nil
+}
+
+// fileChecker is a helper function to check if a file exists in the system
+func fileChecker(s string) bool {
+	fileToCheck := s
+	_, err := os.Stat(fileToCheck)
+	if os.IsExist(err) == true {
+		return true
+	} else {
+		return false
+	}
 }

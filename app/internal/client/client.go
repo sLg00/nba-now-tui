@@ -35,14 +35,17 @@ func InitiateClient(url requestURL) []byte {
 // MakeRequests triggers the HTTP calls towards the NBA API
 func MakeRequests() {
 	urlMap := BuildRequests()
+
 	url, ok := urlMap["leagueLeadersURL"]
 	if !ok {
 		log.Fatal("URL not found")
 	}
-	LLJson = InitiateClient(url)
-
-	err := WriteToFiles()
-	if err != nil {
-		return
+	fileToCheck := fileChecker(LLFULLPATH)
+	if !fileToCheck {
+		LLJson = InitiateClient(url)
+		err := WriteToFiles()
+		if err != nil {
+			return
+		}
 	}
 }
