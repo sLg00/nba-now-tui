@@ -33,26 +33,8 @@ func InitiateClient(url requestURL) []byte {
 	return body
 }
 
-// MakeRequests triggers the HTTP calls towards the NBA API
-//func MakeRequests() {
-//	urlMap := BuildRequests()
-//
-//	url, ok := urlMap["leagueLeadersURL"]
-//	if !ok {
-//		log.Fatal("URL not found")
-//	}
-//	//check whether today's LL file already exists before making HTTP call towards API
-//	fileToCheck := fileChecker(LLFULLPATH)
-//	if !fileToCheck {
-//		LLJson = InitiateClient(url)
-//		err := WriteToFiles()
-//		if err != nil {
-//			return
-//		}
-//	}
-//}
-
-// MakeRequests queries the NBA APIs and populates the respective files with the returned JSON
+// MakeRequests queries the NBA APIs and populates the respective files with the returned JSON IF the files do not already
+// exist for the given day
 func MakeRequests() {
 	urlMap := BuildRequests()
 

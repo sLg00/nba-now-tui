@@ -35,7 +35,8 @@ func createDirectory() (string, error) {
 	return path, nil
 }
 
-// WriteToFiles handles the writing of the json responses to the filesystem
+// WriteToFiles handles the writing of the json responses to the filesystem. It takes a string
+// (the full path of the file the body of the JSON response as []byte
 func WriteToFiles(s string, b []byte) error {
 	_, err := createDirectory()
 	if err != nil {
