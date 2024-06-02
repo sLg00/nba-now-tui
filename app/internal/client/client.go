@@ -40,6 +40,7 @@ func MakeRequests() {
 	if !ok {
 		log.Fatal("URL not found")
 	}
+	//check whether today's LL file already exists before making HTTP call towards API
 	fileToCheck := fileChecker(LLFULLPATH)
 	if !fileToCheck {
 		LLJson = InitiateClient(url)

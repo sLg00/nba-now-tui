@@ -62,8 +62,7 @@ func WriteToFiles() error {
 
 // fileChecker is a helper function to check if a file exists in the system
 func fileChecker(s string) bool {
-	fileToCheck := s
-	_, err := os.Stat(fileToCheck)
+	_, err := os.Stat(s)
 	if os.IsExist(err) == true {
 		return true
 	} else {

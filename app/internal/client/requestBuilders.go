@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+type (
+	requestURL string
+)
+
 var Today = time.Now().Format("2006-01-02")
 
 // HTTPHeaderSet returns a http header
@@ -39,7 +43,6 @@ func identifySeason() string {
 	month := cyms[1]
 	yearInt, _ := strconv.Atoi(year)
 	monthInt, _ := strconv.Atoi(month)
-
 	lastYear := yearInt - 1
 	nextYear := yearInt + 1
 
@@ -58,10 +61,6 @@ func identifySeason() string {
 	}
 	return ""
 }
-
-type (
-	requestURL string
-)
 
 // leagueLeadersAPIRequestBuilder creates the URL for the API request from dynamic- and hardcoded building blocks
 // TODO: SeasonType key can have 2 values, need to add identification for regular season/playoffs
