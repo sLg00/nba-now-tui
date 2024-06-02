@@ -1,14 +1,12 @@
 package client
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"runtime"
 )
 
 var (
-	OS      = runtime.GOOS
+	//OS      = runtime.GOOS
 	HOME, _ = os.UserHomeDir()
 	PATH    = "/.config/nba-tui/"
 	LLFILE  = Today + "_ll"
@@ -30,7 +28,7 @@ func createDirectory() (string, error) {
 
 		err = os.Mkdir(path, 0777)
 		if err != nil {
-			fmt.Println("Error creating directory", err)
+			log.Println("Error creating directory", err)
 			return path, err
 		}
 	}
@@ -38,21 +36,21 @@ func createDirectory() (string, error) {
 }
 
 // WriteToFiles handles the writing of the json responses to the filesystem
-func WriteToFiles() error {
+func WriteToFiles(s string, b []byte) error {
 	_, err := createDirectory()
 	if err != nil {
 		log.Println(err)
 	}
-	filePath := LLFULLPATH
+	filePath := s
 
 	file, err := os.Create(filePath)
 	if err != nil {
-		fmt.Println("Error creating file:", err)
+		log.Println("Error creating file:", err)
 		return err
 	}
 	defer file.Close()
 
-	_, err = file.Write(LLJson)
+	_, err = file.Write(b)
 	if err != nil {
 		log.Println("could not write to file")
 		return err

@@ -3,12 +3,13 @@ package client
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 )
 
 var LLJson []byte
+var SSJson []byte
+var DSBJson []byte
 
 // InitiateClient initializes client instances with the appropriate request URLs and headers
 func InitiateClient(url requestURL) []byte {
@@ -33,20 +34,57 @@ func InitiateClient(url requestURL) []byte {
 }
 
 // MakeRequests triggers the HTTP calls towards the NBA API
+//func MakeRequests() {
+//	urlMap := BuildRequests()
+//
+//	url, ok := urlMap["leagueLeadersURL"]
+//	if !ok {
+//		log.Fatal("URL not found")
+//	}
+//	//check whether today's LL file already exists before making HTTP call towards API
+//	fileToCheck := fileChecker(LLFULLPATH)
+//	if !fileToCheck {
+//		LLJson = InitiateClient(url)
+//		err := WriteToFiles()
+//		if err != nil {
+//			return
+//		}
+//	}
+//}
+
+// MakeRequests queries the NBA APIs and populates the respective files with the returned JSON
 func MakeRequests() {
 	urlMap := BuildRequests()
 
-	url, ok := urlMap["leagueLeadersURL"]
-	if !ok {
-		log.Fatal("URL not found")
-	}
-	//check whether today's LL file already exists before making HTTP call towards API
-	fileToCheck := fileChecker(LLFULLPATH)
-	if !fileToCheck {
-		LLJson = InitiateClient(url)
-		err := WriteToFiles()
-		if err != nil {
-			return
+	for k, v := range urlMap {
+		switch k {
+		case "leagueLeadersURL":
+			fileToCheck := fileChecker(LLFULLPATH)
+			if !fileToCheck {
+				LLJson = InitiateClient(v)
+				err := WriteToFiles(LLFULLPATH, LLJson)
+				if err != nil {
+					return
+				}
+			}
+		case "seasonStandingsURL":
+			fileToCheck := fileChecker(SSFULLPATH)
+			if !fileToCheck {
+				SSJson = InitiateClient(v)
+				err := WriteToFiles(SSFULLPATH, SSJson)
+				if err != nil {
+					return
+				}
+			}
+		case "dailyScoresURL":
+			fileToCheck := fileChecker(DSBFULLPATH)
+			if !fileToCheck {
+				DSBJson = InitiateClient(v)
+				err := WriteToFiles(DSBFULLPATH, DSBJson)
+				if err != nil {
+					return
+				}
+			}
 		}
 	}
 }
