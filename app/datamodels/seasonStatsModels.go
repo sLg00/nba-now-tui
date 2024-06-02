@@ -1,4 +1,6 @@
 package datamodels
 
-type SeasonStandings struct {
+type Team struct {
 }
+
+type Teams []Team
