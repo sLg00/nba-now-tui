@@ -26,18 +26,12 @@ type ResultSet struct {
 	RowSet  [][]interface{} `json:"rowSet"`
 }
 
-type ResultSets struct {
-	Name    string          `json:"Name"`
-	Headers []string        `json:"Headers"`
-	RowSet  [][]interface{} `json:"RowSet"`
-}
-
 // ResponseSet is the object to which the incoming JSON is unmarshalled
 type ResponseSet struct {
-	Resource   string     `json:"resource"`
-	Parameters Parameters `json:"parameters"`
-	ResultSet  ResultSet  `json:"resultSet"`
-	ResultSets ResultSets `json:"resultSets"`
+	Resource   string      `json:"resource"`
+	Parameters Parameters  `json:"parameters"`
+	ResultSet  ResultSet   `json:"resultSet"`
+	ResultSets []ResultSet `json:"resultSets"`
 }
 
 // unmarshallResponseJSON unmarshalls JSON from the appropriate JSON file. Takes string (full path to file) as an input

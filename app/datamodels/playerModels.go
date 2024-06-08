@@ -43,7 +43,7 @@ type Players []Player
 func PopulatePlayerStats() (Players, []string, error) {
 	response, err := unmarshallResponseJSON(client.LLFULLPATH)
 	if err != nil {
-		fmt.Println("err", err)
+		fmt.Println("Could not unmarshall json data:", err)
 	}
 	// mapping as Player types. the code is ugly with the switch statements, but it works
 	headers := response.ResultSet.Headers
