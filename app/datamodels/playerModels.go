@@ -119,9 +119,10 @@ func PopulatePlayerStats() (Players, []string, error) {
 	return playerStats, headers, nil
 }
 
-// ConvertToString is a method on the Players type that creates
-// a slice of a slice of string representation of Player objects
-func (ps Players) ConvertToString() [][]string {
+// ConvertPlayersToString is a DEPRECATED method on the Players type that creates
+// a slice of a slice of string representation of Player objects.
+// It is replaced by the generic ConvertToString() function
+func (ps Players) ConvertPlayersToString() [][]string {
 	var PlayerStatsString [][]string
 
 	for _, row := range ps {

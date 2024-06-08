@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
+	"strconv"
 )
 
 // Parameters struct represents the parameters headers returned with the JSON response from the stats API
@@ -50,4 +52,30 @@ func unmarshallResponseJSON(s string) (ResponseSet, error) {
 		return ResponseSet{}, err
 	}
 	return response, nil
+}
+
+// ConvertToString is a helper function that takes any struct type and converts its values to strings
+// it is required since Bubble Tea uses strings to draw the UI
+func ConvertToString[T any](obj []T) [][]string {
+	var statsString [][]string
+
+	for _, row := range obj {
+		var instance []string
+
+		v := reflect.ValueOf(row)
+
+		for i := 0; i < v.NumField(); i++ {
+			value := v.Field(i)
+			switch value.Interface().(type) {
+			case float64:
+				instance = append(instance, strconv.FormatFloat(value.Float(), 'f', 2, 64))
+			case int:
+				instance = append(instance, strconv.Itoa(int(value.Int())))
+			case string:
+				instance = append(instance, value.String())
+			}
+		}
+		statsString = append(statsString, instance)
+	}
+	return statsString
 }

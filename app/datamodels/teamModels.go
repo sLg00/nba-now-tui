@@ -285,3 +285,18 @@ func PopulateTeamStats() (Teams, []string, error) {
 	}
 	return teamStats, headers, nil
 }
+
+func splitStandingsPerConference(t Teams, h []string) (Teams, Teams) {
+	teams := t
+	var westTeams Teams
+	var eastTeams Teams
+
+	for _, team := range teams {
+		if team.Conference == "East" {
+			eastTeams = append(eastTeams, team)
+		} else if team.Conference == "West" {
+			westTeams = append(westTeams, team)
+		}
+	}
+	return eastTeams, westTeams
+}

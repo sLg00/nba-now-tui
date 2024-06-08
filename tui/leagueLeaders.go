@@ -30,7 +30,7 @@ func initLeagueLeaders(i list.Item, p *tea.Program) leagueLeaders {
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-	playerStatsString := playerStats.ConvertToString()
+	playerStatsString := datamodels.ConvertToString(playerStats)
 
 	var (
 		columns    []table.Column
