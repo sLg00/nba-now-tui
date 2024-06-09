@@ -296,8 +296,10 @@ func PopulateTeamStats() (Teams, []string, error) {
 	return teamStats, headers, nil
 }
 
-func splitStandingsPerConference(t Teams, h []string) (Teams, Teams) {
-	teams := t
+// splitStandingsPerConference is a method on the Teams type that separates the Western and Easter conference teams into
+// separate instances of the Teams type
+func (ts Teams) splitStandingsPerConference() (Teams, Teams) {
+	teams := ts
 	var westTeams Teams
 	var eastTeams Teams
 
