@@ -9,6 +9,12 @@ import (
 	"strconv"
 )
 
+// Stringer interface provides a method to convert the attributes of any type to strings.
+// This is required to use types in the TUI, which requires objects to be strings
+type Stringer interface {
+	ToStringSlice() []string
+}
+
 // Parameters struct represents the parameters headers returned with the JSON response from the stats API
 type Parameters struct {
 	LeagueID     string `json:"LeagueID"`
@@ -54,28 +60,33 @@ func unmarshallResponseJSON(s string) (ResponseSet, error) {
 	return response, nil
 }
 
-// ConvertToString is a helper function that takes any struct type and converts its values to strings
-// it is required since Bubble Tea uses strings to draw the UI
-func ConvertToString[T any](obj []T) [][]string {
-	var statsString [][]string
+// structToStringSlice is the core function that converts type attributes from Float64 and Int to String, using reflection
+func structToStringSlice(obj any) []string {
+	v := reflect.ValueOf(obj)
+	var result []string
 
-	for _, row := range obj {
-		var instance []string
-
-		v := reflect.ValueOf(row)
-
-		for i := 0; i < v.NumField(); i++ {
-			value := v.Field(i)
-			switch value.Interface().(type) {
-			case float64:
-				instance = append(instance, strconv.FormatFloat(value.Float(), 'f', 2, 64))
-			case int:
-				instance = append(instance, strconv.Itoa(int(value.Int())))
-			case string:
-				instance = append(instance, value.String())
-			}
+	for i := 0; i < v.NumField(); i++ {
+		value := v.Field(i)
+		switch value.Kind() {
+		case reflect.Float64:
+			result = append(result, strconv.FormatFloat(value.Float(), 'f', 2, 64))
+		case reflect.Int:
+			result = append(result, strconv.Itoa(int(value.Int())))
+		case reflect.String:
+			result = append(result, value.String())
 		}
-		statsString = append(statsString, instance)
 	}
-	return statsString
+	return result
+}
+
+// ConvertToString takes the generic Stringer interface and does type conversion to string. All types that satisfy the
+// Stringer interface can have their attributes converted to strings. For instance Player, Players, Team and Teams
+func ConvertToString[T Stringer](objs []T) [][]string {
+	var stringValues [][]string
+
+	for _, obj := range objs {
+		stringValues = append(stringValues, obj.ToStringSlice())
+	}
+
+	return stringValues
 }

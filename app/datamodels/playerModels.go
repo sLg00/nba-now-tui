@@ -37,7 +37,17 @@ type Player struct {
 	EFF         float64 `json:"EFF"`
 }
 
+// ToStringSlice is a method on the Player type that enables the attributes of the type to be converted to strings
+func (p Player) ToStringSlice() []string {
+	return structToStringSlice(p)
+}
+
 type Players []Player
+
+// ToStringSlice is a method on the Players type that enables the attributes of the type to be converted to strings
+func (ps Players) ToStringSlice() []string {
+	return structToStringSlice(ps)
+}
 
 // PopulatePlayerStats maps the data to the Player struct
 func PopulatePlayerStats() (Players, []string, error) {
