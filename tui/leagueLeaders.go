@@ -1,13 +1,13 @@
 package tui
 
 import (
-	"fmt"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/sLg00/nba-now-tui/app/datamodels"
+	"log"
 	"slices"
 	"strings"
 )
@@ -25,10 +25,11 @@ type leagueLeaders struct {
 func (m leagueLeaders) Init() tea.Cmd { return nil }
 
 // initLeagueLeadersTable returns a table.Model which is populated with the current league leaders (per PPG)
-func initLeagueLeaders(i list.Item, p *tea.Program) leagueLeaders {
+func initLeagueLeaders(i list.Item, p *tea.Program) (*leagueLeaders, error) {
 	playerStats, headers, err := datamodels.PopulatePlayerStats()
 	if err != nil {
-		fmt.Println("error:", err)
+		log.Println("Could not populate player stats, error:", err)
+		return nil, err
 	}
 	playerStatsString := datamodels.ConvertToString(playerStats)
 
@@ -106,9 +107,9 @@ func initLeagueLeaders(i list.Item, p *tea.Program) leagueLeaders {
 		Background(lipgloss.Color("57")).
 		Bold(false)
 	t.SetStyles(s)
-	m := leagueLeaders{leaderboard: t}
+	m := &leagueLeaders{leaderboard: t}
 
-	return m
+	return m, nil
 }
 
 func (m leagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {

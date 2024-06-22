@@ -21,5 +21,3 @@ type dailyScores struct {
 	selectedIndex int
 	boxScores     []boxScore
 }
-
-type seasonStandings []table.Model

@@ -112,7 +112,8 @@ func (ts Teams) ToStringSlice() []string {
 }
 
 func PopulateTeamStats() (Teams, []string, error) {
-	response, err := unmarshallResponseJSON(client.SSFULLPATH)
+	pc := client.InstantiatePaths()
+	response, err := unmarshallResponseJSON(pc.SSFullPath())
 	if err != nil {
 		log.Println("Could not unmarshall json data:", err)
 	}
@@ -296,9 +297,9 @@ func PopulateTeamStats() (Teams, []string, error) {
 	return teamStats, headers, nil
 }
 
-// splitStandingsPerConference is a method on the Teams type that separates the Western and Easter conference teams into
+// SplitStandingsPerConference is a method on the Teams type that separates the Western and Easter conference teams into
 // separate instances of the Teams type
-func (ts Teams) splitStandingsPerConference() (Teams, Teams) {
+func (ts Teams) SplitStandingsPerConference() (Teams, Teams) {
 	teams := ts
 	var westTeams Teams
 	var eastTeams Teams

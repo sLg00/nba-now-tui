@@ -3,25 +3,49 @@ package client
 import (
 	"log"
 	"os"
+	"time"
 )
 
-var (
-	//OS      = runtime.GOOS
-	HOME, _ = os.UserHomeDir()
-	PATH    = "/.config/nba-tui/"
-	LLFILE  = Today + "_ll"
-	SSFILE  = Today + "_ss"
-	DSBFILE = Today + "_dsb"
+type PathComponents struct {
+	Home    string
+	Path    string
+	LLFile  string
+	SSFile  string
+	DSBFile string
+}
 
-	LLFULLPATH  = HOME + PATH + LLFILE
-	SSFULLPATH  = HOME + PATH + SSFILE
-	DSBFULLPATH = HOME + PATH + DSBFILE
-)
+func (p PathComponents) LLFullPath() string {
+	return p.Home + p.Path + p.LLFile
+}
+
+func (p PathComponents) SSFullPath() string {
+	return p.Home + p.Path + p.SSFile
+}
+
+func (p PathComponents) DSBFullPath() string {
+	return p.Home + p.Path + p.DSBFile
+}
+
+func InstantiatePaths() PathComponents {
+	today := time.Now().Format("2006-01-02")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Println(err)
+	}
+	paths := PathComponents{
+		Home:    home,
+		Path:    "/.config/nba-tui/",
+		LLFile:  today + "_ll",
+		SSFile:  today + "_ss",
+		DSBFile: today + "_dsb",
+	}
+	return paths
+}
 
 // createDirectory creates the dir to hold daily json files received from the NBA API. If a directory already exists,
 // nothing his done
-func createDirectory() (string, error) {
-	path := HOME + PATH
+func createDirectory(pc PathComponents) (string, error) {
+	path := pc.Home + pc.Path
 
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) == true {
@@ -38,7 +62,7 @@ func createDirectory() (string, error) {
 // WriteToFiles handles the writing of the json responses to the filesystem. It takes a string
 // (the full path of the file the body of the JSON response as []byte
 func WriteToFiles(s string, b []byte) error {
-	_, err := createDirectory()
+	_, err := createDirectory(InstantiatePaths())
 	if err != nil {
 		log.Println(err)
 	}

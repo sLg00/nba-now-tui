@@ -37,32 +37,32 @@ func InitiateClient(url requestURL) []byte {
 // exist for the given day
 func MakeRequests() {
 	urlMap := BuildRequests()
-
+	pc := InstantiatePaths()
 	for k, v := range urlMap {
 		switch k {
 		case "leagueLeadersURL":
-			fileToCheck := fileChecker(LLFULLPATH)
+			fileToCheck := fileChecker(pc.LLFullPath())
 			if !fileToCheck {
 				LLJson = InitiateClient(v)
-				err := WriteToFiles(LLFULLPATH, LLJson)
+				err := WriteToFiles(pc.LLFullPath(), LLJson)
 				if err != nil {
 					return
 				}
 			}
 		case "seasonStandingsURL":
-			fileToCheck := fileChecker(SSFULLPATH)
+			fileToCheck := fileChecker(pc.SSFullPath())
 			if !fileToCheck {
 				SSJson = InitiateClient(v)
-				err := WriteToFiles(SSFULLPATH, SSJson)
+				err := WriteToFiles(pc.SSFullPath(), SSJson)
 				if err != nil {
 					return
 				}
 			}
 		case "dailyScoresURL":
-			fileToCheck := fileChecker(DSBFULLPATH)
+			fileToCheck := fileChecker(pc.DSBFullPath())
 			if !fileToCheck {
 				DSBJson = InitiateClient(v)
-				err := WriteToFiles(DSBFULLPATH, DSBJson)
+				err := WriteToFiles(pc.DSBFullPath(), DSBJson)
 				if err != nil {
 					return
 				}
