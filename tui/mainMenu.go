@@ -4,6 +4,8 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"log"
+	"os"
 )
 
 // Model acts as the main model of the TUI. It's just to build the initial menu
@@ -89,12 +91,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selectedItem := m.menu.SelectedItem()
 			switch {
 			case selectedItem.FilterValue() == "League Leaders":
-				ll := initLeagueLeaders(selectedItem, Program)
+				ll, err := initLeagueLeaders(selectedItem, Program)
+				if err != nil {
+					log.Println(err)
+					os.Exit(1)
+				}
 				return ll.Update(WindowSize)
 			case selectedItem.FilterValue() == "Daily Scores":
 				//pseudo
 			case selectedItem.FilterValue() == "Season Standings":
-				//pseudo
+				ss, err := initSeasonStandings(selectedItem, Program)
+				if err != nil {
+					log.Println(err)
+					os.Exit(1)
+				}
+				return ss.Update(WindowSize)
 			case selectedItem.FilterValue() == "Recent News":
 				//pseudo
 			}

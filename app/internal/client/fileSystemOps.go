@@ -26,6 +26,7 @@ func (p PathComponents) DSBFullPath() string {
 	return p.Home + p.Path + p.DSBFile
 }
 
+// InstantiatePaths returns a PathComponents struct with default values
 func InstantiatePaths() PathComponents {
 	today := time.Now().Format("2006-01-02")
 	home, err := os.UserHomeDir()

@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// TODO: remove
 var LLJson []byte
 var SSJson []byte
 var DSBJson []byte
@@ -43,8 +44,8 @@ func MakeRequests() {
 		case "leagueLeadersURL":
 			fileToCheck := fileChecker(pc.LLFullPath())
 			if !fileToCheck {
-				LLJson = InitiateClient(v)
-				err := WriteToFiles(pc.LLFullPath(), LLJson)
+				json := InitiateClient(v)
+				err := WriteToFiles(pc.LLFullPath(), json)
 				if err != nil {
 					return
 				}
@@ -52,8 +53,8 @@ func MakeRequests() {
 		case "seasonStandingsURL":
 			fileToCheck := fileChecker(pc.SSFullPath())
 			if !fileToCheck {
-				SSJson = InitiateClient(v)
-				err := WriteToFiles(pc.SSFullPath(), SSJson)
+				json := InitiateClient(v)
+				err := WriteToFiles(pc.SSFullPath(), json)
 				if err != nil {
 					return
 				}
@@ -61,8 +62,8 @@ func MakeRequests() {
 		case "dailyScoresURL":
 			fileToCheck := fileChecker(pc.DSBFullPath())
 			if !fileToCheck {
-				DSBJson = InitiateClient(v)
-				err := WriteToFiles(pc.DSBFullPath(), DSBJson)
+				json := InitiateClient(v)
+				err := WriteToFiles(pc.DSBFullPath(), json)
 				if err != nil {
 					return
 				}
