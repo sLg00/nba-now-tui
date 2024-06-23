@@ -7,11 +7,6 @@ import (
 	"time"
 )
 
-// TODO: remove
-var LLJson []byte
-var SSJson []byte
-var DSBJson []byte
-
 // InitiateClient initializes client instances with the appropriate request URLs and headers
 func InitiateClient(url requestURL) []byte {
 	client := http.Client{Timeout: time.Duration(5) * time.Second}
