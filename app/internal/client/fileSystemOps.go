@@ -7,11 +7,11 @@ import (
 )
 
 type PathComponents struct {
-	Home    string
-	Path    string
-	LLFile  string
-	SSFile  string
-	DSBFile string
+	Home    string //home directory of the current OS user
+	Path    string //path to the config directory of the app
+	LLFile  string //league leaders file name
+	SSFile  string //season standings file name
+	DSBFile string //daily scoreboard file name
 }
 
 func (p PathComponents) LLFullPath() string {

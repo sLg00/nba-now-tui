@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -34,35 +35,45 @@ func InitiateClient(url requestURL) []byte {
 func MakeRequests() {
 	urlMap := BuildRequests()
 	pc := InstantiatePaths()
+
+	var wg sync.WaitGroup
+
 	for k, v := range urlMap {
-		switch k {
-		case "leagueLeadersURL":
-			fileToCheck := fileChecker(pc.LLFullPath())
-			if !fileToCheck {
-				json := InitiateClient(v)
-				err := WriteToFiles(pc.LLFullPath(), json)
-				if err != nil {
-					return
+		wg.Add(1)
+
+		go func(key string, url requestURL) {
+			defer wg.Done()
+
+			switch key {
+			case "leagueLeadersURL":
+				fileToCheck := fileChecker(pc.LLFullPath())
+				if !fileToCheck {
+					json := InitiateClient(url)
+					err := WriteToFiles(pc.LLFullPath(), json)
+					if err != nil {
+						return
+					}
+				}
+			case "seasonStandingsURL":
+				fileToCheck := fileChecker(pc.SSFullPath())
+				if !fileToCheck {
+					json := InitiateClient(url)
+					err := WriteToFiles(pc.SSFullPath(), json)
+					if err != nil {
+						return
+					}
+				}
+			case "dailyScoresURL":
+				fileToCheck := fileChecker(pc.DSBFullPath())
+				if !fileToCheck {
+					json := InitiateClient(url)
+					err := WriteToFiles(pc.DSBFullPath(), json)
+					if err != nil {
+						return
+					}
 				}
 			}
-		case "seasonStandingsURL":
-			fileToCheck := fileChecker(pc.SSFullPath())
-			if !fileToCheck {
-				json := InitiateClient(v)
-				err := WriteToFiles(pc.SSFullPath(), json)
-				if err != nil {
-					return
-				}
-			}
-		case "dailyScoresURL":
-			fileToCheck := fileChecker(pc.DSBFullPath())
-			if !fileToCheck {
-				json := InitiateClient(v)
-				err := WriteToFiles(pc.DSBFullPath(), json)
-				if err != nil {
-					return
-				}
-			}
-		}
+		}(k, v)
 	}
+	wg.Wait()
 }

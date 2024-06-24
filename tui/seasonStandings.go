@@ -60,7 +60,7 @@ func initSeasonStandings(i list.Item, p *tea.Program) (*seasonStandings, error) 
 	eastTable := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
-		table.WithFocused(false),
+		table.WithFocused(true),
 		table.WithHeight(15))
 
 	westTable := table.New(
