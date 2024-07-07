@@ -26,7 +26,7 @@ func (p PathComponents) DSBFullPath() string {
 	return p.Home + p.Path + p.DSBFile
 }
 
-// InstantiatePaths returns a PathComponents struct with default values
+// InstantiatePaths is a factory function that returns a PathComponents struct with default values
 func InstantiatePaths() PathComponents {
 	today := time.Now().Format("2006-01-02")
 	home, err := os.UserHomeDir()
@@ -63,7 +63,8 @@ func createDirectory(pc PathComponents) (string, error) {
 // WriteToFiles handles the writing of the json responses to the filesystem. It takes a string
 // (the full path of the file the body of the JSON response as []byte
 func WriteToFiles(s string, b []byte) error {
-	_, err := createDirectory(InstantiatePaths())
+	paths := InstantiatePaths()
+	_, err := createDirectory(paths)
 	if err != nil {
 		log.Println(err)
 	}
@@ -87,8 +88,11 @@ func WriteToFiles(s string, b []byte) error {
 // fileChecker is a helper function to check if a file exists in the system
 func fileChecker(s string) bool {
 	_, err := os.Stat(s)
-	if os.IsExist(err) == true {
+	if err == nil {
 		return true
+	}
+	if os.IsNotExist(err) {
+		return false
 	} else {
 		return false
 	}
