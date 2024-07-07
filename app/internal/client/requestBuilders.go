@@ -50,14 +50,13 @@ func identifySeason() string {
 		s := p1 + "-" + p2
 		return s
 
-	}
-	if monthInt < 7 {
+	} else {
 		p1 := strconv.Itoa(lastYear)
 		p2 := strconv.Itoa(yearInt)[2:]
 		s := p1 + "-" + p2
 		return s
+
 	}
-	return ""
 }
 
 // leagueLeadersAPIRequestBuilder creates the URL for the API request from dynamic- and hardcoded building blocks
