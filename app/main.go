@@ -6,7 +6,8 @@ import (
 )
 
 func main() {
-	client.MakeRequests()
+
+	client.NewClient().MakeRequests()
 	tui.RenderUI()
 
 }

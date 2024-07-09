@@ -63,7 +63,7 @@ func createDirectory(pc PathComponents) (string, error) {
 // WriteToFiles handles the writing of the json responses to the filesystem. It takes a string
 // (the full path of the file the body of the JSON response as []byte
 func WriteToFiles(s string, b []byte) error {
-	paths := InstantiatePaths()
+	paths := NewClient().InstantiatePaths()
 	_, err := createDirectory(paths)
 	if err != nil {
 		log.Println(err)

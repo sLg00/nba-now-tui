@@ -51,8 +51,8 @@ func (ps Players) ToStringSlice() []string {
 
 // PopulatePlayerStats maps the data to the Player struct
 func PopulatePlayerStats() (Players, []string, error) {
-	pc := client.InstantiatePaths()
-	response, err := unmarshallResponseJSON(pc.LLFullPath())
+	pc := client.NewClient().InstantiatePaths().LLFullPath()
+	response, err := unmarshallResponseJSON(pc)
 	if err != nil {
 		fmt.Println("Could not unmarshall json data:", err)
 	}

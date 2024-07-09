@@ -74,6 +74,8 @@ func structToStringSlice(obj any) []string {
 			result = append(result, strconv.Itoa(int(value.Int())))
 		case reflect.String:
 			result = append(result, value.String())
+		default:
+			panic("unhandled default case")
 		}
 	}
 	return result

@@ -112,8 +112,8 @@ func (ts Teams) ToStringSlice() []string {
 }
 
 func PopulateTeamStats() (Teams, []string, error) {
-	pc := client.InstantiatePaths()
-	response, err := unmarshallResponseJSON(pc.SSFullPath())
+	pc := client.NewClient().InstantiatePaths().SSFullPath()
+	response, err := unmarshallResponseJSON(pc)
 	if err != nil {
 		log.Println("Could not unmarshall json data:", err)
 	}
