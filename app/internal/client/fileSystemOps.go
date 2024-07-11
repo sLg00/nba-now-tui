@@ -18,9 +18,7 @@ func (p PathComponents) LLFullPath() string {
 	return p.Home + p.Path + p.LLFile
 }
 
-func (p PathComponents) SSFullPath() string {
-	return p.Home + p.Path + p.SSFile
-}
+func (p PathComponents) SSFullPath() string { return p.Home + p.Path + p.SSFile }
 
 func (p PathComponents) DSBFullPath() string {
 	return p.Home + p.Path + p.DSBFile
