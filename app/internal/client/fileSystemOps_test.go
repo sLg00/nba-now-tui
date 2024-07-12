@@ -5,12 +5,16 @@ import (
 	"testing"
 )
 
-func TestCreateDirectory(t *testing.T) {
+func mockPathComponents() PathComponents {
 	home, _ := os.UserHomeDir()
-	mp := PathComponents{
-		Home: home,
-		Path: "/foo",
-	}
+	return PathComponents{
+		Home:   home,
+		Path:   "/foo",
+		LLFile: "mock,"}
+}
+
+func TestCreateDirectory(t *testing.T) {
+	mp := mockPathComponents()
 	result, err := createDirectory(mp)
 	if result != mp.Home+mp.Path {
 		t.Errorf("createDirectory returned %s, expected %s", result, mp)
@@ -19,6 +23,16 @@ func TestCreateDirectory(t *testing.T) {
 		t.Errorf("createDirectory returned %s, expected no error", err)
 	}
 	os.Remove(mp.Home + mp.Path)
+}
+
+func TestWriteToFiles(t *testing.T) {
+	mp := mockPathComponents()
+	fileContents := []byte(`{"key": "value"}`)
+	result := WriteToFiles(mp.Home+mp.Path+mp.LLFile, fileContents)
+	if result != nil {
+		t.Errorf("WriteToFiles returned %s, expected no error", result)
+	}
+	os.Remove(mp.Home + mp.Path + mp.LLFile)
 }
 
 func TestFileChecker(t *testing.T) {
