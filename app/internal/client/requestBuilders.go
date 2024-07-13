@@ -8,12 +8,13 @@ import (
 )
 
 type (
+	// requestURL is a custom type that represent the specific URLs required to make requests towards the NBA APIs
 	requestURL string
 )
 
-// HTTPHeaderSet returns a http header
+// HTTPHeaderSet returns a http header required for the NBA API
 func HTTPHeaderSet() http.Header {
-	var headerSet = http.Header{
+	return http.Header{
 		"User-Agent":         {"Mozilhttps://stats.nba.com/stats/la/5.0, (Windows NT 10.0; Win64; x64; rv:72.0), Gecko/20100101, Firefox/72.0"},
 		"Accept":             {"application/json; charset=utf-8 , text/plain, */*"},
 		"Accept-Language":    {"en-US, en;q=0.5firefox-125.0b3.tar.bz2"},
@@ -25,7 +26,6 @@ func HTTPHeaderSet() http.Header {
 		"Pragma":             {"no-cache"},
 		"Cache-Control":      {"no-cache"},
 	}
-	return headerSet
 }
 
 // LeagueID is always 00 for the requests going against NBA APIs
