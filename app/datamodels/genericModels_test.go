@@ -7,10 +7,11 @@ import (
 )
 
 func TestUnmarshallRequestJSON(t *testing.T) {
-
-	mockFile := "/home/omar_t/.config/nba-tui/2024-07-10_ll" //somefile that has the expected structure
+	//temporarily using files already on the filesys. TODO: refactor so that files are set up and torn down specifically
+	//for the tests
+	mockFile := "/home/omar_t/.config/nba-tui/2024-07-10_ll"
 	mockResponse, _ := unmarshallResponseJSON(mockFile)
-	mockFileWithNoData := "/home/omar_t/.config/nba-tui/2024-07-07_ll" //somefile that has an unexpected structure
+	mockFileWithNoData := "/home/omar_t/.config/nba-tui/2024-07-07_ll"
 	missingFile := "/tmp/filenotfound.conf"
 
 	var tests = []struct {
