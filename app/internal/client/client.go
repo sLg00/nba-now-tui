@@ -39,14 +39,16 @@ func (c *Client) InitiateClient(url requestURL) []byte {
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		fmt.Println("err:", err)
+		err = fmt.Errorf("HTTP request failed: %v", err)
+		log.Println(err)
 		return nil
 	}
 
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			log.Println("Could not close file.")
+			err = fmt.Errorf("closing response body failed: %v", err)
+			log.Println(err)
 		}
 	}(resp.Body)
 
@@ -75,6 +77,8 @@ func (c *Client) MakeRequests() {
 					json := c.InitiateClient(url)
 					err := c.WriteToFiles(pc.LLFullPath(), json)
 					if err != nil {
+						err = fmt.Errorf("couldn't write to files: %v", err)
+						log.Println(err)
 						return
 					}
 				}
@@ -84,6 +88,8 @@ func (c *Client) MakeRequests() {
 					json := c.InitiateClient(url)
 					err := c.WriteToFiles(pc.SSFullPath(), json)
 					if err != nil {
+						err = fmt.Errorf("couldn't write to files: %v", err)
+						log.Println(err)
 						return
 					}
 				}
@@ -93,6 +99,8 @@ func (c *Client) MakeRequests() {
 					json := c.InitiateClient(url)
 					err := c.WriteToFiles(pc.DSBFullPath(), json)
 					if err != nil {
+						err = fmt.Errorf("couldn't write to files: %v", err)
+						log.Println(err)
 						return
 					}
 				}

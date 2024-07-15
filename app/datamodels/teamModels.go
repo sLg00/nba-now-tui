@@ -1,6 +1,7 @@
 package datamodels
 
 import (
+	"fmt"
 	"github.com/sLg00/nba-now-tui/app/internal/client"
 	"log"
 )
@@ -115,13 +116,15 @@ func PopulateTeamStats() (Teams, []string, error) {
 	pc := client.NewClient().InstantiatePaths().SSFullPath()
 	response, err := unmarshallResponseJSON(pc)
 	if err != nil {
-		log.Println("Could not unmarshall json data:", err)
+		err = fmt.Errorf("could not unmarshall team stats: %v", err)
+		log.Println(err)
 	}
 	headers := response.ResultSets[0].Headers
 	var teamStats Teams
 	for _, row := range response.ResultSets[0].RowSet {
 		if len(row) != len(headers) {
-			log.Println("ERR: Header and row length do not match.")
+			err = fmt.Errorf("header row length does not match row length: %v != %v", len(headers), len(row))
+			log.Println(err)
 			return nil, nil, err
 		}
 		var team Team

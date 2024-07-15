@@ -3,6 +3,7 @@ package datamodels
 import (
 	"fmt"
 	"github.com/sLg00/nba-now-tui/app/internal/client"
+	"log"
 )
 
 // Player struct represents a player row with their current statistical averages based on the input parameters
@@ -52,14 +53,17 @@ func PopulatePlayerStats() (Players, []string, error) {
 	pc := client.NewClient().InstantiatePaths().LLFullPath()
 	response, err := unmarshallResponseJSON(pc)
 	if err != nil {
-		fmt.Println("Could not unmarshall json data:", err)
+		err = fmt.Errorf("could not unmarshall json data: %v", err)
+		log.Println(err)
 	}
+
 	// mapping as Player types. the code is ugly with the switch statements, but it works
 	headers := response.ResultSet.Headers
 	var playerStats Players
 	for _, row := range response.ResultSet.RowSet {
 		if len(row) != len(headers) {
-			fmt.Println("Error: Row length doesn't match headers length")
+			err = fmt.Errorf("row length doesn't match headers length. %v != %v", len(row), len(headers))
+			log.Println(err)
 			return nil, nil, err
 		}
 		var player Player

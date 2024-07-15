@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -29,6 +30,7 @@ func InstantiatePaths() PathComponents {
 	today := time.Now().Format("2006-01-02")
 	home, err := os.UserHomeDir()
 	if err != nil {
+		err = fmt.Errorf("could not determine home directory: %w", err)
 		log.Println(err)
 	}
 	paths := PathComponents{
@@ -51,7 +53,8 @@ func createDirectory(pc PathComponents) (string, error) {
 
 		err = os.Mkdir(path, 0777)
 		if err != nil {
-			log.Println("Error creating directory", err)
+			err = fmt.Errorf("could not create directory: %w", err)
+			log.Println(err)
 			return path, err
 		}
 	}
