@@ -3,8 +3,6 @@ package datamodels
 import (
 	"fmt"
 	"github.com/sLg00/nba-now-tui/app/internal/client"
-	"reflect"
-	"strconv"
 )
 
 // Player struct represents a player row with their current statistical averages based on the input parameters
@@ -128,31 +126,4 @@ func PopulatePlayerStats() (Players, []string, error) {
 		playerStats = append(playerStats, player)
 	}
 	return playerStats, headers, nil
-}
-
-// ConvertPlayersToString is a DEPRECATED method on the Players type that creates
-// a slice of a slice of string representation of Player objects.
-// It is replaced by the generic ConvertToString() function
-func (ps Players) ConvertPlayersToString() [][]string {
-	var PlayerStatsString [][]string
-
-	for _, row := range ps {
-		var instance []string
-
-		v := reflect.ValueOf(row)
-
-		for i := 0; i < v.NumField(); i++ {
-			value := v.Field(i)
-			switch value.Interface().(type) {
-			case float64:
-				instance = append(instance, strconv.FormatFloat(value.Float(), 'f', 2, 64))
-			case int:
-				instance = append(instance, strconv.Itoa(int(value.Int())))
-			case string:
-				instance = append(instance, value.String())
-			}
-		}
-		PlayerStatsString = append(PlayerStatsString, instance)
-	}
-	return PlayerStatsString
 }
