@@ -27,7 +27,7 @@ type Parameters struct {
 	ActiveFlag   string `json:"ActiveFlag"`
 }
 
-// ResultSet  is the object that represents the actual returned data structure or headers and rows.SeasonYear
+// ResultSet  is the object that represents the actual returned data structure or headers and rows
 type ResultSet struct {
 	Name    string          `json:"name"`
 	Headers []string        `json:"headers"`
@@ -42,19 +42,22 @@ type ResponseSet struct {
 	ResultSets []ResultSet `json:"resultSets"`
 }
 
-// unmarshallResponseJSON unmarshalls JSON from the appropriate JSON file. Takes string (full path to file) as an input
+// unmarshallResponseJSON unmarshalls JSON from the appropriate JSON file.
+// Takes string (full path to file) as an input and returns a ResponseSet struct
 func unmarshallResponseJSON(s string) (ResponseSet, error) {
 	var response ResponseSet
 
 	data, err := os.ReadFile(s)
 	if err != nil {
-		log.Println("file could not be found")
+		err = fmt.Errorf("error reading file %s", s)
+		log.Println(err)
 		return response, err
 	}
-	jsonData := data
-	err = json.Unmarshal(jsonData, &response)
+
+	err = json.Unmarshal(data, &response)
 	if err != nil {
-		fmt.Println("err:", err)
+		err = fmt.Errorf("error unmarshalling response from file: %s", s)
+		log.Println(err)
 		return ResponseSet{}, err
 	}
 	return response, nil
