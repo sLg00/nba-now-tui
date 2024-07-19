@@ -39,6 +39,7 @@ func initLeagueLeaders(i list.Item, p *tea.Program) (*leagueLeaders, error) {
 	}
 	playerStatsString := datamodels.ConvertToString(playerStats)
 
+	//filter out ID columns
 	var filteredHeaders []string
 	for _, h := range headers {
 		if !strings.Contains(h, "ID") {
@@ -46,6 +47,7 @@ func initLeagueLeaders(i list.Item, p *tea.Program) (*leagueLeaders, error) {
 		}
 	}
 
+	//filter out ID row data
 	var filteredRows [][]string
 	for _, fr := range playerStatsString {
 		fr = slices.Delete(fr, 0, 1)
@@ -53,12 +55,14 @@ func initLeagueLeaders(i list.Item, p *tea.Program) (*leagueLeaders, error) {
 		filteredRows = append(filteredRows, fr)
 	}
 
+	//reorganize column order to be more logical
 	var sortedHeaders []string
 	sortedHeaders = append(sortedHeaders, filteredHeaders[0:5]...)
 	sortedHeaders = append(sortedHeaders, filteredHeaders[21:23]...)
 	sortedHeaders = append(sortedHeaders, filteredHeaders[17:21]...)
 	sortedHeaders = append(sortedHeaders, filteredHeaders[5:17]...)
 
+	//reorganize row data ordering to match column order
 	var sortedRows [][]string
 	for _, r := range filteredRows {
 		var sorterRow []string
