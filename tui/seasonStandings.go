@@ -3,9 +3,10 @@ package tui
 import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
-	"github.com/charmbracelet/bubbles/table"
+	//"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/evertras/bubble-table/table"
 	"github.com/sLg00/nba-now-tui/app/datamodels"
 	"log"
 )
@@ -14,6 +15,10 @@ type seasonStandings struct {
 	quitting  bool
 	westTeams table.Model
 	eastTeams table.Model
+	height    int
+	width     int
+	maxHeight int
+	maxWidth  int
 }
 
 func (m seasonStandings) Init() tea.Cmd { return nil }
@@ -40,47 +45,34 @@ func initSeasonStandings(i list.Item, p *tea.Program) (*seasonStandings, error) 
 	)
 
 	for _, h := range headers {
-		column = table.Column{
-			Title: h,
-			Width: 10,
-		}
+		column = table.NewColumn(h, h, 15)
 		columns = append(columns, column)
 	}
 
 	for _, r := range eastTeamsStrings {
-		row = r
+		rowData := make(table.RowData)
+		for i, rd := range r {
+			columnTitle := columns[i].Title()
+			rowData[columnTitle] = rd
+		}
+		row = table.NewRow(rowData)
 		rows = append(rows, row)
 	}
 
 	for _, r := range westTeamsStrings {
-		westRow = r
+		rowData := make(table.RowData)
+		for i, rd := range r {
+			columnTitle := columns[i].Title()
+			rowData[columnTitle] = rd
+		}
+		westRow = table.NewRow(rowData)
 		westRows = append(westRows, westRow)
 	}
 
-	eastTable := table.New(
-		table.WithColumns(columns),
-		table.WithRows(rows),
-		table.WithFocused(true),
-		table.WithHeight(15))
+	eastTable := table.New(columns).WithRows(rows).WithMaxTotalWidth(120).Focused(true)
 
-	westTable := table.New(
-		table.WithColumns(columns),
-		table.WithRows(westRows),
-		table.WithFocused(false),
-		table.WithHeight(15))
+	westTable := table.New(columns).WithRows(westRows).WithMaxTotalWidth(120)
 
-	s := table.DefaultStyles()
-	s.Header = s.Header.
-		BorderStyle(lipgloss.DoubleBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderBottom(true).
-		Bold(true)
-	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
-		Bold(false)
-	eastTable.SetStyles(s)
-	westTable.SetStyles(s)
 	m := &seasonStandings{eastTeams: eastTable, westTeams: westTable}
 
 	return m, nil
@@ -96,6 +88,16 @@ func (m seasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		case key.Matches(msg, Keymap.Quit):
 			m.quitting = true
 			return m, tea.Quit
+		}
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+
+		if m.width > m.maxWidth {
+			m.maxWidth = m.width
+		}
+		if m.height > m.maxHeight {
+			m.maxHeight = m.height
 		}
 	}
 	m.eastTeams, cmd = m.eastTeams.Update(msg)
