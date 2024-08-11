@@ -190,10 +190,9 @@ func PopulateDailyGameResults() (DailyGameResults, []string, error) {
 		}
 	}
 
-	var gameResults []GameResult
+	var gameResults DailyGameResults
 	for _, gr := range gameResultMap {
 		gameResults = append(gameResults, *gr)
 	}
-	fmt.Println(gameResults)
 	return gameResults, headers, nil
 }
