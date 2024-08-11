@@ -99,6 +99,14 @@ type GameResult struct {
 
 type DailyGameResults []GameResult
 
+func (g GameResult) ToStringSlice() []string {
+	return structToStringSlice(g)
+}
+
+func (d DailyGameResults) ToStringSlice() []string {
+	return structToStringSlice(d)
+}
+
 func PopulateDailyGameResults() (DailyGameResults, []string, error) {
 	pc := client.NewClient().InstantiatePaths().DSBFullPath()
 	response, err := unmarshallResponseJSON(pc)
