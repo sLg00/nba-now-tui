@@ -98,7 +98,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				return ll.Update(WindowSize)
 			case selectedItem.FilterValue() == "Daily Scores":
-				//pseudo
+				dv, err := initDailyView(selectedItem, Program)
+				if err != nil {
+					log.Println(err)
+					os.Exit(1)
+				}
+				return dv.Update(WindowSize)
 			case selectedItem.FilterValue() == "Season Standings":
 				ss, err := initSeasonStandings(selectedItem, Program)
 				if err != nil {

@@ -18,6 +18,10 @@ type keymap struct {
 	Back  key.Binding
 	Quit  key.Binding
 	Enter key.Binding
+	Up    key.Binding
+	Down  key.Binding
+	Left  key.Binding
+	Right key.Binding
 }
 
 var DocStyle = lipgloss.NewStyle().Margin(0, 2)
@@ -39,6 +43,18 @@ var Keymap = keymap{
 	Enter: key.NewBinding(
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "select")),
+	Up: key.NewBinding(
+		key.WithKeys("up"),
+		key.WithHelp("up", "up")),
+	Down: key.NewBinding(
+		key.WithKeys("down"),
+		key.WithHelp("down", "down")),
+	Left: key.NewBinding(
+		key.WithKeys("left"),
+		key.WithHelp("left", "left")),
+	Right: key.NewBinding(
+		key.WithKeys("right"),
+		key.WithHelp("right", "right")),
 }
 
 // Date is a helper function which returns the current date in a pre-specified format
