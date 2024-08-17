@@ -19,6 +19,7 @@ type seasonStandings struct {
 	width     int
 	maxHeight int
 	maxWidth  int
+	focused   bool
 }
 
 func (m seasonStandings) Init() tea.Cmd { return nil }
@@ -88,6 +89,15 @@ func (m seasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		case key.Matches(msg, Keymap.Quit):
 			m.quitting = true
 			return m, tea.Quit
+		case key.Matches(msg, Keymap.Tab):
+			m.focused = !m.focused
+			if m.focused {
+				m.eastTeams = m.eastTeams.Focused(true)
+				m.westTeams = m.westTeams.Focused(false)
+			} else {
+				m.eastTeams = m.eastTeams.Focused(false)
+				m.westTeams = m.westTeams.Focused(true)
+			}
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
