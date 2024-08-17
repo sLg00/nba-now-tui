@@ -16,19 +16,22 @@ type dailyView struct {
 	quitting   bool
 	focusIndex int
 	numCols    int
+	width      int
+	height     int
 }
 
 func newGameCard(r []table.Row) table.Model {
 	columns := []table.Column{
-		table.NewColumn("teams", "", 5),
-		table.NewColumn("scores", "", 5),
+		table.NewColumn("teams", "", 7),
+		table.NewColumn("scores", "", 7),
 	}
 
 	gc := table.New(columns)
-
 	gc = gc.WithRows(r)
-	gc = gc.BorderDefault()
+
+	gc = gc.WithBaseStyle(lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("7")))
 	gc = gc.WithHeaderVisibility(false)
+	gc = gc.BorderRounded()
 	return gc
 }
 
@@ -50,10 +53,12 @@ func initDailyView(i list.Item, p *tea.Program) (*dailyView, error) {
 		homeRowData := table.RowData{
 			"teams":  gameScore[4],
 			"scores": gameScore[3],
+			"gameID": gameScore[0],
 		}
 		awayRowData := table.RowData{
 			"teams":  gameScore[8],
 			"scores": gameScore[7],
+			"gameID": gameScore[0],
 		}
 
 		scoreRows = append(scoreRows, table.NewRow(homeRowData))
@@ -63,7 +68,7 @@ func initDailyView(i list.Item, p *tea.Program) (*dailyView, error) {
 		gameCards = append(gameCards, gameCard)
 	}
 
-	m := &dailyView{gameCards: gameCards, focusIndex: 0, numCols: 3}
+	m := &dailyView{gameCards: gameCards, focusIndex: 0, numCols: 2}
 	return m, nil
 }
 
@@ -96,7 +101,11 @@ func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 				m.focusIndex++
 			}
 		}
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 	}
+
 	m.gameCards[m.focusIndex], cmd = m.gameCards[m.focusIndex].Update(msg)
 	cmds = append(cmds, cmd)
 	return m, tea.Batch(cmds...)
@@ -107,25 +116,30 @@ func (m dailyView) View() string {
 		return ""
 	}
 
-	var focusedBorderStyle = lipgloss.NewStyle().
-		Border(lipgloss.ThickBorder()).
-		BorderForeground(lipgloss.Color("5")). // Purple color code
-		Padding(1)
+	// Define the default style with a less prominent or hidden border
 
 	var b strings.Builder
 
 	for i, gameCard := range m.gameCards {
 		if i == m.focusIndex {
-			// Apply purple border to the focused gameCard
-			gameCard = gameCard.WithBaseStyle(focusedBorderStyle)
+			gameCard = gameCard.WithBaseStyle(lipgloss.NewStyle().BorderForeground(lipgloss.Color("5")))
 		}
 
 		b.WriteString(gameCard.View())
+		b.WriteString("\n")
 		b.WriteString("\n")
 
 		if (i+1)%m.numCols == 0 {
 			b.WriteString("\n")
 		}
 	}
-	return b.String()
+	content := b.String()
+
+	renderedDailyView := lipgloss.NewStyle().
+		Width(m.width).
+		Height(m.height).
+		Align(lipgloss.Center, lipgloss.Center).
+		Render(content)
+
+	return renderedDailyView
 }
