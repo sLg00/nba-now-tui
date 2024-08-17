@@ -4,6 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,7 @@ type keymap struct {
 	Down  key.Binding
 	Left  key.Binding
 	Right key.Binding
+	Tab   key.Binding
 }
 
 var DocStyle = lipgloss.NewStyle().Margin(0, 2)
@@ -55,6 +57,32 @@ var Keymap = keymap{
 	Right: key.NewBinding(
 		key.WithKeys("right"),
 		key.WithHelp("right", "right")),
+	Tab: key.NewBinding(
+		key.WithKeys("tab"),
+		key.WithHelp("tab", "switch")),
+}
+
+// HelpFooter returns a fully-fledged help footer to be used in all nba-tui views
+func HelpFooter() string {
+	localMap := []struct{ Key, Desc string }{
+		{Keymap.Back.Help().Key, Keymap.Back.Help().Desc},
+		{Keymap.Quit.Help().Key, Keymap.Quit.Help().Desc},
+		{Keymap.Enter.Help().Key, Keymap.Enter.Help().Desc}}
+
+	helpItems := localMap
+
+	var builder strings.Builder
+	for i, item := range helpItems {
+		helpItem := item.Key + ": " + item.Desc
+		builder.WriteString(helpItem)
+
+		if i < len(helpItems)-1 {
+			builder.WriteString(" | ")
+		}
+	}
+
+	helpMenu := strings.TrimSpace(builder.String())
+	return helpMenu
 }
 
 // Date is a helper function which returns the current date in a pre-specified format

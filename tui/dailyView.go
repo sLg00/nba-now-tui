@@ -112,9 +112,8 @@ func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 }
 
 func (m dailyView) helpView() string {
-	// TODO: use the keymaps to populate the help string
 
-	return HelpStyle("\n ↑/↓: navigate  • backspace: %s • q: quit\n")
+	return HelpStyle("\n" + HelpFooter() + "\n")
 }
 
 func (m dailyView) View() string {

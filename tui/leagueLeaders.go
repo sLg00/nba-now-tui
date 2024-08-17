@@ -3,14 +3,13 @@ package tui
 import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
-	"slices"
-	"strings"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
 	"github.com/sLg00/nba-now-tui/app/datamodels"
 	"log"
+	"slices"
+	"strings"
 )
 
 // removeIndex is a helper function to delete elements from a slice
@@ -137,8 +136,8 @@ func (m leagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 }
 
 func (m leagueLeaders) helpView() string {
-	// TODO: use the keymaps to populate the help string
-	return HelpStyle("\n ↑/↓: navigate  • backspace: back • q: quit\n")
+
+	return HelpStyle("\n" + HelpFooter() + "\n")
 }
 
 func (m leagueLeaders) View() string {

@@ -90,13 +90,14 @@ func (m seasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			m.quitting = true
 			return m, tea.Quit
 		case key.Matches(msg, Keymap.Tab):
-			m.focused = !m.focused
 			if m.focused {
 				m.eastTeams = m.eastTeams.Focused(true)
 				m.westTeams = m.westTeams.Focused(false)
+				m.focused = !m.focused
 			} else {
 				m.eastTeams = m.eastTeams.Focused(false)
 				m.westTeams = m.westTeams.Focused(true)
+				m.focused = !m.focused
 			}
 		}
 	case tea.WindowSizeMsg:
@@ -118,8 +119,8 @@ func (m seasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 }
 
 func (m seasonStandings) helpView() string {
-	// TODO: use the keymaps to populate the help string
-	return HelpStyle("\n ↑/↓: navigate  • backspace: back • q: quit\n")
+
+	return HelpStyle("\n" + HelpFooter() + "\n")
 }
 
 func (m seasonStandings) View() string {
