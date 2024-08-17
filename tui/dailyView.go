@@ -27,10 +27,10 @@ func newGameCard(r []table.Row) table.Model {
 	}
 
 	gc := table.New(columns)
-	gc = gc.WithRows(r)
-
-	gc = gc.WithBaseStyle(lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("7")))
-	gc = gc.WithHeaderVisibility(false)
+	gc = gc.WithRows(r).WithBaseStyle(lipgloss.NewStyle().
+		BorderStyle(lipgloss.HiddenBorder()).
+		BorderForeground(lipgloss.Color("7"))).
+		WithHeaderVisibility(false)
 	gc = gc.BorderRounded()
 	return gc
 }
@@ -84,19 +84,19 @@ func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			return m, tea.Quit
 		case key.Matches(msg, Keymap.Enter):
 			//open box score
-		case key.Matches(msg, Keymap.Up):
+		case key.Matches(msg, Keymap.Left):
 			if m.focusIndex >= m.numCols {
 				m.focusIndex -= m.numCols
 			}
-		case key.Matches(msg, Keymap.Down):
+		case key.Matches(msg, Keymap.Right):
 			if m.focusIndex+m.numCols < len(m.gameCards) {
 				m.focusIndex += m.numCols
 			}
-		case key.Matches(msg, Keymap.Left):
+		case key.Matches(msg, Keymap.Up):
 			if m.focusIndex%m.numCols > 0 {
 				m.focusIndex--
 			}
-		case key.Matches(msg, Keymap.Right):
+		case key.Matches(msg, Keymap.Down):
 			if m.focusIndex%m.numCols < m.numCols-1 && m.focusIndex+1 < len(m.gameCards) {
 				m.focusIndex++
 			}
@@ -111,18 +111,25 @@ func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
+func (m dailyView) helpView() string {
+	// TODO: use the keymaps to populate the help string
+
+	return HelpStyle("\n ↑/↓: navigate  • backspace: %s • q: quit\n")
+}
+
 func (m dailyView) View() string {
 	if m.quitting {
 		return ""
 	}
 
-	// Define the default style with a less prominent or hidden border
-
 	var b strings.Builder
 
 	for i, gameCard := range m.gameCards {
 		if i == m.focusIndex {
-			gameCard = gameCard.WithBaseStyle(lipgloss.NewStyle().BorderForeground(lipgloss.Color("5")))
+			gameCard = gameCard.WithBaseStyle(lipgloss.NewStyle().
+				BorderStyle(lipgloss.HiddenBorder()).
+				BorderForeground(lipgloss.Color("5"))).
+				WithHeaderVisibility(false)
 		}
 
 		b.WriteString(gameCard.View())
@@ -141,5 +148,7 @@ func (m dailyView) View() string {
 		Align(lipgloss.Center, lipgloss.Center).
 		Render(content)
 
-	return renderedDailyView
+	comboView := lipgloss.JoinVertical(lipgloss.Left, renderedDailyView, m.helpView())
+	return comboView
+
 }
