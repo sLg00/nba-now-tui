@@ -100,6 +100,8 @@ func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			if m.focusIndex%m.numCols < m.numCols-1 && m.focusIndex+1 < len(m.gameCards) {
 				m.focusIndex++
 			}
+		case key.Matches(msg, Keymap.Tab):
+			m.focusIndex = (m.focusIndex + 1) % len(m.gameCards)
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
