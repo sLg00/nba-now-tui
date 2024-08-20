@@ -68,8 +68,8 @@ func InitMenu() (tea.Model, tea.Cmd) {
 	m.menu.AdditionalShortHelpKeys = func() []key.Binding {
 		return []key.Binding{
 			Keymap.Back,
-			Keymap.Quit,
 			Keymap.Enter,
+			Keymap.Tab,
 		}
 	}
 	return m, func() tea.Msg { return errMsg{err} }

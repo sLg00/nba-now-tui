@@ -6,7 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
-	"github.com/sLg00/nba-now-tui/app/datamodels"
+	"github.com/sLg00/nba-now-tui/cmd/datamodels"
 	"log"
 	"slices"
 	"strings"

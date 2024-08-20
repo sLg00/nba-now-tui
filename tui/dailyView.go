@@ -6,7 +6,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
-	"github.com/sLg00/nba-now-tui/app/datamodels"
+	"github.com/sLg00/nba-now-tui/cmd/client"
+	"github.com/sLg00/nba-now-tui/cmd/datamodels"
 	"log"
 	"strings"
 )
@@ -66,10 +67,28 @@ func initDailyView(i list.Item, p *tea.Program) (*dailyView, error) {
 
 		gameCard := newGameCard(scoreRows)
 		gameCards = append(gameCards, gameCard)
+
+		// For each gameID, query the NBA API, get the box score and save it to the filesystem
+		err = client.NewClient().MakeOnDemandRequests(gameScore[0])
+		if err != nil {
+			log.Printf("Could not make on-demand requests: %v", err)
+		}
 	}
 
 	m := &dailyView{gameCards: gameCards, focusIndex: 0, numCols: 2}
 	return m, nil
+}
+
+func (m dailyView) getGameId() string {
+	focusedCard := m.gameCards[m.focusIndex]
+	rows := focusedCard.GetVisibleRows()
+	if len(rows) > 0 {
+		gameId, ok := rows[0].Data["gameID"].(string)
+		if ok {
+			return gameId
+		}
+	}
+	return ""
 }
 
 func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
@@ -83,7 +102,8 @@ func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			m.quitting = true
 			return m, tea.Quit
 		case key.Matches(msg, Keymap.Enter):
-			//open box score
+			gameID := m.getGameId()
+			log.Println(gameID)
 		case key.Matches(msg, Keymap.Left):
 			if m.focusIndex >= m.numCols {
 				m.focusIndex -= m.numCols

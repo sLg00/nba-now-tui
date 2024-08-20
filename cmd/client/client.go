@@ -13,8 +13,8 @@ import (
 type Client struct {
 	HTTPClient       *http.Client
 	HeaderSet        func() http.Header
-	BuildRequests    func() map[string]requestURL
-	InstantiatePaths func() PathComponents
+	BuildRequests    func(string) map[string]requestURL
+	InstantiatePaths func(string) PathComponents
 	FileChecker      func(string) bool
 	WriteToFiles     func(string, []byte) error
 }
@@ -56,11 +56,12 @@ func (c *Client) InitiateClient(url requestURL) []byte {
 	return body
 }
 
-// MakeRequests queries the NBA APIs and populates the respective files with the returned JSON IF the files do not already
+// MakeDefaultRequests queries the NBA APIs and populates the respective files with the returned JSON IF the files do not already
 // exist for the given day
-func (c *Client) MakeRequests() {
-	urlMap := c.BuildRequests()
-	pc := c.InstantiatePaths()
+func (c *Client) MakeDefaultRequests() {
+	defaultString := ""
+	urlMap := c.BuildRequests(defaultString)
+	pc := c.InstantiatePaths(defaultString)
 
 	var wg sync.WaitGroup
 
@@ -108,4 +109,27 @@ func (c *Client) MakeRequests() {
 		}(k, v)
 	}
 	wg.Wait()
+}
+
+// MakeOnDemandRequests takes a string (a gameId, a playerID etc) and queries the NBA API on-demand
+func (c *Client) MakeOnDemandRequests(s string) error {
+	urlMap := c.BuildRequests(s)
+	path := c.InstantiatePaths(s)
+
+	for k, v := range urlMap {
+		switch k {
+		case "boxScoreURL":
+			fileToCheck := c.FileChecker(path.BoxScoreFullPath())
+			if !fileToCheck {
+				json := c.InitiateClient(v)
+				err := c.WriteToFiles(path.BoxScoreFullPath(), json)
+				if err != nil {
+					err = fmt.Errorf("couldn't write to files: %v", err)
+					log.Println(err)
+					return err
+				}
+			}
+		}
+	}
+	return nil
 }

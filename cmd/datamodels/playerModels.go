@@ -2,7 +2,7 @@ package datamodels
 
 import (
 	"fmt"
-	"github.com/sLg00/nba-now-tui/app/internal/client"
+	"github.com/sLg00/nba-now-tui/cmd/client"
 	"log"
 )
 
@@ -50,7 +50,7 @@ func (ps Players) ToStringSlice() []string {
 
 // PopulatePlayerStats maps the data to the Player struct
 func PopulatePlayerStats() (Players, []string, error) {
-	pc := client.NewClient().InstantiatePaths().LLFullPath()
+	pc := client.NewClient().InstantiatePaths("").LLFullPath()
 	response, err := unmarshallResponseJSON(pc)
 	if err != nil {
 		err = fmt.Errorf("could not unmarshall json data: %v", err)

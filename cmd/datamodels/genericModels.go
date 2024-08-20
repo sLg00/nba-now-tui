@@ -25,6 +25,7 @@ type Parameters struct {
 	SeasonType   string `json:"SeasonType"`
 	Scope        string `json:"Scope"`
 	ActiveFlag   string `json:"ActiveFlag"`
+	GameDate     string `json:"GameDate"`
 }
 
 // ResultSet  is the object that represents the actual returned data structure or headers and rows
@@ -53,7 +54,6 @@ func unmarshallResponseJSON(s string) (ResponseSet, error) {
 		log.Println(err)
 		return response, err
 	}
-
 	err = json.Unmarshal(data, &response)
 	if err != nil {
 		err = fmt.Errorf("error unmarshalling response from file: %s", s)

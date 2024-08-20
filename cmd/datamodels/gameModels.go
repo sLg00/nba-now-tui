@@ -2,7 +2,7 @@ package datamodels
 
 import (
 	"fmt"
-	"github.com/sLg00/nba-now-tui/app/internal/client"
+	"github.com/sLg00/nba-now-tui/cmd/client"
 	"log"
 )
 
@@ -107,15 +107,18 @@ func (d DailyGameResults) ToStringSlice() []string {
 	return structToStringSlice(d)
 }
 
+// PopulateDailyGameResults extracts 'linescores' from the NBA API response for DailyScoreboard.
+// Then subsequently converts the 'linescore' to GameResult objects, combining home and away team basic stats.
+// The function could be cleanly split into two, but yolo for now.
 func PopulateDailyGameResults() (DailyGameResults, []string, error) {
-	pc := client.NewClient().InstantiatePaths().DSBFullPath()
+	pc := client.NewClient().InstantiatePaths("").DSBFullPath()
 	response, err := unmarshallResponseJSON(pc)
 	if err != nil {
 		err = fmt.Errorf("could not unmarshall json data: %v", err)
 		log.Println(err)
 		return nil, nil, err
 	}
-	// ResultSets[1] is the "linescore" part of the response, which we want to use to put together a singlle game "card"
+	// ResultSets[1] is the "linescore" part of the response, which we want to use to put together a single game "card"
 	headers := response.ResultSets[1].Headers
 
 	var lineScore LineScore
@@ -167,6 +170,7 @@ func PopulateDailyGameResults() (DailyGameResults, []string, error) {
 	//consider splitting the function from here
 	gameResultMap := make(map[string]*GameResult)
 
+	//first pass of iterating over linescores and populating the GameResult objects
 	for _, ls := range lineScores {
 		if gr, ok := gameResultMap[lineScore.GameID]; ok {
 			if ls.TeamID == gr.HomeTeamID {
@@ -188,6 +192,9 @@ func PopulateDailyGameResults() (DailyGameResults, []string, error) {
 		}
 	}
 
+	//second pass to iterate over linescores. This was implemented because in some cases the GameResult objects were
+	//not filled properly. For instance the away team would be empty.
+	//There is probably a more elegant way to do all of this, but yolo for now.
 	for _, ls := range lineScores {
 		gr := gameResultMap[ls.GameID]
 		if ls.TeamID != gr.HomeTeamID {
@@ -203,4 +210,14 @@ func PopulateDailyGameResults() (DailyGameResults, []string, error) {
 		gameResults = append(gameResults, *gr)
 	}
 	return gameResults, headers, nil
+}
+
+func populateBoxScores() {
+	// initiate client again, this time going to getboxscores
+	// refactor MakeRequests function to take string. if
+	//check file
+	// create/not create file
+	//unmarshall from file
+	//put into appropriate structures
+	//return said structures
 }

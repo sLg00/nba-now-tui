@@ -74,15 +74,24 @@ func seasonStandingsAPIRequestBuilder() requestURL {
 }
 
 func dailyScoreboardAPIRequestBuilder() requestURL {
-	today := time.Now().Format("2006-01-02")
+	today := "2024-04-17" //TODO: time.Now().Format("2006-01-02")
 	return requestURL(URL + "scoreboardv2?DayOffset=0&GameDate=" + today + "&LeagueID=" + LeagueID)
 }
 
-func BuildRequests() map[string]requestURL {
+// BoxScoreRequestBuilder creates the URL for the API call to query a specific game's box score.
+// This URL does not go into the urlMap returned by the BuildRequests function.
+// This is due to the fact,that box scores are fetched on-demand, not up front. For now.
+func boxScoreRequestBuilder(s string) requestURL {
+	return requestURL(URL + "boxscoretraditionalv3?EndPeriod=1&EndRange=0&GameID=" +
+		s + "&RangeType=0&StartPeriod=1&StartRange=0")
+}
+
+func BuildRequests(s string) map[string]requestURL {
 	urlMap := map[string]requestURL{
 		"leagueLeadersURL":   leagueLeadersAPIRequestBuilder(),
 		"seasonStandingsURL": seasonStandingsAPIRequestBuilder(),
 		"dailyScoresURL":     dailyScoreboardAPIRequestBuilder(),
+		"boxScoreURL":        boxScoreRequestBuilder(s),
 	}
 	return urlMap
 }

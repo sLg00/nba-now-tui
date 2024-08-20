@@ -37,7 +37,7 @@ func TestInitiateClient(t *testing.T) {
 	}
 }
 
-func TestMakeRequest(t *testing.T) {
+func TestMakeDefaultRequest(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"key": "value"}`))
@@ -51,14 +51,14 @@ func TestMakeRequest(t *testing.T) {
 			headers.Set("Content-Type", "application/json")
 			return headers
 		},
-		BuildRequests: func() map[string]requestURL {
+		BuildRequests: func(string) map[string]requestURL {
 			return map[string]requestURL{
 				"leagueLeadersURL":   requestURL(server.URL),
 				"seasonStandingsURL": requestURL(server.URL),
 				"dailyScoreboardURL": requestURL(server.URL),
 			}
 		},
-		InstantiatePaths: func() PathComponents {
+		InstantiatePaths: func(string) PathComponents {
 			home, _ := os.UserHomeDir()
 			return PathComponents{
 				Home:    home,
@@ -75,5 +75,5 @@ func TestMakeRequest(t *testing.T) {
 			return nil
 		},
 	}
-	client.MakeRequests()
+	client.MakeDefaultRequests()
 }

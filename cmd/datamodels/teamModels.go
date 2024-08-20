@@ -2,7 +2,7 @@ package datamodels
 
 import (
 	"fmt"
-	"github.com/sLg00/nba-now-tui/app/internal/client"
+	"github.com/sLg00/nba-now-tui/cmd/client"
 	"log"
 )
 
@@ -112,8 +112,9 @@ func (ts Teams) ToStringSlice() []string {
 	return structToStringSlice(ts)
 }
 
+// PopulateTeamStats maps the data to Teams struct to display season standings
 func PopulateTeamStats() (Teams, []string, error) {
-	pc := client.NewClient().InstantiatePaths().SSFullPath()
+	pc := client.NewClient().InstantiatePaths("").SSFullPath()
 	response, err := unmarshallResponseJSON(pc)
 	if err != nil {
 		err = fmt.Errorf("could not unmarshall team stats: %v", err)
