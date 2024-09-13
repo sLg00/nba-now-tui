@@ -99,6 +99,47 @@ type GameResult struct {
 
 type DailyGameResults []GameResult
 
+type TeamGameStatistics struct {
+	Minutes                 string  `json:"minutes"`
+	FieldGoalsMade          int     `json:"fieldGoalsMade"`
+	FieldGoalsAttempted     int     `json:"fieldGoalsAttempted"`
+	FieldGoalsPercentage    float64 `json:"fieldGoalsPercentage"`
+	ThreePointersMage       int     `json:"threePointersMage"`
+	ThreePointersAttempted  int     `json:"threePointersAttempted"`
+	ThreePointersPercentage float64 `json:"threePointersPercentage"`
+	FreeThrowsMage          int     `json:"freeThrowsMage"`
+	FreeThrowsAttempted     int     `json:"freeThrowsAttempted"`
+	FreeThrowsPercentage    float64 `json:"freeThrowsPercentage"`
+	ReboundsOffensive       int     `json:"reboundsOffensive"`
+	ReboundsDefensive       int     `json:"reboundsDefensive"`
+	ReboundsTotal           int     `json:"reboundsTotal"`
+	Assists                 int     `json:"assists"`
+	Steals                  int     `json:"steals"`
+	Blocks                  int     `json:"blocks"`
+	Turnovers               int     `json:"turnovers"`
+	FoulsPersonal           int     `json:"foulsPersonal"`
+	Points                  int     `json:"points"`
+	PlusMinusPoints         float64 `json:"plusMinusPoints"`
+}
+
+type BoxScoreTeam struct {
+	TeamID             int    `json:"teamId"`
+	TeamCity           string `json:"teamCity"`
+	TeamName           string `json:"teamName"`
+	TeamTriCode        string `json:"teamTriCode"`
+	TeamSlug           string `json:"teamSlug"`
+	BoxScorePlayers    []BoxScorePlayer
+	TeamGameStatistics TeamGameStatistics `json:"statistics"`
+}
+
+type BoxScore struct {
+	GameID     string `json:"gameId"`
+	AwayTeamId int    `json:"awayTeamId"`
+	HomeTeamId int    `json:"homeTeamId"`
+	HomeTeam   BoxScoreTeam
+	AwayTeam   BoxScoreTeam
+}
+
 func (g GameResult) ToStringSlice() []string {
 	return structToStringSlice(g)
 }
@@ -212,12 +253,17 @@ func PopulateDailyGameResults() (DailyGameResults, []string, error) {
 	return gameResults, headers, nil
 }
 
-func populateBoxScores() {
-	// initiate client again, this time going to getboxscores
-	// refactor MakeRequests function to take string. if
-	//check file
-	// create/not create file
-	//unmarshall from file
-	//put into appropriate structures
-	//return said structures
+// PopulateBoxScore takes a gameID (string) as input and returns the required structures to represent
+// the game's box score in a TUI
+func PopulateBoxScore(s string) (BoxScore, error) {
+	pc := client.NewClient().InstantiatePaths(s).BoxScoreFullPath()
+	response, err := unmarshallResponseJSON(pc)
+	if err != nil {
+		err = fmt.Errorf("could not unmarshall json data: %v", err)
+		log.Println(err)
+		return BoxScore{}, err
+	}
+	boxScore := response.BoxScore
+
+	return boxScore, nil
 }
