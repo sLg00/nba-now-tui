@@ -6,6 +6,51 @@ import (
 	"log"
 )
 
+type PlayerStatistics struct {
+	Minutes                 string  `json:"minutes"`
+	FieldGoalsMade          int     `json:"fieldGoalsMade"`
+	FieldGoalsAttempted     int     `json:"fieldGoalsAttempted"`
+	FieldGoalsPercentage    float64 `json:"fieldGoalsPercentage"`
+	ThreePointersMade       int     `json:"threePointersMade"`
+	ThreePointersAttempted  int     `json:"threePointersAttempted"`
+	ThreePointersPercentage float64 `json:"threePointersPercentage"`
+	FreeThrowsMade          int     `json:"freeThrowsMade"`
+	FreeThrowsAttempted     int     `json:"freeThrowsAttempted"`
+	FreeThrowsPercentage    float64 `json:"freeThrowsPercentage"`
+	ReboundsOffensive       int     `json:"reboundsOffensive"`
+	ReboundsDefensive       int     `json:"reboundsDefensive"`
+	ReboundsTotal           int     `json:"reboundsTotal"`
+	Assists                 int     `json:"assists"`
+	Steals                  int     `json:"steals"`
+	Blocks                  int     `json:"blocks"`
+	Turnovers               int     `json:"turnovers"`
+	FoulsPersonal           int     `json:"foulsPersonal"`
+	Points                  int     `json:"points"`
+	PlusMinusPoints         float64 `json:"plusMinusPoints"`
+}
+
+func (pst PlayerStatistics) ToStringSlice() []string {
+	return structToStringSlice(pst)
+}
+
+type BoxScorePlayer struct {
+	PersonId   int              `json:"personId"`
+	FirstName  string           `json:"firstName"`
+	FamilyName string           `json:"familyName"`
+	NameI      string           `json:"nameI"`
+	PlayerSlug string           `json:"playerSlug"`
+	Position   string           `json:"position"`
+	Comment    string           `json:"comment"`
+	JerseyNum  string           `json:"jerseyNum"`
+	Statistics PlayerStatistics `json:"statistics"`
+}
+
+func (bsp BoxScorePlayer) ToStringSlice() []string {
+	return structToStringSlice(bsp)
+}
+
+type BoxScorePlayers []BoxScorePlayer
+
 // Player struct represents a player row with their current statistical averages based on the input parameters
 // Can be totals, per game averages, per 48 minutes etc.
 type Player struct {

@@ -9,6 +9,7 @@ import (
 	"github.com/sLg00/nba-now-tui/cmd/client"
 	"github.com/sLg00/nba-now-tui/cmd/datamodels"
 	"log"
+	"os"
 	"strings"
 )
 
@@ -103,7 +104,12 @@ func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			return m, tea.Quit
 		case key.Matches(msg, Keymap.Enter):
 			gameID := m.getGameId()
-			log.Println(gameID)
+			bx, err := initBoxScore(gameID, Program)
+			if err != nil {
+				log.Println(err)
+				os.Exit(1)
+			}
+			return bx.Update(WindowSize)
 		case key.Matches(msg, Keymap.Left):
 			if m.focusIndex >= m.numCols {
 				m.focusIndex -= m.numCols

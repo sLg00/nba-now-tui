@@ -41,6 +41,7 @@ type ResponseSet struct {
 	Parameters Parameters  `json:"parameters"`
 	ResultSet  ResultSet   `json:"resultSet"`
 	ResultSets []ResultSet `json:"resultSets"`
+	BoxScore   BoxScore    `json:"boxScoreTraditional"`
 }
 
 // unmarshallResponseJSON unmarshalls JSON from the appropriate JSON file.

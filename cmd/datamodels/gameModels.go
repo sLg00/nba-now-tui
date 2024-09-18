@@ -123,12 +123,12 @@ type TeamGameStatistics struct {
 }
 
 type BoxScoreTeam struct {
-	TeamID             int    `json:"teamId"`
-	TeamCity           string `json:"teamCity"`
-	TeamName           string `json:"teamName"`
-	TeamTriCode        string `json:"teamTriCode"`
-	TeamSlug           string `json:"teamSlug"`
-	BoxScorePlayers    []BoxScorePlayer
+	TeamID             int                `json:"teamId"`
+	TeamCity           string             `json:"teamCity"`
+	TeamName           string             `json:"teamName"`
+	TeamTriCode        string             `json:"teamTriCode"`
+	TeamSlug           string             `json:"teamSlug"`
+	BoxScorePlayers    BoxScorePlayers    `json:"players"`
 	TeamGameStatistics TeamGameStatistics `json:"statistics"`
 }
 
@@ -146,6 +146,10 @@ func (g GameResult) ToStringSlice() []string {
 
 func (d DailyGameResults) ToStringSlice() []string {
 	return structToStringSlice(d)
+}
+
+func (bst BoxScoreTeam) ToStringSlice() []string {
+	return structToStringSlice(bst)
 }
 
 // PopulateDailyGameResults extracts 'linescores' from the NBA API response for DailyScoreboard.
