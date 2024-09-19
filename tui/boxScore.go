@@ -34,7 +34,7 @@ func getColsAndValues(v interface{}) ([]string, []string) {
 		field := typ.Field(i)
 		fieldValue := val.Field(i)
 
-		if field.Name == "NameI" || field.Name == "Position" {
+		if field.Name == "NameI" || field.Name == "Position" || field.Name == "PersonId" {
 			keys = append(keys, field.Name)
 			if fieldValue.Kind() == reflect.String {
 				values = append(values, fieldValue.String())
@@ -79,7 +79,7 @@ func (m boxScore) Init() tea.Cmd { return nil }
 
 // initBoxScore is the main function to render a game's box score, in very basic fashion.
 // It takes a gameID as an input and uses it to access the corresponding game's box score,
-// which is already present on the filesystem.
+// which is already present on the filesystem. The JSON files get downloaded when the Daily View is loaded.
 func initBoxScore(gameID string, p *tea.Program) (*boxScore, error) {
 	boxScoreData, err := datamodels.PopulateBoxScore(gameID)
 	if err != nil {
@@ -97,9 +97,14 @@ func initBoxScore(gameID string, p *tea.Program) (*boxScore, error) {
 	var awayRows []table.Row
 
 	cols, _ := getColsAndValues(homeDataSet[0])
-	for _, col := range cols {
+
+	columns = make([]table.Column, len(cols))
+	for i, col := range cols {
+		if col == "PersonId" {
+			continue
+		}
 		column = table.NewColumn(col, col, 15)
-		columns = append(columns, column)
+		columns[i] = column
 	}
 
 	for _, player := range homeDataSet {
