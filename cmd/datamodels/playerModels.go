@@ -10,13 +10,13 @@ type PlayerStatistics struct {
 	Minutes                 string  `json:"minutes"`
 	FieldGoalsMade          int     `json:"fieldGoalsMade"`
 	FieldGoalsAttempted     int     `json:"fieldGoalsAttempted"`
-	FieldGoalsPercentage    float64 `json:"fieldGoalsPercentage"`
+	FieldGoalsPercentage    float64 `json:"fieldGoalsPercentage" percentage:"true"`
 	ThreePointersMade       int     `json:"threePointersMade"`
 	ThreePointersAttempted  int     `json:"threePointersAttempted"`
-	ThreePointersPercentage float64 `json:"threePointersPercentage"`
+	ThreePointersPercentage float64 `json:"threePointersPercentage" percentage:"true"`
 	FreeThrowsMade          int     `json:"freeThrowsMade"`
 	FreeThrowsAttempted     int     `json:"freeThrowsAttempted"`
-	FreeThrowsPercentage    float64 `json:"freeThrowsPercentage"`
+	FreeThrowsPercentage    float64 `json:"freeThrowsPercentage" percentage:"true"`
 	ReboundsOffensive       int     `json:"reboundsOffensive"`
 	ReboundsDefensive       int     `json:"reboundsDefensive"`
 	ReboundsTotal           int     `json:"reboundsTotal"`
@@ -63,13 +63,13 @@ type Player struct {
 	Minutes     float64 `json:"MIN"`
 	FGM         float64 `json:"FGM"`
 	FGA         float64 `json:"FGA"`
-	FGPCT       float64 `json:"FG_PCT"`
+	FGPCT       float64 `json:"FG_PCT" percentage:"true"`
 	FG3PTM      float64 `json:"FG3PTM"`
 	FG3PTA      float64 `json:"FG3PTA"`
-	FG3PTPCT    float64 `json:"FG3PT_PCT"`
+	FG3PTPCT    float64 `json:"FG3PT_PCT" percentage:"true"`
 	FTM         float64 `json:"FTM"`
 	FTA         float64 `json:"FTA"`
-	FTPCT       float64 `json:"FT_PCT"`
+	FTPCT       float64 `json:"FT_PCT" percentage:"true"`
 	OREB        float64 `json:"OREB"`
 	DREB        float64 `json:"DREB"`
 	REB         float64 `json:"REB"`

@@ -22,7 +22,7 @@ type Team struct {
 	DivisionRank            int     `json:"DivisionRank"`
 	Wins                    int     `json:"WINS"`
 	Losses                  int     `json:"LOSSES"`
-	WinPCT                  float64 `json:"WinPCT"`
+	WinPCT                  float64 `json:"WinPCT" percentage:"true"`
 	LeagueRank              int     `json:"LeagueRank"`
 	Record                  string  `json:"Record"`
 	Home                    string  `json:"HOME"`

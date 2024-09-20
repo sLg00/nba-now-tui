@@ -51,9 +51,9 @@ type LineScore struct {
 	PtsOt9           int     `json:"PTS_OT9"`
 	PtsOt10          int     `json:"PTS_OT10"`
 	Pts              int     `json:"PTS"`
-	FgPct            float64 `json:"FG_PCT"`
-	FtPct            float64 `json:"FT_PCT"`
-	Fg3Pct           float64 `json:"FG3_PCT"`
+	FgPct            float64 `json:"FG_PCT" percentage:"true"`
+	FtPct            float64 `json:"FT_PCT" percentage:"true"`
+	Fg3Pct           float64 `json:"FG3_PCT" percentage:"true"`
 	Ast              int     `json:"AST"`
 	Reb              int     `json:"REB"`
 	Tov              int     `json:"TOV"`
@@ -103,13 +103,13 @@ type TeamGameStatistics struct {
 	Minutes                 string  `json:"minutes"`
 	FieldGoalsMade          int     `json:"fieldGoalsMade"`
 	FieldGoalsAttempted     int     `json:"fieldGoalsAttempted"`
-	FieldGoalsPercentage    float64 `json:"fieldGoalsPercentage"`
+	FieldGoalsPercentage    float64 `json:"fieldGoalsPercentage" percentage:"true"`
 	ThreePointersMage       int     `json:"threePointersMage"`
 	ThreePointersAttempted  int     `json:"threePointersAttempted"`
-	ThreePointersPercentage float64 `json:"threePointersPercentage"`
+	ThreePointersPercentage float64 `json:"threePointersPercentage" percentage:"true"`
 	FreeThrowsMage          int     `json:"freeThrowsMage"`
 	FreeThrowsAttempted     int     `json:"freeThrowsAttempted"`
-	FreeThrowsPercentage    float64 `json:"freeThrowsPercentage"`
+	FreeThrowsPercentage    float64 `json:"freeThrowsPercentage" percentage:"true"`
 	ReboundsOffensive       int     `json:"reboundsOffensive"`
 	ReboundsDefensive       int     `json:"reboundsDefensive"`
 	ReboundsTotal           int     `json:"reboundsTotal"`
