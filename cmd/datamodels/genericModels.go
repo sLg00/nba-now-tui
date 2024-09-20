@@ -64,7 +64,9 @@ func unmarshallResponseJSON(s string) (ResponseSet, error) {
 	return response, nil
 }
 
-// structToStringSlice is the core function that converts type attributes from Float64 and Int to String, using reflection
+// structToStringSlice is the core function that converts type attributes from Float64 and Int to String,
+// using reflection. It also looks for the "percentage" tag and if found, formats the values in a way that
+// they will be presented as "xx%" in the UI
 func structToStringSlice(obj any) []string {
 	v := reflect.ValueOf(obj)
 	t := reflect.TypeOf(obj)
@@ -105,6 +107,7 @@ func ConvertToString[T Stringer](objs []T) [][]string {
 	return stringValues
 }
 
+// FloatToPercent converts a float to a string and formats it as a percentage representation
 func FloatToPercent(f float64) string {
 	return fmt.Sprintf("%.0f%%", f*100)
 }
