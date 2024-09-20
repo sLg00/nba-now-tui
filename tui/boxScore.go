@@ -7,12 +7,14 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
 	"github.com/sLg00/nba-now-tui/cmd/datamodels"
+	"log"
 	"reflect"
 )
 
 type boxScore struct {
 	homeTeamBoxScore table.Model
 	awayTeamBoxScore table.Model
+	activeTable      int
 	quitting         bool
 	focused          bool
 	width            int
@@ -100,9 +102,9 @@ func initBoxScore(gameID string, p *tea.Program) (*boxScore, error) {
 
 	columns = make([]table.Column, len(cols))
 	for i, col := range cols {
-		if col == "PersonId" {
-			continue
-		}
+		//if col == "PersonId" {
+		//	continue
+		//}
 		column = table.NewColumn(col, col, 15)
 		columns[i] = column
 	}
@@ -129,8 +131,8 @@ func initBoxScore(gameID string, p *tea.Program) (*boxScore, error) {
 		awayRows = append(awayRows, awayRow)
 	}
 
-	homeTable := table.New(columns).WithRows(homeRows).WithMaxTotalWidth(120).Focused(true)
-	awayTable := table.New(columns).WithRows(awayRows).WithMaxTotalWidth(120).Focused(false)
+	homeTable := table.New(columns).WithRows(homeRows).SelectableRows(true).WithMaxTotalWidth(120).Focused(true)
+	awayTable := table.New(columns).WithRows(awayRows).SelectableRows(true).WithMaxTotalWidth(120).Focused(false)
 
 	m := &boxScore{
 		homeTeamBoxScore: homeTable,
@@ -141,6 +143,7 @@ func initBoxScore(gameID string, p *tea.Program) (*boxScore, error) {
 
 func (m boxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	var cmds []tea.Cmd
+	var selectedRows []table.Row
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
@@ -152,12 +155,24 @@ func (m boxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		case key.Matches(msg, Keymap.Tab):
 			if m.focused {
 				m.homeTeamBoxScore = m.homeTeamBoxScore.Focused(true)
+				m.activeTable = 0
 				m.awayTeamBoxScore = m.awayTeamBoxScore.Focused(false)
-				m.focused = !m.focused
 			} else {
 				m.homeTeamBoxScore = m.homeTeamBoxScore.Focused(false)
+				m.activeTable = 1
 				m.awayTeamBoxScore = m.awayTeamBoxScore.Focused(true)
-				m.focused = !m.focused
+			}
+			m.focused = !m.focused
+		case key.Matches(msg, Keymap.Enter):
+			if m.activeTable == 0 {
+				selectedRows = m.homeTeamBoxScore.SelectedRows()
+			} else {
+				selectedRows = m.awayTeamBoxScore.SelectedRows()
+			}
+			if len(selectedRows) > 0 {
+				personId := selectedRows[0].Data["PersonId"].(string)
+				log.Println(personId)
+				//TODO: add player profile view init
 			}
 		}
 	case tea.WindowSizeMsg:
