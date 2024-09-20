@@ -24,6 +24,7 @@ type keymap struct {
 	Left  key.Binding
 	Right key.Binding
 	Tab   key.Binding
+	Space key.Binding
 }
 
 var DocStyle = lipgloss.NewStyle().Margin(0, 2)
@@ -60,6 +61,9 @@ var Keymap = keymap{
 	Tab: key.NewBinding(
 		key.WithKeys("tab"),
 		key.WithHelp("tab", "switch")),
+	Space: key.NewBinding(
+		key.WithKeys("space"),
+		key.WithHelp("space", "mark for selection")),
 }
 
 // HelpFooter returns a fully-fledged help footer to be used in all nba-tui views
@@ -67,7 +71,8 @@ func HelpFooter() string {
 	localMap := []struct{ Key, Desc string }{
 		{Keymap.Back.Help().Key, Keymap.Back.Help().Desc},
 		{Keymap.Quit.Help().Key, Keymap.Quit.Help().Desc},
-		{Keymap.Enter.Help().Key, Keymap.Enter.Help().Desc}}
+		{Keymap.Enter.Help().Key, Keymap.Enter.Help().Desc},
+		{Keymap.Space.Help().Key, Keymap.Space.Help().Desc}}
 
 	helpItems := localMap
 
