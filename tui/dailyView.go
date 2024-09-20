@@ -2,7 +2,6 @@ package tui
 
 import (
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
@@ -39,7 +38,7 @@ func newGameCard(r []table.Row) table.Model {
 
 func (m dailyView) Init() tea.Cmd { return nil }
 
-func initDailyView(i list.Item, p *tea.Program) (*dailyView, error) {
+func initDailyView() (*dailyView, error) {
 	dailyScores, _, err := datamodels.PopulateDailyGameResults()
 	if err != nil {
 		log.Printf("Could not populate daily results: %v", err)

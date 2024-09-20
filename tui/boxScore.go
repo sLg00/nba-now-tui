@@ -8,6 +8,7 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/sLg00/nba-now-tui/cmd/datamodels"
 	"log"
+	"os"
 	"reflect"
 )
 
@@ -148,7 +149,12 @@ func (m boxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, Keymap.Back):
-			return InitMenu()
+			dv, err := initDailyView()
+			if err != nil {
+				log.Println(err)
+				os.Exit(1)
+			}
+			return dv.Update(WindowSize)
 		case key.Matches(msg, Keymap.Quit):
 			m.quitting = true
 			return m, tea.Quit
