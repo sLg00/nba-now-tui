@@ -69,10 +69,18 @@ func extractStatistics(v interface{}) ([]string, []string) {
 	for i := 0; i < val.NumField(); i++ {
 		field := typ.Field(i)
 		fieldValue := val.Field(i)
+		tag := field.Tag.Get("percentage")
 
 		// Extract keys and values
 		keys = append(keys, field.Name)
-		values = append(values, fmt.Sprintf("%v", fieldValue.Interface()))
+		if fieldValue.Kind() == reflect.Float64 {
+			if tag == "true" {
+				values = append(values, datamodels.FloatToPercent(fieldValue.Float()))
+			}
+		} else {
+			values = append(values, fmt.Sprintf("%v", fieldValue.Interface()))
+		}
+
 	}
 
 	return keys, values
@@ -132,8 +140,17 @@ func initBoxScore(gameID string, p *tea.Program) (*boxScore, error) {
 		awayRows = append(awayRows, awayRow)
 	}
 
-	homeTable := table.New(columns).WithRows(homeRows).SelectableRows(true).WithMaxTotalWidth(120).Focused(true)
-	awayTable := table.New(columns).WithRows(awayRows).SelectableRows(true).WithMaxTotalWidth(120).Focused(false)
+	homeTable := table.New(columns).
+		WithRows(homeRows).
+		SelectableRows(true).
+		WithMaxTotalWidth(120).
+		Focused(true)
+
+	awayTable := table.New(columns).
+		WithRows(awayRows).
+		SelectableRows(true).
+		WithMaxTotalWidth(120).
+		Focused(false)
 
 	m := &boxScore{
 		homeTeamBoxScore: homeTable,

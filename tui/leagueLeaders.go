@@ -100,7 +100,9 @@ func initLeagueLeaders(i list.Item, p *tea.Program) (*leagueLeaders, error) {
 		Focused(true).
 		WithPageSize(20).
 		WithMaxTotalWidth(150).
-		WithHorizontalFreezeColumnCount(2).WithBaseStyle(lipgloss.NewStyle().BorderStyle(lipgloss.DoubleBorder()))
+		WithHorizontalFreezeColumnCount(2).
+		WithBaseStyle(lipgloss.NewStyle().
+			BorderStyle(lipgloss.DoubleBorder()))
 
 	m := &leagueLeaders{leaderboard: t, maxHeight: 25, maxWidth: 80}
 
