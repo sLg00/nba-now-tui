@@ -12,14 +12,15 @@ import (
 )
 
 type seasonStandings struct {
-	quitting  bool
-	westTeams table.Model
-	eastTeams table.Model
-	height    int
-	width     int
-	maxHeight int
-	maxWidth  int
-	focused   bool
+	quitting    bool
+	westTeams   table.Model
+	eastTeams   table.Model
+	activeTable int
+	height      int
+	width       int
+	maxHeight   int
+	maxWidth    int
+	focused     bool
 }
 
 func (m seasonStandings) Init() tea.Cmd { return nil }
@@ -70,9 +71,16 @@ func initSeasonStandings(i list.Item, p *tea.Program) (*seasonStandings, error) 
 		westRows = append(westRows, westRow)
 	}
 
-	eastTable := table.New(columns).WithRows(rows).WithMaxTotalWidth(120).Focused(true)
+	eastTable := table.New(columns).
+		WithRows(rows).
+		SelectableRows(true).
+		WithMaxTotalWidth(120).
+		Focused(true)
 
-	westTable := table.New(columns).WithRows(westRows).WithMaxTotalWidth(120)
+	westTable := table.New(columns).
+		WithRows(westRows).
+		SelectableRows(true).
+		WithMaxTotalWidth(120)
 
 	m := &seasonStandings{eastTeams: eastTable, westTeams: westTable}
 
@@ -81,6 +89,7 @@ func initSeasonStandings(i list.Item, p *tea.Program) (*seasonStandings, error) 
 
 func (m seasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	var cmds []tea.Cmd
+	var selectedRows []table.Row
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
@@ -92,12 +101,25 @@ func (m seasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		case key.Matches(msg, Keymap.Tab):
 			if m.focused {
 				m.eastTeams = m.eastTeams.Focused(true)
+				m.activeTable = 0
 				m.westTeams = m.westTeams.Focused(false)
 				m.focused = !m.focused
 			} else {
 				m.eastTeams = m.eastTeams.Focused(false)
+				m.activeTable = 1
 				m.westTeams = m.westTeams.Focused(true)
 				m.focused = !m.focused
+			}
+		case key.Matches(msg, Keymap.Enter):
+			if m.activeTable == 0 {
+				selectedRows = m.eastTeams.SelectedRows()
+			} else {
+				selectedRows = m.westTeams.SelectedRows()
+			}
+			if len(selectedRows) > 0 {
+				teamID := selectedRows[0].Data["TeamID"].(string)
+				log.Println(teamID)
+				//TODO: add team profile init logic
 			}
 		}
 	case tea.WindowSizeMsg:
