@@ -29,10 +29,6 @@ type PlayerStatistics struct {
 	PlusMinusPoints         float64 `json:"plusMinusPoints"`
 }
 
-func (pst PlayerStatistics) ToStringSlice() []string {
-	return structToStringSlice(pst)
-}
-
 type BoxScorePlayer struct {
 	PersonId   int              `json:"personId"`
 	FirstName  string           `json:"firstName"`
@@ -43,10 +39,6 @@ type BoxScorePlayer struct {
 	Comment    string           `json:"comment"`
 	JerseyNum  string           `json:"jerseyNum"`
 	Statistics PlayerStatistics `json:"statistics"`
-}
-
-func (bsp BoxScorePlayer) ToStringSlice() []string {
-	return structToStringSlice(bsp)
 }
 
 type BoxScorePlayers []BoxScorePlayer
@@ -81,12 +73,20 @@ type Player struct {
 	EFF         float64 `json:"EFF"`
 }
 
+type Players []Player
+
+func (pst PlayerStatistics) ToStringSlice() []string {
+	return structToStringSlice(pst)
+}
+
+func (bsp BoxScorePlayer) ToStringSlice() []string {
+	return structToStringSlice(bsp)
+}
+
 // ToStringSlice is a method on the Player type that enables the attributes of the type to be converted to strings
 func (p Player) ToStringSlice() []string {
 	return structToStringSlice(p)
 }
-
-type Players []Player
 
 // ToStringSlice is a method on the Players type that enables the attributes of the type to be converted to strings
 func (ps Players) ToStringSlice() []string {

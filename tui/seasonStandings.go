@@ -27,6 +27,7 @@ type seasonStandings struct {
 
 func (m seasonStandings) Init() tea.Cmd { return nil }
 
+// initSeasonStandings gets, filters and populates the Season Standings tables
 func initSeasonStandings(i list.Item, p *tea.Program) (*seasonStandings, error) {
 	teams, headers, err := datamodels.PopulateTeamStats()
 	if err != nil {

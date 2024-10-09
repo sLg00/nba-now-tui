@@ -72,7 +72,6 @@ func createDirectory(pc PathComponents) (string, error) {
 // (the full path of the file the body of the JSON response as []byte
 func WriteToFiles(s string, b []byte) error {
 	paths := NewClient().InstantiatePaths(s)
-	// TODO: YOU ARE HERE WITH DEBUGGING THE BOXSCORES CRAP
 	_, err := createDirectory(paths)
 	if err != nil {
 		log.Println(err)

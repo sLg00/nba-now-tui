@@ -111,9 +111,6 @@ func initBoxScore(gameID string, p *tea.Program) (*boxScore, error) {
 
 	columns = make([]table.Column, len(cols))
 	for i, col := range cols {
-		//if col == "PersonId" {
-		//	continue
-		//}
 		column = table.NewColumn(col, col, 15)
 		columns[i] = column
 	}

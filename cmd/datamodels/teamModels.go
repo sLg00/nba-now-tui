@@ -100,12 +100,12 @@ type Team struct {
 	ClinchedPostSeason      int     `json:"ClinchedPostSeason"`
 }
 
+type Teams []Team
+
 // ToStringSlice is a method on the Team type that enables the attributes of the type to be converted to strings
 func (t Team) ToStringSlice() []string {
 	return structToStringSlice(t)
 }
-
-type Teams []Team
 
 // ToStringSlice is a method on the Teams type that enables the attributes of type to be converted to strings
 func (ts Teams) ToStringSlice() []string {

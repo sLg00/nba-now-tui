@@ -96,6 +96,7 @@ func initLeagueLeaders(i list.Item, p *tea.Program) (*leagueLeaders, error) {
 
 	t := table.New(columns).
 		WithRows(rows).
+		SelectableRows(true).
 		WithHeaderVisibility(true).
 		Focused(true).
 		WithPageSize(20).
