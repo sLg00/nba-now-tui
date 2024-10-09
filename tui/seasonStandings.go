@@ -3,6 +3,8 @@ package tui
 import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
+	"strings"
+
 	//"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -47,15 +49,24 @@ func initSeasonStandings(i list.Item, p *tea.Program) (*seasonStandings, error) 
 	)
 
 	for _, h := range headers {
-		column = table.NewColumn(h, h, 15)
-		columns = append(columns, column)
+		if !strings.Contains(h, "ID") {
+			column = table.NewColumn(h, h, 15)
+			columns = append(columns, column)
+		}
 	}
 
 	for _, r := range eastTeamsStrings {
 		rowData := make(table.RowData)
+		visibleColumnIndex := 0
 		for i, rd := range r {
-			columnTitle := columns[i].Title()
-			rowData[columnTitle] = rd
+			headerName := headers[i]
+			if headerName == "LeagueID" || headerName == "TeamID" || headerName == "SeasonID" {
+				rowData[headerName] = rd
+			} else {
+				columnTitle := columns[visibleColumnIndex].Title()
+				rowData[columnTitle] = rd
+				visibleColumnIndex++
+			}
 		}
 		row = table.NewRow(rowData)
 		rows = append(rows, row)
@@ -63,9 +74,16 @@ func initSeasonStandings(i list.Item, p *tea.Program) (*seasonStandings, error) 
 
 	for _, r := range westTeamsStrings {
 		rowData := make(table.RowData)
+		visibleColumnIndex := 0
 		for i, rd := range r {
-			columnTitle := columns[i].Title()
-			rowData[columnTitle] = rd
+			headerName := headers[i]
+			if headerName == "LeagueID" || headerName == "TeamID" || headerName == "SeasonID" {
+				rowData[headerName] = rd
+			} else {
+				columnTitle := columns[visibleColumnIndex].Title()
+				rowData[columnTitle] = rd
+				visibleColumnIndex++
+			}
 		}
 		westRow = table.NewRow(rowData)
 		westRows = append(westRows, westRow)
