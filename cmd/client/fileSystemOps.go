@@ -12,7 +12,7 @@ type PathComponents struct {
 	LLFile       string //league leaders file name
 	SSFile       string //season standings file name
 	DSBFile      string //daily scoreboard file name
-	BoxScorePath string //folder to store box scroes
+	BoxScorePath string //folder to store box scores
 	BoxScoreFile string //box score file name
 }
 
@@ -60,7 +60,7 @@ func createDirectory(pc PathComponents) (string, error) {
 
 		err = os.Mkdir(path, 0777)
 		if err != nil {
-			err = fmt.Errorf("could not create directory: %w", err)
+			err = fmt.Errorf("could not create directory: %w\n", err)
 			log.Println(err)
 			return path, err
 		}
