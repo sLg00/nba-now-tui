@@ -30,7 +30,7 @@ type PlayerStatistics struct {
 }
 
 type BoxScorePlayer struct {
-	PersonId   int              `json:"personId"`
+	PersonId   int              `json:"personId" isVisible:"false"`
 	FirstName  string           `json:"firstName"`
 	FamilyName string           `json:"familyName"`
 	NameI      string           `json:"nameI"`
@@ -46,10 +46,10 @@ type BoxScorePlayers []BoxScorePlayer
 // Player struct represents a player row with their current statistical averages based on the input parameters
 // Can be totals, per game averages, per 48 minutes etc.
 type Player struct {
-	PlayerID    int     `json:"PLAYER_ID"`
+	PlayerID    int     `json:"PLAYER_ID" isVisible:"false"`
 	Rank        int     `json:"RANK"`
 	PlayerName  string  `json:"PLAYER"`
-	TeamID      int     `json:"TEAM_ID"`
+	TeamID      int     `json:"TEAM_ID" isVisible:"false"`
 	TeamAbbr    string  `json:"TEAM"`
 	GamesPlayed int     `json:"GP"`
 	Minutes     float64 `json:"MIN"`

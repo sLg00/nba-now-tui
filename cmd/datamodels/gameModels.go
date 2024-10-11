@@ -9,12 +9,12 @@ import (
 type GameHeader struct {
 	GameDateEst                   string `json:"GAME_DATE_EST"`
 	GameSequence                  int    `json:"GAME_SEQUENCE"`
-	GameID                        string `json:"GAME_ID"`
-	GameStatusID                  int    `json:"GAME_STATUS_ID"`
+	GameID                        string `json:"GAME_ID" isVisible:"false"`
+	GameStatusID                  int    `json:"GAME_STATUS_ID" isVisible:"false"`
 	GameStatusText                string `json:"GAME_STATUS_TEXT"`
-	GameCode                      string `json:"GAMECODE"`
-	HomeTeamID                    int    `json:"HOME_TEAM_ID"`
-	VisitorTeamID                 int    `json:"VISITOR_TEAM_ID"`
+	GameCode                      string `json:"GAMECODE" isVisible:"false"`
+	HomeTeamID                    int    `json:"HOME_TEAM_ID" isVisible:"false"`
+	VisitorTeamID                 int    `json:"VISITOR_TEAM_ID" isVisible:"false"`
 	Season                        string `json:"SEASON"`
 	LivePeriod                    int    `json:"LIVE_PERIOD"`
 	LivePcTime                    string `json:"LIVE_PC_TIME"`
@@ -30,8 +30,8 @@ type GameHeader struct {
 type LineScore struct {
 	GameDateEst      string  `json:"GAME_DATE_EST"`
 	GameSequence     int     `json:"GAME_SEQUENCE"`
-	GameID           string  `json:"GAME_ID"`
-	TeamID           int     `json:"TEAM_ID"`
+	GameID           string  `json:"GAME_ID" isVisible:"false"`
+	TeamID           int     `json:"TEAM_ID" isVisible:"false"`
 	TeamAbbreviation string  `json:"TEAM_ABBREVIATION"`
 	TeamCityName     string  `json:"TEAM_CITY_NAME"`
 	TeamName         string  `json:"TEAM_NAME"`
@@ -60,9 +60,9 @@ type LineScore struct {
 }
 
 type SeriesStandings struct {
-	GameID         string `json:"GAME_ID"`
-	HomeTeamID     int    `json:"HOME_TEAM_ID"`
-	VisitorTeamID  int    `json:"VISITOR_TEAM_ID"`
+	GameID         string `json:"GAME_ID" isVisible:"false"`
+	HomeTeamID     int    `json:"HOME_TEAM_ID" isVisible:"false"`
+	VisitorTeamID  int    `json:"VISITOR_TEAM_ID" isVisible:"false"`
 	GameDateEst    string `json:"GAME_DATE_EST"`
 	HomeTeamWins   int    `json:"HOME_TEAM_WINS"`
 	HomeTeamLosses int    `json:"HOME_TEAM_LOSSES"`
@@ -70,15 +70,15 @@ type SeriesStandings struct {
 }
 
 type LastMeeting struct {
-	GameID                       string `json:"GAME_ID"`
-	LastGameID                   string `json:"LAST_GAME_ID"`
+	GameID                       string `json:"GAME_ID" isVisible:"false"`
+	LastGameID                   string `json:"LAST_GAME_ID" isVisible:"false"`
 	LastGameDateEst              string `json:"LAST_GAME_DATE_EST"`
-	LastGameHomeTeamID           int    `json:"LAST_GAME_HOME_TEAM_ID"`
+	LastGameHomeTeamID           int    `json:"LAST_GAME_HOME_TEAM_ID" isVisible:"false"`
 	LastGameHomeTeamCity         string `json:"LAST_GAME_HOME_TEAM_CITY"`
 	LastGameHomeTeamName         string `json:"LAST_GAME_HOME_TEAM_NAME"`
 	LastGameHomeTeamAbbreviation string `json:"LAST_GAME_HOME_TEAM_ABBREVIATION"`
 	LastGameHomeTeamPoints       int    `json:"LAST_GAME_HOME_TEAM_POINTS"`
-	LastGameVisitorTeamID        int    `json:"LAST_GAME_VISITOR_TEAM_ID"`
+	LastGameVisitorTeamID        int    `json:"LAST_GAME_VISITOR_TEAM_ID" isVisible:"false"`
 	LastGameVisitorTeamCity      string `json:"LAST_GAME_VISITOR_TEAM_CITY"`
 	LastGameVisitorTeamName      string `json:"LAST_GAME_VISITOR_TEAM_NAME"`
 	LastGameVisitorTeamCity1     string `json:"LAST_GAME_VISITOR_TEAM_CITY1"`
@@ -86,12 +86,12 @@ type LastMeeting struct {
 }
 
 type GameResult struct {
-	GameID               string
-	HomeTeamID           int
+	GameID               string `isVisible:"false"`
+	HomeTeamID           int    `isVisible:"false"`
 	HomeTeamName         string
 	HomeTeamPts          int
 	HomeTeamAbbreviation string
-	AwayTeamID           int
+	AwayTeamID           int `isVisible:"false"`
 	AwayTeamName         string
 	AwayTeamPts          int
 	AwayTeamAbbreviation string
@@ -123,7 +123,7 @@ type TeamGameStatistics struct {
 }
 
 type BoxScoreTeam struct {
-	TeamID             int                `json:"teamId"`
+	TeamID             int                `json:"teamId" isVisible:"false"`
 	TeamCity           string             `json:"teamCity"`
 	TeamName           string             `json:"teamName"`
 	TeamTriCode        string             `json:"teamTriCode"`
@@ -133,9 +133,9 @@ type BoxScoreTeam struct {
 }
 
 type BoxScore struct {
-	GameID     string `json:"gameId"`
-	AwayTeamId int    `json:"awayTeamId"`
-	HomeTeamId int    `json:"homeTeamId"`
+	GameID     string `json:"gameId" isVisible:"false"`
+	AwayTeamId int    `json:"awayTeamId" isVisible:"false"`
+	HomeTeamId int    `json:"homeTeamId" isVisible:"false"`
 	HomeTeam   BoxScoreTeam
 	AwayTeam   BoxScoreTeam
 }

@@ -7,9 +7,9 @@ import (
 )
 
 type Team struct {
-	LeagueID                string  `json:"LeagueID"`
-	SeasonID                string  `json:"SeasonID"`
-	TeamID                  int     `json:"TeamID"`
+	LeagueID                string  `json:"LeagueID" isVisible:"false"`
+	SeasonID                string  `json:"SeasonID" isVisible:"false"`
+	TeamID                  int     `json:"TeamID" isVisible:"false"`
 	TeamCity                string  `json:"TeamCity"`
 	TeamName                string  `json:"TeamName"`
 	TeamSlug                string  `json:"TeamSlug"`
