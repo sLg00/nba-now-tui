@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// LogToFile is a helper function which sets up a daily log file in the application's config directory.
+// LogToFile is a helper function which sets up a log file in the application's config directory.
 // The function is quite lazy atm, with paths hardcoded. I'm ok with it.
 func LogToFile() {
 	home, err := os.UserHomeDir()
@@ -21,8 +21,6 @@ func LogToFile() {
 		}
 	}
 	fileName := home + "/.config/nba-tui/logs/appLog.log"
-	_, err = os.Stat(fileName)
-
 	logFile, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Println(err)
