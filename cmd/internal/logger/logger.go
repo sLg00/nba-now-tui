@@ -3,6 +3,7 @@ package logger
 import (
 	"log"
 	"os"
+	"path/filepath"
 )
 
 // LogToFile is a helper function which sets up a log file in the application's config directory.
@@ -13,14 +14,15 @@ func LogToFile() {
 		log.Println(err)
 		return
 	}
-	if os.IsNotExist(err) == true {
-		err = os.Mkdir(home+"/.config/nba-tui/logs/", 0777)
+	logDir := filepath.Join(home, ".config/nba-tui/logs/")
+	if _, err = os.Stat(logDir); os.IsNotExist(err) {
+		err = os.MkdirAll(logDir, 0777)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 	}
-	fileName := home + "/.config/nba-tui/logs/appLog.log"
+	fileName := filepath.Join(logDir, "appLog.log")
 	logFile, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Println(err)
