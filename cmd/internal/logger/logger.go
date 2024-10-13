@@ -16,7 +16,7 @@ func LogToFile() {
 	}
 	logDir := filepath.Join(home, ".config/nba-tui/logs/")
 	if _, err = os.Stat(logDir); os.IsNotExist(err) {
-		err = os.MkdirAll(logDir, 0777)
+		err = os.MkdirAll(logDir, 0644)
 		if err != nil {
 			log.Println(err)
 			return
