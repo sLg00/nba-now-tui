@@ -9,7 +9,7 @@ import (
 func RenderUI() {
 	m, _ := InitMenu()
 	Program = tea.NewProgram(m, tea.WithAltScreen())
-	if err, _ := Program.Run(); err != nil {
+	if _, err := Program.Run(); err != nil {
 		log.Fatal(err)
 
 	}
