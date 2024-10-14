@@ -7,11 +7,6 @@ import (
 
 func main() {
 	internal.LogToFile()
-	//err := client.NewClient().MakeDefaultRequests()
-	//if err != nil {
-	//	log.Println(err)
-	//	os.Exit(1)
-	//}
 	tui.RenderUI()
 
 }
