@@ -4,6 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/sLg00/nba-now-tui/cmd/client"
 	"log"
 	"os"
 )
@@ -18,6 +19,10 @@ type Model struct {
 type menuItem struct {
 	index              int
 	title, description string
+}
+
+type requestsFinishedMsg struct {
+	err error
 }
 
 // these methods on the menuItem model ensure that the menuItem objects satisfies the requirements of list.Model struct
@@ -53,6 +58,13 @@ func createMenuItems() ([]list.Item, error) {
 	return items, nil
 }
 
+func makeDefaultRequests() tea.Cmd {
+	return func() tea.Msg {
+		err := client.NewClient().MakeDefaultRequests()
+		return requestsFinishedMsg{err: err}
+	}
+}
+
 // InitMenu creates the list object and returns the model
 func InitMenu() (tea.Model, tea.Cmd) {
 	items, err := createMenuItems()
@@ -75,7 +87,9 @@ func InitMenu() (tea.Model, tea.Cmd) {
 	return m, func() tea.Msg { return errMsg{err} }
 }
 
-func (m Model) Init() tea.Cmd { return nil }
+func (m Model) Init() tea.Cmd {
+	return tea.Batch(makeDefaultRequests())
+}
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
@@ -121,6 +135,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.menu, cmd = m.menu.Update(msg)
 		}
 		cmds = append(cmds, cmd)
+
+	case requestsFinishedMsg:
+		if msg.err != nil {
+			log.Println("Requests finished with error", msg.err)
+		} else {
+			log.Println("Requests finished successfully")
+		}
 	}
 	return m, tea.Batch(cmds...)
 }
