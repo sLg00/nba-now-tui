@@ -11,8 +11,9 @@ import (
 
 // Model acts as the main model of the TUI. It's just to build the initial menu
 type Model struct {
-	menu     list.Model
-	quitting bool
+	menu         list.Model
+	quitting     bool
+	requestsMade bool
 }
 
 // menuItem is a singular list item within a list
@@ -69,7 +70,8 @@ func makeDefaultRequests() tea.Cmd {
 func InitMenu() (tea.Model, tea.Cmd) {
 	items, err := createMenuItems()
 	m := Model{
-		menu: list.New(items, list.NewDefaultDelegate(), 10, 10),
+		menu:         list.New(items, list.NewDefaultDelegate(), 10, 10),
+		requestsMade: false,
 	}
 	if WindowSize.Height != 0 {
 		top, right, bottom, left := DocStyle.GetMargin()
@@ -88,7 +90,11 @@ func InitMenu() (tea.Model, tea.Cmd) {
 }
 
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(makeDefaultRequests())
+	if !m.requestsMade {
+		m.requestsMade = true
+		return tea.Batch(makeDefaultRequests())
+	}
+	return nil
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -138,9 +144,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case requestsFinishedMsg:
 		if msg.err != nil {
-			log.Println("Requests finished with error", msg.err)
+			log.Println("Baseline data population finished with error", msg.err)
 		} else {
-			log.Println("Requests finished successfully")
+			log.Println("Baseline data population finished successfully")
 		}
 	}
 	return m, tea.Batch(cmds...)
