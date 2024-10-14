@@ -58,12 +58,14 @@ func (c *Client) InitiateClient(url requestURL) []byte {
 
 // MakeDefaultRequests queries the NBA APIs and populates the respective files with the returned JSON IF the files do not already
 // exist for the given day
-func (c *Client) MakeDefaultRequests() {
+func (c *Client) MakeDefaultRequests() error {
 	defaultString := ""
 	urlMap := c.BuildRequests(defaultString)
 	pc := c.InstantiatePaths(defaultString)
 
 	var wg sync.WaitGroup
+	var errMutex sync.Mutex
+	var colErr []error
 
 	for k, v := range urlMap {
 		wg.Add(1)
@@ -78,9 +80,9 @@ func (c *Client) MakeDefaultRequests() {
 					json := c.InitiateClient(url)
 					err := c.WriteToFiles(pc.LLFullPath(), json)
 					if err != nil {
-						err = fmt.Errorf("couldn't write to files: %v", err)
-						log.Println(err)
-						return
+						errMutex.Lock()
+						colErr = append(colErr, fmt.Errorf("could not write to files %v\n", err))
+						errMutex.Unlock()
 					}
 				}
 			case "seasonStandingsURL":
@@ -89,9 +91,9 @@ func (c *Client) MakeDefaultRequests() {
 					json := c.InitiateClient(url)
 					err := c.WriteToFiles(pc.SSFullPath(), json)
 					if err != nil {
-						err = fmt.Errorf("couldn't write to files: %v", err)
-						log.Println(err)
-						return
+						errMutex.Lock()
+						colErr = append(colErr, fmt.Errorf("could not write to files %v\n", err))
+						errMutex.Unlock()
 					}
 				}
 			case "dailyScoresURL":
@@ -100,15 +102,20 @@ func (c *Client) MakeDefaultRequests() {
 					json := c.InitiateClient(url)
 					err := c.WriteToFiles(pc.DSBFullPath(), json)
 					if err != nil {
-						err = fmt.Errorf("couldn't write to files: %v", err)
-						log.Println(err)
-						return
+						errMutex.Lock()
+						colErr = append(colErr, fmt.Errorf("could not write to files %v\n", err))
+						errMutex.Unlock()
 					}
 				}
 			}
 		}(k, v)
 	}
 	wg.Wait()
+
+	if len(colErr) > 0 {
+		return fmt.Errorf("Errors occured during the requests: %v", colErr)
+	}
+	return nil
 }
 
 // MakeOnDemandRequests takes a string (a gameId, a playerID etc) and queries the NBA API on-demand
