@@ -22,6 +22,8 @@ type menuItem struct {
 	title, description string
 }
 
+// requestsFinishedMsg is a struct for a custom tea.Msg that denotes if the default requests and subsequent
+// storing of JSON was successful
 type requestsFinishedMsg struct {
 	err error
 }
@@ -59,6 +61,8 @@ func createMenuItems() ([]list.Item, error) {
 	return items, nil
 }
 
+// makeDefaultRequests is used to initiate default api requests and results storing on TUI launch.
+// It's only ran once when the app starts. Subsequent returns to the main menu do not trigger it again.
 func makeDefaultRequests() tea.Cmd {
 	return func() tea.Msg {
 		err := client.NewClient().MakeDefaultRequests()
@@ -89,6 +93,8 @@ func InitMenu() (tea.Model, tea.Cmd) {
 	return m, func() tea.Msg { return errMsg{err} }
 }
 
+// Init is in charge of executing the initialization logic,
+// in the case of mainMenu, it fires off the default requests
 func (m Model) Init() tea.Cmd {
 	if !m.requestsMade {
 		m.requestsMade = true

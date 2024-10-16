@@ -61,7 +61,7 @@ func initSeasonStandings(i list.Item, p *tea.Program) (*seasonStandings, error) 
 		visibleColumnIndex := 0
 		for i, rd := range r {
 			headerName := headers[i]
-			if headerName == "LeagueID" || headerName == "TeamID" || headerName == "SeasonID" {
+			if strings.Contains(headerName, "ID") {
 				rowData[headerName] = rd
 			} else {
 				columnTitle := columns[visibleColumnIndex].Title()
@@ -78,7 +78,7 @@ func initSeasonStandings(i list.Item, p *tea.Program) (*seasonStandings, error) 
 		visibleColumnIndex := 0
 		for i, rd := range r {
 			headerName := headers[i]
-			if headerName == "LeagueID" || headerName == "TeamID" || headerName == "SeasonID" {
+			if strings.Contains(headerName, "ID") {
 				rowData[headerName] = rd
 			} else {
 				columnTitle := columns[visibleColumnIndex].Title()

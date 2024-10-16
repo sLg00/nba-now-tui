@@ -54,7 +54,6 @@ func InstantiatePaths(s string) PathComponents {
 // nothing his done
 func createDirectory(pc PathComponents) (string, error) {
 	path := pc.Home + pc.Path + pc.BoxScorePath
-
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) == true {
 

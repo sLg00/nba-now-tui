@@ -44,7 +44,7 @@ func identifySeason() string {
 	lastYear := yearInt - 1
 	nextYear := yearInt + 1
 
-	if monthInt >= 10 {
+	if monthInt >= 11 { //TODO: change to 10 (or better yet, figure out a better way to determine season cutoffs
 		p1 := strconv.Itoa(yearInt)
 		p2 := strconv.Itoa(nextYear)[2:]
 		s := p1 + "-" + p2
