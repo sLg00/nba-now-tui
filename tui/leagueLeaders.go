@@ -28,8 +28,6 @@ type leagueLeaders struct {
 func (m leagueLeaders) Init() tea.Cmd { return nil }
 
 // initLeagueLeadersTable returns a table.Model which is populated with the current league leaders (PPG)
-// TODO: refactor the whole thing - remove the filtering and sorting, hide ID fields from view
-// (but keep them attached to the table), sort table again
 func initLeagueLeaders(i list.Item, p *tea.Program) (*leagueLeaders, error) {
 	playerStats, headers, err := datamodels.PopulatePlayerStats()
 	if err != nil {
@@ -37,40 +35,6 @@ func initLeagueLeaders(i list.Item, p *tea.Program) (*leagueLeaders, error) {
 		return nil, err
 	}
 	playerStatsString := datamodels.ConvertToString(playerStats)
-
-	//filter out ID columns
-	//var filteredHeaders []string
-	//for _, h := range headers {
-	//	if !strings.Contains(h, "ID") {
-	//		filteredHeaders = append(filteredHeaders, h)
-	//	}
-	//}
-	//
-	////filter out ID row data
-	//var filteredRows [][]string
-	//for _, fr := range playerStatsString {
-	//	fr = slices.Delete(fr, 0, 1)
-	//	fr = slices.Delete(fr, 2, 3)
-	//	filteredRows = append(filteredRows, fr)
-	//}
-	//
-	////reorganize column order to be more logical
-	//var sortedHeaders []string
-	//sortedHeaders = append(sortedHeaders, filteredHeaders[0:5]...)
-	//sortedHeaders = append(sortedHeaders, filteredHeaders[21:23]...)
-	//sortedHeaders = append(sortedHeaders, filteredHeaders[17:21]...)
-	//sortedHeaders = append(sortedHeaders, filteredHeaders[5:17]...)
-	//
-	////reorganize row data ordering to match column order
-	//var sortedRows [][]string
-	//for _, r := range filteredRows {
-	//	var sorterRow []string
-	//	sorterRow = append(sorterRow, r[0:5]...)
-	//	sorterRow = append(sorterRow, r[21:23]...)
-	//	sorterRow = append(sorterRow, r[17:21]...)
-	//	sorterRow = append(sorterRow, r[5:17]...)
-	//	sortedRows = append(sortedRows, sorterRow)
-	//}
 
 	var (
 		columns []table.Column

@@ -44,7 +44,7 @@ func identifySeason() string {
 	lastYear := yearInt - 1
 	nextYear := yearInt + 1
 
-	if monthInt >= 11 { //TODO: change to 10 (or better yet, figure out a better way to determine season cutoffs
+	if monthInt >= 10 {
 		p1 := strconv.Itoa(yearInt)
 		p2 := strconv.Itoa(nextYear)[2:]
 		s := p1 + "-" + p2
@@ -60,7 +60,7 @@ func identifySeason() string {
 }
 
 // leagueLeadersAPIRequestBuilder creates the URL for the API request from dynamic- and hardcoded building blocks
-// TODO: SeasonType key can have 2 values, need to add identification for regular season/playoffs
+// TODO: SeasonType key can have 3 values, need to add identification for regular season/playoffs/preseason
 func leagueLeadersAPIRequestBuilder() requestURL {
 	return requestURL(URL + "leagueleaders?ActiveFlag=&LeagueID=" +
 		LeagueID + "&PerMode=PerGame&Scope=S&Season=" +
@@ -74,7 +74,7 @@ func seasonStandingsAPIRequestBuilder() requestURL {
 }
 
 func dailyScoreboardAPIRequestBuilder() requestURL {
-	today := "2024-04-17" //TODO: time.Now().Format("2006-01-02")
+	today := time.Now().Format("2006-01-02")
 	return requestURL(URL + "scoreboardv2?DayOffset=0&GameDate=" + today + "&LeagueID=" + LeagueID)
 }
 
