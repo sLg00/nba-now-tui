@@ -79,8 +79,8 @@ func seasonStandingsAPIRequestBuilder() requestURL {
 func dailyScoreboardAPIRequestBuilder() requestURL {
 	today, err := GetDateArg()
 	if err != nil {
-		log.Println(err)
-		os.Exit(1)
+		fmt.Println(err)
+		log.Fatal(err)
 	}
 	return requestURL(URL + "scoreboardv2?DayOffset=0&GameDate=" + today + "&LeagueID=" + LeagueID)
 }
@@ -114,6 +114,10 @@ func GetDateArg() (string, error) {
 		fmt.Printf("Please use %s -d \"YYYY-DD-MM\"", os.Args[0])
 	}
 	dateStr := os.Args[2]
+
+	if _, err := time.Parse("2006-01-02", dateStr); err != nil {
+		return "", fmt.Errorf("date must be in YYYY-MM-DD format")
+	}
 
 	return dateStr, nil
 }
