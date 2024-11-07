@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 )
 
 type PathComponents struct {
@@ -33,7 +32,11 @@ func (p PathComponents) BoxScoreFullPath() string {
 
 // InstantiatePaths is a factory function that returns a PathComponents struct with default values
 func InstantiatePaths(s string) PathComponents {
-	today := time.Now().Format("2006-01-02")
+	today, err := GetDateArg()
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		err = fmt.Errorf("could not determine home directory: %w", err)

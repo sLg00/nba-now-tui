@@ -1,7 +1,10 @@
 package client
 
 import (
+	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -74,7 +77,11 @@ func seasonStandingsAPIRequestBuilder() requestURL {
 }
 
 func dailyScoreboardAPIRequestBuilder() requestURL {
-	today := time.Now().Format("2006-01-02")
+	today, err := GetDateArg()
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
 	return requestURL(URL + "scoreboardv2?DayOffset=0&GameDate=" + today + "&LeagueID=" + LeagueID)
 }
 
@@ -94,4 +101,19 @@ func BuildRequests(s string) map[string]requestURL {
 		"boxScoreURL":        boxScoreRequestBuilder(s),
 	}
 	return urlMap
+}
+
+func GetDateArg() (string, error) {
+	if len(os.Args) != 3 || os.Args[1] != "-d" {
+		log.Println("Cannot invoke program, date not provided in command line arguments.")
+		err := fmt.Errorf("Please use %s -d \"YYYY-DD-MM\"", os.Args[0])
+
+		return "", err
+	}
+	if os.Args[1] == "-h" {
+		fmt.Printf("Please use %s -d \"YYYY-DD-MM\"", os.Args[0])
+	}
+	dateStr := os.Args[2]
+
+	return dateStr, nil
 }
