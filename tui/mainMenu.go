@@ -81,8 +81,8 @@ func InitMenu() (tea.Model, tea.Cmd) {
 		top, right, bottom, left := DocStyle.GetMargin()
 		m.menu.SetSize(WindowSize.Width-left-right, WindowSize.Height-top-bottom-1)
 	}
-
-	m.menu.Title = "NBA on " + Date()
+	currentDate, _ := client.GetDateArg()
+	m.menu.Title = "NBA on " + currentDate
 	m.menu.AdditionalShortHelpKeys = func() []key.Binding {
 		return []key.Binding{
 			Keymap.Back,
