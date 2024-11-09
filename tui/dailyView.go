@@ -9,7 +9,6 @@ import (
 	"github.com/sLg00/nba-now-tui/cmd/datamodels"
 	"log"
 	"os"
-	"strings"
 )
 
 type dailyView struct {
@@ -75,7 +74,7 @@ func initDailyView() (*dailyView, error) {
 		}
 	}
 
-	m := &dailyView{gameCards: gameCards, focusIndex: 0, numCols: 2}
+	m := &dailyView{gameCards: gameCards, focusIndex: 0, numCols: 3}
 	return m, nil
 }
 
@@ -109,19 +108,19 @@ func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 				os.Exit(1)
 			}
 			return bx.Update(WindowSize)
-		case key.Matches(msg, Keymap.Left):
+		case key.Matches(msg, Keymap.Up):
 			if m.focusIndex >= m.numCols {
 				m.focusIndex -= m.numCols
 			}
-		case key.Matches(msg, Keymap.Right):
+		case key.Matches(msg, Keymap.Down):
 			if m.focusIndex+m.numCols < len(m.gameCards) {
 				m.focusIndex += m.numCols
 			}
-		case key.Matches(msg, Keymap.Up):
+		case key.Matches(msg, Keymap.Left):
 			if m.focusIndex%m.numCols > 0 {
 				m.focusIndex--
 			}
-		case key.Matches(msg, Keymap.Down):
+		case key.Matches(msg, Keymap.Right):
 			if m.focusIndex%m.numCols < m.numCols-1 && m.focusIndex+1 < len(m.gameCards) {
 				m.focusIndex++
 			}
@@ -148,7 +147,8 @@ func (m dailyView) View() string {
 		return ""
 	}
 
-	var b strings.Builder
+	var rows []string
+	var currentRow []string
 
 	for i, gameCard := range m.gameCards {
 		if i == m.focusIndex {
@@ -158,15 +158,19 @@ func (m dailyView) View() string {
 				WithHeaderVisibility(false)
 		}
 
-		b.WriteString(gameCard.View())
-		b.WriteString("\n")
-		b.WriteString("\n")
+		currentRow = append(currentRow, gameCard.View())
 
 		if (i+1)%m.numCols == 0 {
-			b.WriteString("\n")
+			rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, currentRow...))
+			currentRow = []string{}
 		}
 	}
-	content := b.String()
+
+	if len(currentRow) > 0 {
+		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, currentRow...))
+	}
+
+	content := lipgloss.JoinVertical(lipgloss.Left, rows...)
 
 	renderedDailyView := lipgloss.NewStyle().
 		Width(m.width).
@@ -176,5 +180,4 @@ func (m dailyView) View() string {
 
 	comboView := lipgloss.JoinVertical(lipgloss.Left, renderedDailyView, m.helpView())
 	return comboView
-
 }
