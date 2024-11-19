@@ -96,10 +96,14 @@ func (m leagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			return m, tea.Quit
 		case key.Matches(msg, Keymap.Enter):
 			selectedRows := m.leaderboard.SelectedRows()
-			if len(selectedRows) > 0 {
+			if len(selectedRows) == 1 {
 				playerID := selectedRows[0].Data["PLAYER_ID"].(string)
 				log.Println(playerID)
 				//TODO: add player profile init logic
+			}
+			if len(selectedRows) > 1 || len(selectedRows) < 1 {
+				log.Println("Either 0 rows or more than 1 row were selected")
+				//TODO: Display pop-up with User error! :)
 			}
 		}
 	case tea.WindowSizeMsg:

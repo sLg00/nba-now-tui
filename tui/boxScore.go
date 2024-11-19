@@ -189,10 +189,14 @@ func (m boxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			} else {
 				selectedRows = m.awayTeamBoxScore.SelectedRows()
 			}
-			if len(selectedRows) > 0 {
+			if len(selectedRows) == 1 {
 				personId := selectedRows[0].Data["PersonId"].(string)
 				log.Println(personId)
 				//TODO: add player profile view init
+			}
+			if len(selectedRows) > 1 || len(selectedRows) < 1 {
+				log.Println("Either 0 rows or more than 1 row were selected")
+				//TODO: Display pop-up with User error! :)
 			}
 		}
 	case tea.WindowSizeMsg:

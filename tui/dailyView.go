@@ -81,11 +81,15 @@ func initDailyView() (*dailyView, error) {
 func (m dailyView) getGameId() string {
 	focusedCard := m.gameCards[m.focusIndex]
 	rows := focusedCard.GetVisibleRows()
-	if len(rows) > 0 {
+	if len(rows) == 1 {
 		gameId, ok := rows[0].Data["gameID"].(string)
 		if ok {
 			return gameId
 		}
+	}
+	if len(rows) > 1 || len(rows) < 1 {
+		log.Println("Either 0 rows or more than 1 row were selected")
+		//TODO: Display pop-up with User error! :)
 	}
 	return ""
 }
