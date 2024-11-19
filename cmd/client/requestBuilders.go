@@ -106,7 +106,7 @@ func BuildRequests(s string) map[string]requestURL {
 func GetDateArg() (string, error) {
 	if len(os.Args) != 3 || os.Args[1] != "-d" {
 		log.Println("Cannot invoke program, date not provided in command line arguments.")
-		err := fmt.Errorf("Please use %s -d \"YYYY-DD-MM\"", os.Args[0])
+		err := fmt.Errorf("Please use %s -d \"YYYY-MM-DD\"", os.Args[0])
 
 		return "", err
 	}
