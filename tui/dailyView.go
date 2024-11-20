@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -47,6 +48,10 @@ func initDailyView() (*dailyView, error) {
 
 	var gameCards []table.Model
 
+	//channels to receive signals when concurrent API requests to NBA APIs are done/fail
+	eChan := make(chan error, len(dailyScoresStrings))
+	dChan := make(chan struct{}, len(dailyScoresStrings))
+
 	for _, gameScore := range dailyScoresStrings {
 		var scoreRows []table.Row
 
@@ -67,11 +72,29 @@ func initDailyView() (*dailyView, error) {
 		gameCard := newGameCard(scoreRows)
 		gameCards = append(gameCards, gameCard)
 
-		// For each gameID, query the NBA API, get the box score and save it to the filesystem
-		err = client.NewClient().MakeOnDemandRequests(gameScore[0])
-		if err != nil {
-			log.Printf("Could not make on-demand requests: %v", err)
+		// For each gameID, query the NBA API concurrently, get the box score and save it to the filesystem
+		go func(gameID string) {
+			defer func() { dChan <- struct{}{} }()
+			if err := client.NewClient().MakeOnDemandRequests(gameID); err != nil {
+				eChan <- fmt.Errorf("Could not make on-demand requests: %v", err)
+			}
+		}(gameScore[0])
+	}
+
+	for i := 0; i < len(dailyScoresStrings); i++ {
+		<-dChan
+	}
+	close(eChan)
+
+	var errs []error
+	for apiErr := range eChan {
+		errs = append(errs, apiErr)
+	}
+	if len(errs) > 0 {
+		for _, apiErr := range errs {
+			log.Printf("API error: %v", apiErr)
 		}
+		return nil, fmt.Errorf("encountered errors during API requests")
 	}
 
 	m := &dailyView{gameCards: gameCards, focusIndex: 0, numCols: 3}
@@ -81,7 +104,7 @@ func initDailyView() (*dailyView, error) {
 func (m dailyView) getGameId() string {
 	focusedCard := m.gameCards[m.focusIndex]
 	rows := focusedCard.GetVisibleRows()
-	if len(rows) == 1 {
+	if len(rows) > 0 {
 		gameId, ok := rows[0].Data["gameID"].(string)
 		if ok {
 			return gameId
