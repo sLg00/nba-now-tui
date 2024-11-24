@@ -39,27 +39,31 @@ const (
 
 // identifySeason determines what season is currently ongoing and formats it in a way that is needed to query NBA APIs
 func identifySeason() string {
-	cyms := strings.Split(time.Now().Format("2006-01"), "-")
-	year := cyms[0]
-	month := cyms[1]
-	yearInt, _ := strconv.Atoi(year)
+	var seasonString string
+	date, _ := GetDateArg()
+	dateSplit := strings.Split(date, "-")
+	year := dateSplit[0]
+	month := dateSplit[1]
+
 	monthInt, _ := strconv.Atoi(month)
-	lastYear := yearInt - 1
+	yearInt, _ := strconv.Atoi(year)
+	previousYear := yearInt - 1
 	nextYear := yearInt + 1
 
-	if monthInt >= 10 {
-		p1 := strconv.Itoa(yearInt)
-		p2 := strconv.Itoa(nextYear)[2:]
-		s := p1 + "-" + p2
-		return s
-
-	} else {
-		p1 := strconv.Itoa(lastYear)
-		p2 := strconv.Itoa(yearInt)[2:]
-		s := p1 + "-" + p2
-		return s
+	if monthInt < 10 {
+		dateStringPartOne := strconv.Itoa(previousYear)
+		dateStringPartTwo := strconv.Itoa(yearInt)[2:]
+		seasonString = dateStringPartOne + "-" + dateStringPartTwo
 
 	}
+
+	if monthInt >= 10 {
+		dateStringPartOne := strconv.Itoa(yearInt)
+		dateStringPartTwo := strconv.Itoa(nextYear)[2:]
+		seasonString = dateStringPartOne + "-" + dateStringPartTwo
+	}
+	log.Printf("current season is %s\n", seasonString)
+	return seasonString
 }
 
 // leagueLeadersAPIRequestBuilder creates the URL for the API request from dynamic- and hardcoded building blocks
