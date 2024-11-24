@@ -13,7 +13,7 @@ type Client struct {
 	HTTPClient       *http.Client
 	HeaderSet        func() http.Header
 	BuildRequests    func(string) map[string]requestURL
-	InstantiatePaths func(string) PathComponents
+	InstantiatePaths func(string) *PathComponents
 	FileChecker      func(string) bool
 	WriteToFiles     func(string, []byte) error
 }
@@ -61,6 +61,10 @@ func (c *Client) MakeDefaultRequests() error {
 	defaultString := ""
 	urlMap := c.BuildRequests(defaultString)
 	pc := c.InstantiatePaths(defaultString)
+	err := CleanOldFiles(pc)
+	if err != nil {
+		log.Printf("could not clean up old files: %v\n", err)
+	}
 
 	dChan := make(chan struct{}, len(urlMap))
 	eChan := make(chan error, len(urlMap))

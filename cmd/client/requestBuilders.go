@@ -62,7 +62,6 @@ func identifySeason() string {
 		dateStringPartTwo := strconv.Itoa(nextYear)[2:]
 		seasonString = dateStringPartOne + "-" + dateStringPartTwo
 	}
-	log.Printf("current season is %s\n", seasonString)
 	return seasonString
 }
 

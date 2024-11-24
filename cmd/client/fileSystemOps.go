@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"github.com/sLg00/nba-now-tui/cmd/internal"
 	"log"
 	"os"
 )
@@ -31,7 +32,7 @@ func (p PathComponents) BoxScoreFullPath() string {
 }
 
 // InstantiatePaths is a factory function that returns a PathComponents struct with default values
-func InstantiatePaths(s string) PathComponents {
+func InstantiatePaths(s string) *PathComponents {
 	today, err := GetDateArg()
 	if err != nil {
 		log.Println(err)
@@ -51,16 +52,15 @@ func InstantiatePaths(s string) PathComponents {
 		BoxScorePath: "boxscores/",
 		BoxScoreFile: today + "_" + s,
 	}
-	return paths
+	return &paths
 }
 
 // createDirectory creates the dir to hold daily json files received from the NBA API. If a directory already exists,
 // nothing his done
-func createDirectory(pc PathComponents) (string, error) {
+func createDirectory(pc *PathComponents) (string, error) {
 	path := pc.Home + pc.Path + pc.BoxScorePath
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) == true {
-
 		err = os.Mkdir(path, 0777)
 		if err != nil {
 			err = fmt.Errorf("could not create directory: %w\n", err)
@@ -107,4 +107,26 @@ func fileChecker(s string) bool {
 	} else {
 		return false
 	}
+}
+
+func CleanOldFiles(pc *PathComponents) error {
+	dailyFilesPath := pc.Home + pc.Path
+	boxScoreFilesPath := pc.Home + pc.Path + pc.BoxScorePath
+	paths := []string{dailyFilesPath, boxScoreFilesPath}
+
+	filesRegex := "^(\\d{4}-\\d{2}-\\d{2})_.*$"
+
+	for _, p := range paths {
+		fileList, err := internal.FindFiles(p, filesRegex)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		err = internal.RemoveFiles(fileList)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+	return nil
 }
