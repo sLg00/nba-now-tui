@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 )
 
@@ -63,15 +62,13 @@ func (c *Client) MakeDefaultRequests() error {
 	urlMap := c.BuildRequests(defaultString)
 	pc := c.InstantiatePaths(defaultString)
 
-	var wg sync.WaitGroup
-	var errMutex sync.Mutex
-	var colErr []error
+	dChan := make(chan struct{}, len(urlMap))
+	eChan := make(chan error, len(urlMap))
 
 	for k, v := range urlMap {
-		wg.Add(1)
 
 		go func(key string, url requestURL) {
-			defer wg.Done()
+			defer func() { dChan <- struct{}{} }()
 
 			switch key {
 			case "leagueLeadersURL":
@@ -80,9 +77,8 @@ func (c *Client) MakeDefaultRequests() error {
 					json := c.InitiateClient(url)
 					err := c.WriteToFiles(pc.LLFullPath(), json)
 					if err != nil {
-						errMutex.Lock()
-						colErr = append(colErr, fmt.Errorf("could not write to files %v\n", err))
-						errMutex.Unlock()
+						eChan <- fmt.Errorf("could not write to files %v\n", err)
+
 					}
 				}
 			case "seasonStandingsURL":
@@ -91,9 +87,7 @@ func (c *Client) MakeDefaultRequests() error {
 					json := c.InitiateClient(url)
 					err := c.WriteToFiles(pc.SSFullPath(), json)
 					if err != nil {
-						errMutex.Lock()
-						colErr = append(colErr, fmt.Errorf("could not write to files %v\n", err))
-						errMutex.Unlock()
+						eChan <- fmt.Errorf("could not write to files %v\n", err)
 					}
 				}
 			case "dailyScoresURL":
@@ -102,19 +96,29 @@ func (c *Client) MakeDefaultRequests() error {
 					json := c.InitiateClient(url)
 					err := c.WriteToFiles(pc.DSBFullPath(), json)
 					if err != nil {
-						errMutex.Lock()
-						colErr = append(colErr, fmt.Errorf("could not write to files %v\n", err))
-						errMutex.Unlock()
+						eChan <- fmt.Errorf("could not write to files %v\n", err)
 					}
 				}
 			}
 		}(k, v)
 	}
-	wg.Wait()
-
-	if len(colErr) > 0 {
-		return fmt.Errorf("Errors occured during the requests: %v", colErr)
+	for i := 0; i < len(urlMap); i++ {
+		<-dChan
 	}
+	close(eChan)
+
+	var errs []error
+	for e := range eChan {
+		errs = append(errs, e)
+	}
+
+	if len(errs) > 0 {
+		for _, apiErr := range errs {
+			log.Printf("API error: %v", apiErr)
+		}
+		return fmt.Errorf("encountered errors during API requests")
+	}
+
 	return nil
 }
 
