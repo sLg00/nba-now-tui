@@ -76,7 +76,7 @@ func initDailyView() (*dailyView, error) {
 		go func(gameID string) {
 			defer func() { dChan <- struct{}{} }()
 			if err := client.NewClient().MakeOnDemandRequests(gameID); err != nil {
-				eChan <- fmt.Errorf("Could not make on-demand requests: %v", err)
+				eChan <- fmt.Errorf("could not make on-demand requests: %v", err)
 			}
 		}(gameScore[0])
 	}
