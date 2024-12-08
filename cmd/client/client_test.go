@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -30,7 +31,10 @@ func TestInitiateClient(t *testing.T) {
 	}
 
 	url := requestURL(server.URL)
-	response := client.InitiateClient(url)
+	response, err := client.InitiateClient(url)
+	if err != nil {
+		log.Println(err)
+	}
 	expectedResponse := []byte(`{"key": "value"}`)
 	if !bytes.Equal(response, expectedResponse) {
 		t.Errorf("Expected '%v', got '%v'", expectedResponse, response)
@@ -58,14 +62,16 @@ func TestMakeDefaultRequest(t *testing.T) {
 				"dailyScoreboardURL": requestURL(server.URL),
 			}
 		},
-		InstantiatePaths: func(string) PathComponents {
+		InstantiatePaths: func(string) *PathComponents {
 			home, _ := os.UserHomeDir()
-			return PathComponents{
-				Home:    home,
-				Path:    "/.config/nba-tui/",
-				LLFile:  "2024-01-01" + "_ll",
-				SSFile:  "2024-01-01" + "_ss",
-				DSBFile: "2024-01-1" + "_dsb",
+			return &PathComponents{
+				Home:         home,
+				Path:         "/.config/nba-tui/",
+				LLFile:       "2024-01-01" + "_ll",
+				SSFile:       "2024-01-01" + "_ss",
+				DSBFile:      "2024-01-01" + "_dsb",
+				BoxScorePath: "boxscores",
+				BoxScoreFile: "2024-01-01" + "123123123",
 			}
 		},
 		FileChecker: func(filePath string) bool {

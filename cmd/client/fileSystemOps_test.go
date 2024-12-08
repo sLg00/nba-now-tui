@@ -5,9 +5,10 @@ import (
 	"testing"
 )
 
-func mockPathComponents() PathComponents {
+func mockPathComponents() *PathComponents {
+
 	home, _ := os.UserHomeDir()
-	return PathComponents{
+	return &PathComponents{
 		Home:   home,
 		Path:   "/foo",
 		LLFile: "mock,"}
@@ -26,6 +27,9 @@ func TestCreateDirectory(t *testing.T) {
 }
 
 func TestWriteToFiles(t *testing.T) {
+	realArguments := os.Args
+	defer func() { os.Args = realArguments }()
+	os.Args = []string{"appName", "-d", "2024-12-01"}
 	mp := mockPathComponents()
 	fileContents := []byte(`{"key": "value"}`)
 	result := WriteToFiles(mp.Home+mp.Path+mp.LLFile, fileContents)
