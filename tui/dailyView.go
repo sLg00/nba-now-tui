@@ -21,19 +21,23 @@ type dailyView struct {
 	height     int
 }
 
-func newGameCard(r []table.Row) table.Model {
+func newGameCard(r []table.Row) (table.Model, error) {
 	columns := []table.Column{
 		table.NewColumn("teams", "", 7),
 		table.NewColumn("scores", "", 7),
 	}
 
 	gc := table.New(columns)
-	gc = gc.WithRows(r).WithBaseStyle(lipgloss.NewStyle().
-		BorderStyle(lipgloss.HiddenBorder()).
-		BorderForeground(lipgloss.Color("7"))).
-		WithHeaderVisibility(false)
-	gc = gc.BorderRounded()
-	return gc
+	if len(r) > 0 {
+		gc = gc.WithRows(r).WithBaseStyle(lipgloss.NewStyle().
+			BorderStyle(lipgloss.HiddenBorder()).
+			BorderForeground(lipgloss.Color("7"))).
+			WithHeaderVisibility(false)
+		gc = gc.BorderRounded()
+		return gc, nil
+	}
+	err := fmt.Errorf("no games happened during the date")
+	return table.Model{}, err
 }
 
 func (m dailyView) Init() tea.Cmd { return nil }
@@ -69,7 +73,10 @@ func initDailyView() (*dailyView, error) {
 		scoreRows = append(scoreRows, table.NewRow(homeRowData))
 		scoreRows = append(scoreRows, table.NewRow(awayRowData))
 
-		gameCard := newGameCard(scoreRows)
+		gameCard, err := newGameCard(scoreRows)
+		if err != nil {
+			log.Printf("Could not create game card: %v", err)
+		}
 		gameCards = append(gameCards, gameCard)
 
 		// For each gameID, query the NBA API concurrently, get the box score and save it to the filesystem
@@ -101,20 +108,22 @@ func initDailyView() (*dailyView, error) {
 	return m, nil
 }
 
-func (m dailyView) getGameId() string {
+func (m dailyView) getGameId() (string, error) {
 	focusedCard := m.gameCards[m.focusIndex]
 	rows := focusedCard.GetVisibleRows()
 	if len(rows) > 0 {
 		gameId, ok := rows[0].Data["gameID"].(string)
 		if ok {
-			return gameId
+			return gameId, nil
 		}
 	}
 	if len(rows) > 1 || len(rows) < 1 {
 		log.Println("Either 0 rows or more than 1 row were selected")
+		err := fmt.Errorf("game ID not found")
+		return "", err
 		//TODO: Display pop-up with User error! :)
 	}
-	return ""
+	return "", nil
 }
 
 func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
@@ -128,7 +137,10 @@ func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			m.quitting = true
 			return m, tea.Quit
 		case key.Matches(msg, Keymap.Enter):
-			gameID := m.getGameId()
+			gameID, err := m.getGameId()
+			if err != nil {
+				log.Printf("Could not get game id: %v", err)
+			}
 			bx, err := initBoxScore(gameID, Program)
 			if err != nil {
 				log.Println(err)
@@ -159,8 +171,11 @@ func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		m.height = msg.Height
 	}
 
-	m.gameCards[m.focusIndex], cmd = m.gameCards[m.focusIndex].Update(msg)
-	cmds = append(cmds, cmd)
+	if len(m.gameCards) > 0 {
+		m.gameCards[m.focusIndex], cmd = m.gameCards[m.focusIndex].Update(msg)
+		cmds = append(cmds, cmd)
+		return m, tea.Batch(cmds...)
+	}
 	return m, tea.Batch(cmds...)
 }
 
@@ -174,6 +189,7 @@ func (m dailyView) View() string {
 		return ""
 	}
 
+	var content string
 	var rows []string
 	var currentRow []string
 
@@ -195,9 +211,10 @@ func (m dailyView) View() string {
 
 	if len(currentRow) > 0 {
 		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, currentRow...))
+		content = lipgloss.JoinVertical(lipgloss.Left, rows...)
 	}
-
-	content := lipgloss.JoinVertical(lipgloss.Left, rows...)
+	dateToDisplayInCaseOfEmpty, _ := client.GetDateArg()
+	content = "No games happened during " + dateToDisplayInCaseOfEmpty
 
 	renderedDailyView := lipgloss.NewStyle().
 		Width(m.width).
