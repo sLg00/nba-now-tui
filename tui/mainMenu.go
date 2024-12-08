@@ -51,11 +51,11 @@ func createMenuItems() ([]list.Item, error) {
 			description: "All players sorted by PPG",
 		}, menuItem{
 			index:       3,
-			title:       "Recent News",
+			title:       "[N/A] Recent News",
 			description: "Headlines from around the league",
 		}, menuItem{
 			index:       4,
-			title:       "Playoff Bracket",
+			title:       "[N/A] Playoff Bracket",
 			description: "Playoff bracket",
 		}}
 	return items, nil
