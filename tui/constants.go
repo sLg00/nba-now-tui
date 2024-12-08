@@ -5,7 +5,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"strings"
-	"time"
 )
 
 var (
@@ -88,10 +87,4 @@ func HelpFooter() string {
 
 	helpMenu := strings.TrimSpace(builder.String())
 	return helpMenu
-}
-
-// Date is a helper function which returns the current date in a pre-specified format
-func Date() string {
-	date := time.Now().Format("2006-01-02")
-	return date
 }
