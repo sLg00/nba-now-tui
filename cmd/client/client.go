@@ -31,7 +31,7 @@ func NewClient() *Client {
 }
 
 // InitiateClient initializes client instances with the appropriate request URLs and headers
-func (c *Client) InitiateClient(url requestURL) []byte {
+func (c *Client) InitiateClient(url requestURL) ([]byte, error) {
 	//client := http.Client{Timeout: time.Duration(5) * time.Second}
 	req, _ := http.NewRequest("GET", string(url), nil)
 	req.Header = c.HeaderSet()
@@ -40,7 +40,7 @@ func (c *Client) InitiateClient(url requestURL) []byte {
 	if err != nil {
 		err = fmt.Errorf("HTTP request failed: %v", err)
 		log.Println(err)
-		return nil
+		return nil, err
 	}
 
 	defer func(Body io.ReadCloser) {
@@ -52,13 +52,14 @@ func (c *Client) InitiateClient(url requestURL) []byte {
 	}(resp.Body)
 
 	body, _ := io.ReadAll(resp.Body)
-	return body
+	return body, nil
 }
 
 // MakeDefaultRequests queries the NBA APIs and populates the respective files with the returned JSON IF the files do not already
 // exist for the given day
 func (c *Client) MakeDefaultRequests() error {
 	defaultString := ""
+	var json []byte
 	urlMap := c.BuildRequests(defaultString)
 	pc := c.InstantiatePaths(defaultString)
 	err := CleanOldFiles(pc)
@@ -78,8 +79,11 @@ func (c *Client) MakeDefaultRequests() error {
 			case "leagueLeadersURL":
 				fileToCheck := c.FileChecker(pc.LLFullPath())
 				if !fileToCheck {
-					json := c.InitiateClient(url)
-					err := c.WriteToFiles(pc.LLFullPath(), json)
+					json, err = c.InitiateClient(url)
+					if err != nil {
+						eChan <- fmt.Errorf("API error %v\n", err)
+					}
+					err = c.WriteToFiles(pc.LLFullPath(), json)
 					if err != nil {
 						eChan <- fmt.Errorf("could not write to files %v\n", err)
 
@@ -88,8 +92,11 @@ func (c *Client) MakeDefaultRequests() error {
 			case "seasonStandingsURL":
 				fileToCheck := fileChecker(pc.SSFullPath())
 				if !fileToCheck {
-					json := c.InitiateClient(url)
-					err := c.WriteToFiles(pc.SSFullPath(), json)
+					json, err = c.InitiateClient(url)
+					if err != nil {
+						eChan <- fmt.Errorf("API error %v\n", err)
+					}
+					err = c.WriteToFiles(pc.SSFullPath(), json)
 					if err != nil {
 						eChan <- fmt.Errorf("could not write to files %v\n", err)
 					}
@@ -97,8 +104,11 @@ func (c *Client) MakeDefaultRequests() error {
 			case "dailyScoresURL":
 				fileToCheck := fileChecker(pc.DSBFullPath())
 				if !fileToCheck {
-					json := c.InitiateClient(url)
-					err := c.WriteToFiles(pc.DSBFullPath(), json)
+					json, err = c.InitiateClient(url)
+					if err != nil {
+						eChan <- fmt.Errorf("API error %v\n", err)
+					}
+					err = c.WriteToFiles(pc.DSBFullPath(), json)
 					if err != nil {
 						eChan <- fmt.Errorf("could not write to files %v\n", err)
 					}
@@ -126,7 +136,7 @@ func (c *Client) MakeDefaultRequests() error {
 	return nil
 }
 
-// MakeOnDemandRequests takes a string (a gameId, a playerID etc) and queries the NBA API on-demand
+// MakeOnDemandRequests takes a string (a gameId, a playerID etc.) and queries the NBA API on-demand
 func (c *Client) MakeOnDemandRequests(s string) error {
 	urlMap := c.BuildRequests(s)
 	path := c.InstantiatePaths(s)
@@ -136,8 +146,11 @@ func (c *Client) MakeOnDemandRequests(s string) error {
 		case "boxScoreURL":
 			fileToCheck := c.FileChecker(path.BoxScoreFullPath())
 			if !fileToCheck {
-				json := c.InitiateClient(v)
-				err := c.WriteToFiles(path.BoxScoreFullPath(), json)
+				json, err := c.InitiateClient(v)
+				if err != nil {
+					return fmt.Errorf("API error %v\n", err)
+				}
+				err = c.WriteToFiles(path.BoxScoreFullPath(), json)
 				if err != nil {
 					err = fmt.Errorf("couldn't write to files: %v", err)
 					log.Println(err)
