@@ -35,7 +35,7 @@ func FindFiles(path string, pattern string) ([]string, error) {
 					log.Println("error parsing file date: " + fileDateStr)
 				}
 
-				if fileDate.Before(time.Now().Add(-48 * time.Hour)) {
+				if fileDate.Before(time.Now().Add(-time.Hour * 48)) {
 					filePath := filepath.Join(path, item.Name())
 					fileList = append(fileList, filePath)
 				}
