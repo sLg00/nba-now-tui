@@ -6,7 +6,10 @@ import (
 )
 
 func main() {
-	internal.LogToFile()
+	_, err := internal.LogToFile()
+	if err != nil {
+		panic(err)
+	}
 	tui.RenderUI()
 
 }
