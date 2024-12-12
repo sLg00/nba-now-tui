@@ -67,3 +67,11 @@ func TestStructToStringSlice(t *testing.T) {
 		})
 	}
 }
+
+func TestFloatToPercent(t *testing.T) {
+	value := 0.1
+	result := FloatToPercent(value)
+	if result != "10%" {
+		t.Errorf("Wanted: %v, Got: %v", "1%", result)
+	}
+}

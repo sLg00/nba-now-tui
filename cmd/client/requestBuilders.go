@@ -82,7 +82,6 @@ func seasonStandingsAPIRequestBuilder() requestURL {
 func dailyScoreboardAPIRequestBuilder() requestURL {
 	today, err := GetDateArg()
 	if err != nil {
-		fmt.Println(err)
 		log.Fatal(err)
 	}
 	return requestURL(URL + "scoreboardv2?DayOffset=0&GameDate=" + today + "&LeagueID=" + LeagueID)

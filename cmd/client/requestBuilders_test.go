@@ -1,36 +1,45 @@
 package client
 
 import (
+	"os"
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestIdentifySeason(t *testing.T) {
-	var s string
-	cyms := strings.Split(time.Now().Format("2006-01"), "-")
-	year := cyms[0]
-	month := cyms[1]
-	yearInt, _ := strconv.Atoi(year)
+	realArguments := os.Args
+	defer func() { os.Args = realArguments }()
+	os.Args = []string{"appName", "-d", "2024-12-01"}
+
+	var seasonString string
+	date, _ := GetDateArg()
+	dateSplit := strings.Split(date, "-")
+	year := dateSplit[0]
+	month := dateSplit[1]
+
 	monthInt, _ := strconv.Atoi(month)
-	lastYear := yearInt - 1
+	yearInt, _ := strconv.Atoi(year)
+	previousYear := yearInt - 1
 	nextYear := yearInt + 1
 
+	if monthInt < 10 {
+		dateStringPartOne := strconv.Itoa(previousYear)
+		dateStringPartTwo := strconv.Itoa(yearInt)[2:]
+		seasonString = dateStringPartOne + "-" + dateStringPartTwo
+
+	}
+
 	if monthInt >= 10 {
-		p1 := strconv.Itoa(yearInt)
-		p2 := strconv.Itoa(nextYear)[2:]
-		s = p1 + "-" + p2
+		dateStringPartOne := strconv.Itoa(yearInt)
+		dateStringPartTwo := strconv.Itoa(nextYear)[2:]
+		seasonString = dateStringPartOne + "-" + dateStringPartTwo
 
-	} else {
-		p1 := strconv.Itoa(lastYear)
-		p2 := strconv.Itoa(yearInt)[2:]
-		s = p1 + "-" + p2
+	}
 
-		expectedResult := identifySeason()
-		if expectedResult != s {
-			t.Errorf("expected: %s, got: %s", expectedResult, s)
-		}
+	expectedResult := identifySeason()
+	if expectedResult != seasonString {
+		t.Errorf("expected: %s, got: %s", expectedResult, seasonString)
 	}
 
 }
