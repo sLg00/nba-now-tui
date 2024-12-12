@@ -75,6 +75,14 @@ func TestFindFiles(t *testing.T) {
 }
 
 func TestRemoveFiles(t *testing.T) {
-	//
+	fileList, mockDir, err := createMockFiles()
+	if err != nil {
+		t.Errorf("error creating mock files: %v", err)
+	}
+	defer os.RemoveAll(mockDir)
 
+	result := RemoveFiles(fileList)
+	if result != nil {
+		t.Errorf("RemoveFiles returned a non-nil result: %v", result)
+	}
 }
