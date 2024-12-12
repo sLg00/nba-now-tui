@@ -43,8 +43,8 @@ func (c *Client) InitiateClient(url requestURL) ([]byte, error) {
 		return nil, err
 	}
 
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
+	defer func(body io.ReadCloser) {
+		err := body.Close()
 		if err != nil {
 			err = fmt.Errorf("closing response body failed: %v", err)
 			log.Println(err)

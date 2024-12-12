@@ -18,7 +18,7 @@ type (
 // HTTPHeaderSet returns a http header required for the NBA API
 func HTTPHeaderSet() http.Header {
 	return http.Header{
-		"User-Agent":         {"Mozilhttps://stats.nba.com/stats/la/5.0, (Windows NT 10.0; Win64; x64; rv:72.0), Gecko/20100101, Firefox/72.0"},
+		"User-Agent":         {"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0), Gecko/20100101, Firefox/72.0"},
 		"Accept":             {"application/json; charset=utf-8 , text/plain, */*"},
 		"Accept-Language":    {"en-US, en;q=0.5firefox-125.0b3.tar.bz2"},
 		"Accept-Encoding":    {"deflate, br"},
@@ -109,11 +109,11 @@ func BuildRequests(s string) map[string]requestURL {
 func GetDateArg() (string, error) {
 	if len(os.Args) != 3 {
 		log.Println("Cannot invoke program, date not provided in command line arguments.")
-		err := fmt.Errorf("Please use %s -d \"YYYY-MM-DD\"", os.Args[0])
+		err := fmt.Errorf("please use %s -d \"YYYY-MM-DD\"", os.Args[0])
 		return "", err
 	}
 	if os.Args[1] == "-h" {
-		err := fmt.Errorf("To invoke the program, please use %s -d \"YYYY-DD-MM\" with any date", os.Args[0])
+		err := fmt.Errorf("to invoke the program, please use %s -d \"YYYY-DD-MM\" with any date", os.Args[0])
 		return "", err
 	}
 	dateStr := os.Args[2]
