@@ -21,7 +21,7 @@ type Client struct {
 // NewClient instantiates a pointer to a Client struct with the appropriate values
 func NewClient() *Client {
 	return &Client{
-		HTTPClient:       &http.Client{Timeout: time.Duration(5) * time.Second},
+		HTTPClient:       &http.Client{Timeout: time.Duration(8) * time.Second},
 		HeaderSet:        HTTPHeaderSet,
 		BuildRequests:    BuildRequests,
 		InstantiatePaths: InstantiatePaths,
@@ -32,7 +32,6 @@ func NewClient() *Client {
 
 // InitiateClient initializes client instances with the appropriate request URLs and headers
 func (c *Client) InitiateClient(url requestURL) ([]byte, error) {
-	//client := http.Client{Timeout: time.Duration(5) * time.Second}
 	req, _ := http.NewRequest("GET", string(url), nil)
 	req.Header = c.HeaderSet()
 
