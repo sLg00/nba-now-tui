@@ -63,3 +63,11 @@ isolated from frontend in the early days, to make sure it's easy to jump off of 
 But i do like it, so i have bit of refactoring to do at some point.
 
 **Currently only tested on Linux, because that's where i use it.** /shrug
+
+<h3>Screenshots</h3>
+
+![Alt text](/screenshots/sc1.png?raw=true "Main Menu")
+
+![Alt text](/screenshots/sc2.png?raw=true "Daily View")
+
+![Alt text](/screenshots/sc3.png?raw=true "Box Score")
