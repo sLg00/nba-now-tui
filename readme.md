@@ -59,7 +59,7 @@ Why filesystem and not an sqlite db? The database already exists on NBA's side, 
 persisting a ton of data.
 
 The app is also not fully leveraging Bubble Tea, since i wanted to keep the deep backend logic
-isolated from frontend in the early days, to make sure it's easy to jump off of Bubble Tea, if i don't like it. 
+isolated from frontend in the early days, to make sure it's easy to jump off of Bubble Tea, if i didn't like it. 
 But i do like it, so i have bit of refactoring to do at some point.
 
 **Currently only tested on Linux, because that's where i use it.** /shrug
