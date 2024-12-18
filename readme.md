@@ -16,7 +16,7 @@ without all that work!
 Just 'make' in the root directory runs all the test and builds executables for Linux, Mac and Win.
 
 <h4>Run</h4>
-Execute **./<binary> -d YYYY-MM-DD** to launch the app. Due to the timezone differences between the States
+Execute **./binary-d YYYY-MM-DD** to launch the app. Due to the timezone differences between the States
 and the rest of the world, i changed the app logic to take in a specific date. The date
 denotes local time when the games occurred.
 
