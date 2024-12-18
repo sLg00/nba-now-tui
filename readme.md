@@ -48,11 +48,11 @@ denotes local time when the games occurred.
 
 <h3>Tech details</h3> 
 Concurrently querying NBA APIs and displaying the results in the terminal (revolutionary, i know).
-Results are stored in json files in a designated folder **(~/.config/nba-tui)**. Only the necessary files are downloaded
+Results are stored in json files in a designated folder (**~/.config/nba-tui**). Only the necessary files are downloaded
 and parsed. On app initiation the daily scores, league leaders and season standings are queried. Once daily view
 is opened, the files for the box scores are downloaded and parsed.
 
-Logs are written to a dedicated log file **(~/.config/nba-tui/logs/appLog.log)**. All downloaded json files, older than 48 hours
+Logs are written to a dedicated log file (**~/.config/nba-tui/logs/appLog.log**). All downloaded json files, older than 48 hours
 are deleted on app launch to avoid cluttering the filesystem.
 
 Why filesystem and not an sqlite db? The database already exists on NBA's side, so this is just about the terminal client and not
