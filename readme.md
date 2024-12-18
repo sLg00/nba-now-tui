@@ -11,7 +11,7 @@ extensive documentation of the NBA APIs. This project would not be possible
 without all that work!
 
 
-<h3>Build/h3>
+<h3>Build</h3>
 
 Just 'make' in the root directory runs all the test and builds executables for Linux, Mac and Win.
 
