@@ -3,8 +3,6 @@
 NBA NOW is a simple terminal application built with Go. 
 The TUI is built using [Charm](https://charm.sh)'s suite of libraries and leveraging the Bubble Tea framework.
 
-<img src="/home/omar_t/Pictures/rando/Screenshot_20241219_010342.png">
-
 This is a personal hobby project not to be taken seriously. The current version is lacking a lot of features i want to ultimately
 have - soon:tm:
 
