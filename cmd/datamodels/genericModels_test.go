@@ -10,7 +10,7 @@ func TestUnmarshallRequestJSON(t *testing.T) {
 	//temporarily using files already on the filesys. TODO: refactor so that files are set up and torn down specifically
 	//for the tests
 	mockFile := "/home/omar_t/.config/nba-tui/2024-07-10_ll"
-	mockResponse, _ := unmarshallResponseJSON(mockFile)
+	mockResponse, _ := UnmarshallResponseJSON(mockFile)
 	mockFileWithNoData := "/home/omar_t/.config/nba-tui/2024-07-07_ll"
 	missingFile := "/tmp/filenotfound.conf"
 
@@ -28,7 +28,7 @@ func TestUnmarshallRequestJSON(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			result, _ := unmarshallResponseJSON(test.input)
+			result, _ := UnmarshallResponseJSON(test.input)
 			if !reflect.DeepEqual(result, test.want) {
 				t.Errorf("Wanted: %v, Got: %v, Returned err: %v", test.want, result, test.err)
 			}
