@@ -259,9 +259,9 @@ func PopulateDailyGameResults(unmarshall func(string) (ResponseSet, error)) (Dai
 
 // PopulateBoxScore takes a gameID (string) as input and returns the required structures to represent
 // the game's box score in a TUI
-func PopulateBoxScore(s string) (BoxScore, error) {
+func PopulateBoxScore(s string, unmarshall func(string) (ResponseSet, error)) (BoxScore, error) {
 	pc := client.NewClient().InstantiatePaths(s).BoxScoreFullPath()
-	response, err := UnmarshallResponseJSON(pc)
+	response, err := unmarshall(pc)
 	if err != nil {
 		err = fmt.Errorf("could not unmarshall json data: %v", err)
 		log.Println(err)

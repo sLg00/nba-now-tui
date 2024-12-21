@@ -92,7 +92,7 @@ func (m boxScore) Init() tea.Cmd { return nil }
 // It takes a gameID as an input and uses it to access the corresponding game's box score,
 // which is already present on the filesystem. The JSON files get downloaded when the Daily View is loaded.
 func initBoxScore(gameID string, p *tea.Program) (*boxScore, error) {
-	boxScoreData, err := datamodels.PopulateBoxScore(gameID)
+	boxScoreData, err := datamodels.PopulateBoxScore(gameID, datamodels.UnmarshallResponseJSON)
 	if err != nil {
 		return nil, err
 	}
