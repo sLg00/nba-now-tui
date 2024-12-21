@@ -29,7 +29,7 @@ func (m seasonStandings) Init() tea.Cmd { return nil }
 
 // initSeasonStandings gets, filters and populates the Season Standings tables
 func initSeasonStandings(i list.Item, p *tea.Program) (*seasonStandings, error) {
-	teams, headers, err := datamodels.PopulateTeamStats()
+	teams, headers, err := datamodels.PopulateTeamStats(datamodels.UnmarshallResponseJSON)
 	if err != nil {
 		log.Println("Could not populate player stats, error:", err)
 		return nil, err

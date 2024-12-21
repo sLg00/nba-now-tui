@@ -44,9 +44,9 @@ type ResponseSet struct {
 	BoxScore   BoxScore    `json:"boxScoreTraditional"`
 }
 
-// unmarshallResponseJSON unmarshalls JSON from the appropriate JSON file.
+// UnmarshallResponseJSON unmarshalls JSON from the appropriate JSON file.
 // Takes string (full path to file) as an input and returns a ResponseSet struct
-func unmarshallResponseJSON(s string) (ResponseSet, error) {
+func UnmarshallResponseJSON(s string) (ResponseSet, error) {
 	var response ResponseSet
 
 	data, err := os.ReadFile(s)
@@ -89,7 +89,8 @@ func structToStringSlice(obj any) []string {
 		case reflect.String:
 			result = append(result, value.String())
 		default:
-			panic("unhandled default case")
+			log.Println("unhandled case")
+			break
 		}
 	}
 	return result

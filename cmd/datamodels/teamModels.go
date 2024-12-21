@@ -113,14 +113,15 @@ func (ts Teams) ToStringSlice() []string {
 }
 
 // PopulateTeamStats maps the data to Teams struct to display season standings
-func PopulateTeamStats() (Teams, []string, error) {
+func PopulateTeamStats(unmarshall func(string) (ResponseSet, error)) (Teams, []string, error) {
 	pc := client.NewClient().InstantiatePaths("").SSFullPath()
-	response, err := unmarshallResponseJSON(pc)
+	response, err := unmarshall(pc)
 	if err != nil {
 		err = fmt.Errorf("could not unmarshall team stats: %v", err)
 		log.Println(err)
 	}
 	headers := response.ResultSets[0].Headers
+
 	var teamStats Teams
 	for _, row := range response.ResultSets[0].RowSet {
 		if len(row) != len(headers) {

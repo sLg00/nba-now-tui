@@ -29,7 +29,7 @@ func (m leagueLeaders) Init() tea.Cmd { return nil }
 
 // initLeagueLeadersTable returns a table.Model which is populated with the current league leaders (PPG)
 func initLeagueLeaders(i list.Item, p *tea.Program) (*leagueLeaders, error) {
-	playerStats, headers, err := datamodels.PopulatePlayerStats()
+	playerStats, headers, err := datamodels.PopulatePlayerStats(datamodels.UnmarshallResponseJSON)
 	if err != nil {
 		log.Println("Could not populate player stats, error:", err)
 		return nil, err

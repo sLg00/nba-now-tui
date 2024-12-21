@@ -43,7 +43,7 @@ func newGameCard(r []table.Row) (table.Model, error) {
 func (m dailyView) Init() tea.Cmd { return nil }
 
 func initDailyView() (*dailyView, error) {
-	dailyScores, _, err := datamodels.PopulateDailyGameResults()
+	dailyScores, _, err := datamodels.PopulateDailyGameResults(datamodels.UnmarshallResponseJSON)
 	if err != nil {
 		log.Printf("Could not populate daily results: %v", err)
 		return nil, err

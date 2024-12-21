@@ -94,15 +94,15 @@ func (ps Players) ToStringSlice() []string {
 }
 
 // PopulatePlayerStats maps the data to the Player struct
-func PopulatePlayerStats() (Players, []string, error) {
+func PopulatePlayerStats(unmarshall func(string) (ResponseSet, error)) (Players, []string, error) {
 	pc := client.NewClient().InstantiatePaths("").LLFullPath()
-	response, err := unmarshallResponseJSON(pc)
+	response, err := unmarshall(pc)
 	if err != nil {
 		err = fmt.Errorf("could not unmarshall json data: %v", err)
 		log.Println(err)
 	}
 
-	// mapping as Player types. the code is ugly with the switch statements, but it works
+	// mapping as Player types
 	headers := response.ResultSet.Headers
 	var playerStats Players
 	for _, row := range response.ResultSet.RowSet {
