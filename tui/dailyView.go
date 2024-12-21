@@ -210,11 +210,14 @@ func (m dailyView) View() string {
 	}
 
 	dateToDisplayInCaseOfEmpty, _ := client.GetDateArg()
-	if len(currentRow) > 0 {
-		rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, currentRow...))
-		content = lipgloss.JoinVertical(lipgloss.Left, rows...)
-	} else {
+	if len(m.gameCards) == 0 {
 		content = "No games happened during " + dateToDisplayInCaseOfEmpty
+	} else {
+		if len(currentRow) > 0 {
+			rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, currentRow...))
+
+		}
+		content = lipgloss.JoinVertical(lipgloss.Left, rows...)
 	}
 
 	renderedDailyView := lipgloss.NewStyle().
