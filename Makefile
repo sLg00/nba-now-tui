@@ -1,6 +1,7 @@
 DIR=./bin
 BINARY=nba-now
 
+
 make: build
 
 build: test
