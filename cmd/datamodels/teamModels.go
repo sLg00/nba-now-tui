@@ -120,7 +120,11 @@ func PopulateTeamStats(unmarshall func(string) (ResponseSet, error)) (Teams, []s
 		err = fmt.Errorf("could not unmarshall team stats: %v", err)
 		log.Println(err)
 	}
+
 	headers := response.ResultSets[0].Headers
+	if len(headers) == 0 {
+		return nil, nil, fmt.Errorf("could not unmarshall team stats: no %v returned", headers)
+	}
 
 	var teamStats Teams
 	for _, row := range response.ResultSets[0].RowSet {
