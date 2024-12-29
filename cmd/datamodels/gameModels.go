@@ -159,70 +159,97 @@ func PopulateDailyGameResults(unmarshall func(string) (ResponseSet, error)) (Dai
 	pc := client.NewClient().InstantiatePaths("").DSBFullPath()
 	response, err := unmarshall(pc)
 	if err != nil {
-		err = fmt.Errorf("could not unmarshall json data: %v", err)
-		log.Println(err)
-		return nil, nil, err
+		log.Printf("could not unmarshall json data: %v", err)
+		return nil, nil, fmt.Errorf("could not unmarshall json data: %v", err)
 	}
-	// ResultSets[1] is the "linescore" part of the response, which we want to use to put together a single game "card"
-	headers := response.ResultSets[1].Headers
 
-	var lineScore LineScore
+	// ResultSets[1] is the "linescore" part of the response, which is used to create a gameCard
+	if len(response.ResultSets) < 2 || len(response.ResultSets[1].Headers) == 0 {
+		return nil, nil, fmt.Errorf("no headers or insufficient result sets in response")
+	}
+
+	headers := response.ResultSets[1].Headers
+	rowSet := response.ResultSets[1].RowSet
+
+	// Create a header index map for dynamic lookups
+	headerIndex := make(map[string]int)
+	for i, h := range headers {
+		headerIndex[h] = i
+	}
+
 	var lineScores []LineScore
-	for _, row := range response.ResultSets[1].RowSet {
+	for _, row := range rowSet {
 		if len(row) != len(headers) {
-			err = fmt.Errorf("header row length does not match row length: %v != %v", len(headers), len(row))
-			log.Println(err)
-			return nil, nil, err
+			log.Printf("header row length does not match row length: %v != %v", len(headers), len(row))
+			return nil, nil, fmt.Errorf("header row length does not match row length: %v != %v", len(headers), len(row))
 		}
 
+		lineScore := LineScore{}
 		for i, value := range row {
-			switch v := value.(type) {
-			case float64:
-				switch headers[i] {
-				case headers[23]:
-					lineScore.FgPct = v
-				case headers[24]:
-					lineScore.FtPct = v
-				case headers[25]:
-					lineScore.Fg3Pct = v
-				case headers[1]:
-					lineScore.GameSequence = int(v)
-				case headers[3]:
+			header := headers[i]
+			switch header {
+			case "GAME_DATE_EST":
+				if v, ok := value.(string); ok {
+					lineScore.GameDateEst = v
+				}
+			case "GAME_ID":
+				if v, ok := value.(string); ok {
+					lineScore.GameID = v
+				}
+			case "TEAM_ID":
+				if v, ok := value.(float64); ok {
 					lineScore.TeamID = int(v)
-				case headers[22]:
+				}
+			case "TEAM_ABBREVIATION":
+				if v, ok := value.(string); ok {
+					lineScore.TeamAbbreviation = v
+				}
+			case "TEAM_CITY_NAME":
+				if v, ok := value.(string); ok {
+					lineScore.TeamCityName = v
+				}
+			case "PTS":
+				if v, ok := value.(float64); ok {
 					lineScore.Pts = int(v)
 				}
-			case string:
-				switch headers[i] {
-				case headers[0]:
-					lineScore.GameDateEst = v
-				case headers[2]:
-					lineScore.GameID = v
-				case headers[4]:
-					lineScore.TeamAbbreviation = v
-				case headers[5]:
-					lineScore.TeamCityName = v
-				case headers[6]:
-					lineScore.TeamName = v
-				case headers[7]:
-					lineScore.TeamWinsLosses = v
+			case "FG_PCT":
+				if v, ok := value.(float64); ok {
+					lineScore.FgPct = v
+				}
+			case "FT_PCT":
+				if v, ok := value.(float64); ok {
+					lineScore.FtPct = v
+				}
+			case "FG3_PCT":
+				if v, ok := value.(float64); ok {
+					lineScore.Fg3Pct = v
+				}
+			case "AST":
+				if v, ok := value.(float64); ok {
+					lineScore.Ast = int(v)
+				}
+			case "REB":
+				if v, ok := value.(float64); ok {
+					lineScore.Reb = int(v)
+				}
+			case "TOV":
+				if v, ok := value.(float64); ok {
+					lineScore.Tov = int(v)
 				}
 			}
 		}
 		lineScores = append(lineScores, lineScore)
 	}
 
-	//consider splitting the function from here
 	gameResultMap := make(map[string]*GameResult)
-
-	//first pass of iterating over linescores and populating the GameResult objects
 	for _, ls := range lineScores {
-		if gr, ok := gameResultMap[lineScore.GameID]; ok {
-			if ls.TeamID == gr.HomeTeamID {
+		if gr, ok := gameResultMap[ls.GameID]; ok {
+			if gr.HomeTeamID == 0 {
+				gr.HomeTeamID = ls.TeamID
 				gr.HomeTeamPts = ls.Pts
-			} else {
+				gr.HomeTeamAbbreviation = ls.TeamAbbreviation
+			} else if gr.AwayTeamID == 0 {
 				gr.AwayTeamID = ls.TeamID
-				gr.AwayTeamName = ls.TeamName
 				gr.AwayTeamPts = ls.Pts
 				gr.AwayTeamAbbreviation = ls.TeamAbbreviation
 			}
@@ -230,23 +257,9 @@ func PopulateDailyGameResults(unmarshall func(string) (ResponseSet, error)) (Dai
 			gameResultMap[ls.GameID] = &GameResult{
 				GameID:               ls.GameID,
 				HomeTeamID:           ls.TeamID,
-				HomeTeamName:         ls.TeamName,
 				HomeTeamPts:          ls.Pts,
 				HomeTeamAbbreviation: ls.TeamAbbreviation,
 			}
-		}
-	}
-
-	//second pass to iterate over linescores. This was implemented because in some cases the GameResult objects were
-	//not filled properly. For instance the away team would be empty.
-	//There is probably a more elegant way to do all of this, but yolo for now.
-	for _, ls := range lineScores {
-		gr := gameResultMap[ls.GameID]
-		if ls.TeamID != gr.HomeTeamID {
-			gr.AwayTeamID = ls.TeamID
-			gr.AwayTeamName = ls.TeamName
-			gr.AwayTeamPts = ls.Pts
-			gr.AwayTeamAbbreviation = ls.TeamAbbreviation
 		}
 	}
 
@@ -254,6 +267,7 @@ func PopulateDailyGameResults(unmarshall func(string) (ResponseSet, error)) (Dai
 	for _, gr := range gameResultMap {
 		gameResults = append(gameResults, *gr)
 	}
+
 	return gameResults, headers, nil
 }
 
