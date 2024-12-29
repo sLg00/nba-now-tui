@@ -168,14 +168,28 @@ func PopulateDailyGameResults(unmarshall func(string) (ResponseSet, error)) (Dai
 		return nil, nil, fmt.Errorf("no headers or insufficient result sets in response")
 	}
 
+	gameHeaders := make(map[string]GameHeader)
+	for _, row := range response.ResultSets[0].RowSet {
+		if len(row) < 8 {
+			err = fmt.Errorf("not enough header rows in response, expected at least 8 bytes, got %d", len(row))
+			return nil, nil, err
+		}
+		gameHeader := GameHeader{
+			GameID:        row[2].(string),
+			HomeTeamID:    int(row[6].(float64)),
+			VisitorTeamID: int(row[7].(float64)),
+		}
+		gameHeaders[gameHeader.GameID] = gameHeader
+	}
+
 	headers := response.ResultSets[1].Headers
 	rowSet := response.ResultSets[1].RowSet
 
-	// Create a header index map for dynamic lookups
-	headerIndex := make(map[string]int)
-	for i, h := range headers {
-		headerIndex[h] = i
-	}
+	//// Create a header index map for dynamic lookups
+	//headerIndex := make(map[string]int)
+	//for i, h := range headers {
+	//	headerIndex[h] = i
+	//}
 
 	var lineScores []LineScore
 	for _, row := range rowSet {
@@ -241,31 +255,23 @@ func PopulateDailyGameResults(unmarshall func(string) (ResponseSet, error)) (Dai
 		lineScores = append(lineScores, lineScore)
 	}
 
-	gameResultMap := make(map[string]*GameResult)
-	for _, ls := range lineScores {
-		if gr, ok := gameResultMap[ls.GameID]; ok {
-			if gr.HomeTeamID == 0 {
-				gr.HomeTeamID = ls.TeamID
-				gr.HomeTeamPts = ls.Pts
-				gr.HomeTeamAbbreviation = ls.TeamAbbreviation
-			} else if gr.AwayTeamID == 0 {
-				gr.AwayTeamID = ls.TeamID
-				gr.AwayTeamPts = ls.Pts
-				gr.AwayTeamAbbreviation = ls.TeamAbbreviation
-			}
-		} else {
-			gameResultMap[ls.GameID] = &GameResult{
-				GameID:               ls.GameID,
-				HomeTeamID:           ls.TeamID,
-				HomeTeamPts:          ls.Pts,
-				HomeTeamAbbreviation: ls.TeamAbbreviation,
+	var gameResults DailyGameResults
+	for _, gh := range gameHeaders {
+		result := GameResult{GameID: gh.GameID}
+		for _, ls := range lineScores {
+			if ls.GameID == gh.GameID {
+				if ls.TeamID == gh.HomeTeamID {
+					result.HomeTeamID = ls.TeamID
+					result.HomeTeamAbbreviation = ls.TeamAbbreviation
+					result.HomeTeamPts = ls.Pts
+				} else if ls.TeamID == gh.VisitorTeamID {
+					result.AwayTeamID = ls.TeamID
+					result.AwayTeamAbbreviation = ls.TeamAbbreviation
+					result.AwayTeamPts = ls.Pts
+				}
 			}
 		}
-	}
-
-	var gameResults DailyGameResults
-	for _, gr := range gameResultMap {
-		gameResults = append(gameResults, *gr)
+		gameResults = append(gameResults, result)
 	}
 
 	return gameResults, headers, nil
