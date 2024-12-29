@@ -185,12 +185,6 @@ func PopulateDailyGameResults(unmarshall func(string) (ResponseSet, error)) (Dai
 	headers := response.ResultSets[1].Headers
 	rowSet := response.ResultSets[1].RowSet
 
-	//// Create a header index map for dynamic lookups
-	//headerIndex := make(map[string]int)
-	//for i, h := range headers {
-	//	headerIndex[h] = i
-	//}
-
 	var lineScores []LineScore
 	for _, row := range rowSet {
 		if len(row) != len(headers) {
