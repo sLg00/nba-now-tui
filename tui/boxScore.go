@@ -163,12 +163,12 @@ func (m boxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, Keymap.Back):
-			dv, err := initDailyView()
+			dv, cmd, err := NewDailyView(WindowSize)
 			if err != nil {
 				log.Println(err)
 				os.Exit(1)
 			}
-			return dv.Update(WindowSize)
+			return dv, cmd
 		case key.Matches(msg, Keymap.Quit):
 			m.quitting = true
 			return m, tea.Quit

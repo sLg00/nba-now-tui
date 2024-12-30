@@ -21,6 +21,35 @@ type dailyView struct {
 	height     int
 }
 
+type dailyScoresFetchedMsg struct {
+	scores [][]string
+	err    error
+}
+
+type gameDataFetchedMsg struct {
+	err error
+}
+
+func NewDailyView(size tea.WindowSizeMsg) (dailyView, tea.Cmd, error) {
+	m := dailyView{
+		focusIndex: 0,
+		numCols:    3,
+		width:      size.Width,
+		height:     size.Height,
+	}
+
+	// Attempt to fetch initial data directly to validate API availability
+	_, _, err := datamodels.PopulateDailyGameResults(datamodels.UnmarshallResponseJSON)
+	if err != nil {
+		return dailyView{}, nil, fmt.Errorf("failed to populate daily scores: %w", err)
+	}
+
+	// Prepare the Init command for fetching dynamic updates
+	cmd := fetchDailyScoresCmd()
+
+	return m, cmd, nil
+}
+
 func newGameCard(r []table.Row) (table.Model, error) {
 	columns := []table.Column{
 		table.NewColumn("teams", "", 7),
@@ -40,72 +69,23 @@ func newGameCard(r []table.Row) (table.Model, error) {
 	return table.Model{}, err
 }
 
-func (m dailyView) Init() tea.Cmd { return nil }
+func (m dailyView) Init() tea.Cmd { return fetchDailyScoresCmd() }
 
-func initDailyView() (*dailyView, error) {
-	dailyScores, _, err := datamodels.PopulateDailyGameResults(datamodels.UnmarshallResponseJSON)
-	if err != nil {
-		log.Printf("Could not populate daily results: %v", err)
-		return nil, err
-	}
-	dailyScoresStrings := datamodels.ConvertToString(dailyScores)
-
-	var gameCards []table.Model
-
-	//channels to receive signals when concurrent API requests to NBA APIs are done/fail
-	eChan := make(chan error, len(dailyScoresStrings))
-	dChan := make(chan struct{}, len(dailyScoresStrings))
-
-	for _, gameScore := range dailyScoresStrings {
-		var scoreRows []table.Row
-
-		homeRowData := table.RowData{
-			"teams":  gameScore[4],
-			"scores": gameScore[3],
-			"gameID": gameScore[0],
-		}
-		awayRowData := table.RowData{
-			"teams":  gameScore[8],
-			"scores": gameScore[7],
-			"gameID": gameScore[0],
-		}
-
-		scoreRows = append(scoreRows, table.NewRow(homeRowData))
-		scoreRows = append(scoreRows, table.NewRow(awayRowData))
-
-		gameCard, err := newGameCard(scoreRows)
+func fetchDailyScoresCmd() tea.Cmd {
+	return func() tea.Msg {
+		dailyScores, _, err := datamodels.PopulateDailyGameResults(datamodels.UnmarshallResponseJSON)
 		if err != nil {
-			log.Printf("Could not create game card: %v", err)
+			return dailyScoresFetchedMsg{err: err}
 		}
-		gameCards = append(gameCards, gameCard)
-
-		// For each gameID, query the NBA API concurrently, get the box score and save it to the filesystem
-		go func(gameID string) {
-			defer func() { dChan <- struct{}{} }()
-			if err := client.NewClient().MakeOnDemandRequests(gameID); err != nil {
-				eChan <- fmt.Errorf("could not make on-demand requests: %v", err)
-			}
-		}(gameScore[0])
+		return dailyScoresFetchedMsg{scores: datamodels.ConvertToString(dailyScores)}
 	}
+}
 
-	for i := 0; i < len(dailyScoresStrings); i++ {
-		<-dChan
+func fetchGameDataCmd(gameID string) tea.Cmd {
+	return func() tea.Msg {
+		err := client.NewClient().MakeOnDemandRequests(gameID)
+		return gameDataFetchedMsg{err: err}
 	}
-	close(eChan)
-
-	var errs []error
-	for apiErr := range eChan {
-		errs = append(errs, apiErr)
-	}
-	if len(errs) > 0 {
-		for _, apiErr := range errs {
-			log.Printf("API error: %v", apiErr)
-		}
-		return nil, fmt.Errorf("encountered errors during API requests")
-	}
-
-	m := &dailyView{gameCards: gameCards, focusIndex: 0, numCols: 3}
-	return m, nil
 }
 
 func (m dailyView) getGameId() (string, error) {
@@ -129,6 +109,28 @@ func (m dailyView) getGameId() (string, error) {
 func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
+	case dailyScoresFetchedMsg:
+		if msg.err != nil {
+			log.Println("Error while fetching daily game data", msg.err)
+			return m, nil
+		}
+		for _, score := range msg.scores {
+			rows := []table.Row{
+				table.NewRow(table.RowData{"teams": score[4], "scores": score[3], "gameID": score[0]}),
+				table.NewRow(table.RowData{"teams": score[8], "scores": score[7], "gameID": score[0]}),
+			}
+			gameCard, err := newGameCard(rows)
+			if err != nil {
+				log.Println("Error creating game card", err)
+				continue
+			}
+			m.gameCards = append(m.gameCards, gameCard)
+			cmds = append(cmds, fetchGameDataCmd(score[0]))
+		}
+	case gameDataFetchedMsg:
+		if msg.err != nil {
+			log.Println("Error while fetching game data", msg.err)
+		}
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, Keymap.Back):
@@ -179,16 +181,7 @@ func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m dailyView) helpView() string {
-
-	return HelpStyle("\n" + HelpFooter() + "\n")
-}
-
-func (m dailyView) View() string {
-	if m.quitting {
-		return ""
-	}
-
+func renderDailyView(m dailyView) string {
 	var content string
 	var rows []string
 	var currentRow []string
@@ -200,7 +193,6 @@ func (m dailyView) View() string {
 				BorderForeground(lipgloss.Color("5"))).
 				WithHeaderVisibility(false)
 		}
-
 		currentRow = append(currentRow, gameCard.View())
 
 		if (i+1)%m.numCols == 0 {
@@ -220,12 +212,21 @@ func (m dailyView) View() string {
 		content = lipgloss.JoinVertical(lipgloss.Left, rows...)
 	}
 
-	renderedDailyView := lipgloss.NewStyle().
+	return lipgloss.NewStyle().
 		Width(m.width).
 		Height(m.height).
 		Align(lipgloss.Center, lipgloss.Center).
 		Render(content)
+}
 
-	comboView := lipgloss.JoinVertical(lipgloss.Left, renderedDailyView, m.helpView())
+func (m dailyView) renderHelpView() string {
+	return HelpStyle("\n" + HelpFooter() + "\n")
+}
+
+func (m dailyView) View() string {
+	if m.quitting {
+		return ""
+	}
+	comboView := lipgloss.JoinVertical(lipgloss.Left, renderDailyView(m), m.renderHelpView())
 	return comboView
 }
