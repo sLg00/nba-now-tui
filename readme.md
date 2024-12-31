@@ -58,9 +58,9 @@ are deleted on app launch to avoid cluttering the filesystem.
 Why filesystem and not an sqlite db? The database already exists on NBA's side, so this is just about the terminal client and not
 persisting a ton of data.
 
-The app is also not fully leveraging Bubble Tea, since i wanted to keep the deep backend logic
+The app is also not fully leveraging Bubble Tea yet, since i wanted to keep the deep backend logic
 isolated from frontend in the early days, to make sure it's easy to jump off of Bubble Tea, if i didn't like it. 
-But i do like it, so i have bit of refactoring to do at some point.
+But i do like it, so i am going through and refactoring the parts in the tui package asap.
 
 **Currently only tested on Linux, because that's where i use it.** /shrug
 
