@@ -12,7 +12,7 @@ import (
 	"os"
 )
 
-type dailyView struct {
+type DailyView struct {
 	gameCards  []table.Model
 	quitting   bool
 	focusIndex int
@@ -30,8 +30,8 @@ type gameDataFetchedMsg struct {
 	err error
 }
 
-func NewDailyView(size tea.WindowSizeMsg) (dailyView, tea.Cmd, error) {
-	m := dailyView{
+func NewDailyView(size tea.WindowSizeMsg) (*DailyView, tea.Cmd, error) {
+	m := &DailyView{
 		focusIndex: 0,
 		numCols:    3,
 		width:      size.Width,
@@ -41,7 +41,7 @@ func NewDailyView(size tea.WindowSizeMsg) (dailyView, tea.Cmd, error) {
 	// Attempt to fetch initial data directly to validate API availability
 	_, _, err := datamodels.PopulateDailyGameResults(datamodels.UnmarshallResponseJSON)
 	if err != nil {
-		return dailyView{}, nil, fmt.Errorf("failed to populate daily scores: %w", err)
+		return &DailyView{}, nil, fmt.Errorf("failed to populate daily scores: %w", err)
 	}
 
 	// Prepare the Init command for fetching dynamic updates
@@ -69,7 +69,7 @@ func newGameCard(r []table.Row) (table.Model, error) {
 	return table.Model{}, err
 }
 
-func (m dailyView) Init() tea.Cmd { return fetchDailyScoresCmd() }
+func (m DailyView) Init() tea.Cmd { return fetchDailyScoresCmd() }
 
 func fetchDailyScoresCmd() tea.Cmd {
 	return func() tea.Msg {
@@ -88,7 +88,7 @@ func fetchGameDataCmd(gameID string) tea.Cmd {
 	}
 }
 
-func (m dailyView) getGameId() (string, error) {
+func (m DailyView) getGameId() (string, error) {
 	focusedCard := m.gameCards[m.focusIndex]
 	rows := focusedCard.GetVisibleRows()
 	if len(rows) > 0 {
@@ -106,7 +106,7 @@ func (m dailyView) getGameId() (string, error) {
 	return "", nil
 }
 
-func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
+func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
 	case dailyScoresFetchedMsg:
@@ -181,7 +181,7 @@ func (m dailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func renderDailyView(m dailyView) string {
+func renderDailyView(m DailyView) string {
 	var content string
 	var rows []string
 	var currentRow []string
@@ -219,11 +219,11 @@ func renderDailyView(m dailyView) string {
 		Render(content)
 }
 
-func (m dailyView) renderHelpView() string {
+func (m DailyView) renderHelpView() string {
 	return HelpStyle("\n" + HelpFooter() + "\n")
 }
 
-func (m dailyView) View() string {
+func (m DailyView) View() string {
 	if m.quitting {
 		return ""
 	}
