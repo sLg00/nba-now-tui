@@ -143,12 +143,12 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			if err != nil {
 				log.Printf("Could not get game id: %v", err)
 			}
-			bx, err := initBoxScore(gameID, Program)
+			bx, cmd, err := NewBoxScore(gameID, WindowSize)
 			if err != nil {
 				log.Println(err)
 				os.Exit(1)
 			}
-			return bx.Update(WindowSize)
+			return bx, cmd
 		case key.Matches(msg, Keymap.Up):
 			if m.focusIndex >= m.numCols {
 				m.focusIndex -= m.numCols

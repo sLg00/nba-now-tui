@@ -12,7 +12,7 @@ import (
 	"reflect"
 )
 
-type boxScore struct {
+type InstantiatedBoxScore struct {
 	homeTeamBoxScore table.Model
 	awayTeamBoxScore table.Model
 	activeTable      int
@@ -22,6 +22,86 @@ type boxScore struct {
 	height           int
 	maxWidth         int
 	maxHeight        int
+}
+
+type boxScoreFetchedMsg struct {
+	err                  error
+	boxScoreTableColumns []table.Column
+	homeBoxScoreData     []table.Row
+	awayBoxScoreData     []table.Row
+}
+
+// NewBoxScore is a factory function to instantiate a BoxScore when the BoxScore is opened from the Daily View.
+// It takes gameId and WindowSize as inputs and returns a model, command and error
+func NewBoxScore(gameId string, size tea.WindowSizeMsg) (*InstantiatedBoxScore, tea.Cmd, error) {
+	m := &InstantiatedBoxScore{
+		width:  size.Width,
+		height: size.Height,
+	}
+
+	_, err := datamodels.PopulateBoxScore(gameId, datamodels.UnmarshallResponseJSON)
+	if err != nil {
+		return &InstantiatedBoxScore{}, nil, fmt.Errorf("failed to populate box score: %w", err)
+	}
+
+	cmd := fetchBoxSoresCmd(gameId)
+
+	return m, cmd, nil
+}
+
+// fetchBoxScoresCmd "fetches" and processes the given game data to eventually render a box score
+func fetchBoxSoresCmd(gameID string) tea.Cmd {
+	return func() tea.Msg {
+		boxScoreData, err := datamodels.PopulateBoxScore(gameID, datamodels.UnmarshallResponseJSON)
+		if err != nil {
+			return boxScoreFetchedMsg{err: err}
+		}
+		homeDataSet := boxScoreData.HomeTeam.BoxScorePlayers
+		awayDataSet := boxScoreData.AwayTeam.BoxScorePlayers
+
+		var column table.Column
+		var columns []table.Column
+		var homeRow table.Row
+		var awayRow table.Row
+		var homeRows []table.Row
+		var awayRows []table.Row
+
+		cols, _ := getColsAndValues(homeDataSet[0])
+
+		columns = make([]table.Column, len(cols))
+		for i, col := range cols {
+			column = table.NewColumn(col, col, 15)
+			columns[i] = column
+		}
+
+		for _, player := range homeDataSet {
+			rowData := make(table.RowData)
+			_, values := getColsAndValues(player)
+			for i, value := range values {
+				columnTitle := columns[i].Title()
+				rowData[columnTitle] = value
+			}
+			homeRow = table.NewRow(rowData)
+			homeRows = append(homeRows, homeRow)
+		}
+
+		for _, player := range awayDataSet {
+			rowData := make(table.RowData)
+			_, values := getColsAndValues(player)
+			for i, value := range values {
+				columnTitle := columns[i].Title()
+				rowData[columnTitle] = value
+			}
+			awayRow = table.NewRow(rowData)
+			awayRows = append(awayRows, awayRow)
+		}
+
+		return boxScoreFetchedMsg{
+			boxScoreTableColumns: columns,
+			homeBoxScoreData:     homeRows,
+			awayBoxScoreData:     awayRows,
+		}
+	}
 }
 
 // getColsAndValues is a function to extract and filter fields and values from complex structs.
@@ -86,80 +166,34 @@ func extractStatistics(v interface{}) ([]string, []string) {
 	return keys, values
 }
 
-func (m boxScore) Init() tea.Cmd { return nil }
+func (m InstantiatedBoxScore) Init() tea.Cmd { return nil }
 
-// initBoxScore is the main function to render a game's box score, in very basic fashion.
-// It takes a gameID as an input and uses it to access the corresponding game's box score,
-// which is already present on the filesystem. The JSON files get downloaded when the Daily View is loaded.
-func initBoxScore(gameID string, p *tea.Program) (*boxScore, error) {
-	boxScoreData, err := datamodels.PopulateBoxScore(gameID, datamodels.UnmarshallResponseJSON)
-	if err != nil {
-		return nil, err
-	}
-
-	homeDataSet := boxScoreData.HomeTeam.BoxScorePlayers
-	awayDataSet := boxScoreData.AwayTeam.BoxScorePlayers
-
-	var column table.Column
-	var columns []table.Column
-	var homeRow table.Row
-	var awayRow table.Row
-	var homeRows []table.Row
-	var awayRows []table.Row
-
-	cols, _ := getColsAndValues(homeDataSet[0])
-
-	columns = make([]table.Column, len(cols))
-	for i, col := range cols {
-		column = table.NewColumn(col, col, 15)
-		columns[i] = column
-	}
-
-	for _, player := range homeDataSet {
-		rowData := make(table.RowData)
-		_, values := getColsAndValues(player)
-		for i, value := range values {
-			columnTitle := columns[i].Title()
-			rowData[columnTitle] = value
-		}
-		homeRow = table.NewRow(rowData)
-		homeRows = append(homeRows, homeRow)
-	}
-
-	for _, player := range awayDataSet {
-		rowData := make(table.RowData)
-		_, values := getColsAndValues(player)
-		for i, value := range values {
-			columnTitle := columns[i].Title()
-			rowData[columnTitle] = value
-		}
-		awayRow = table.NewRow(rowData)
-		awayRows = append(awayRows, awayRow)
-	}
-
-	homeTable := table.New(columns).
-		WithRows(homeRows).
-		SelectableRows(true).
-		WithMaxTotalWidth(120).
-		Focused(true)
-
-	awayTable := table.New(columns).
-		WithRows(awayRows).
-		SelectableRows(true).
-		WithMaxTotalWidth(120).
-		Focused(false)
-
-	m := &boxScore{
-		homeTeamBoxScore: homeTable,
-		awayTeamBoxScore: awayTable}
-
-	return m, nil
-}
-
-func (m boxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
+func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	var cmds []tea.Cmd
 	var selectedRows []table.Row
 	switch msg := msg.(type) {
+	case boxScoreFetchedMsg:
+		if msg.err != nil {
+			log.Println("error fetching box score")
+			return m, nil
+		}
+		homeTable := table.New(msg.boxScoreTableColumns).
+			WithRows(msg.homeBoxScoreData).
+			SelectableRows(true).
+			WithMaxTotalWidth(120).
+			Focused(true)
+
+		awayTable := table.New(msg.boxScoreTableColumns).
+			WithRows(msg.awayBoxScoreData).
+			SelectableRows(true).
+			WithMaxTotalWidth(120).
+			Focused(false)
+
+		m := &InstantiatedBoxScore{
+			homeTeamBoxScore: homeTable,
+			awayTeamBoxScore: awayTable}
+		return m, nil
+
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, Keymap.Back):
@@ -217,11 +251,11 @@ func (m boxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m boxScore) helpView() string {
+func (m InstantiatedBoxScore) helpView() string {
 	return HelpStyle("\n" + HelpFooter() + "\n")
 }
 
-func (m boxScore) View() string {
+func (m InstantiatedBoxScore) View() string {
 	if m.quitting {
 		return ""
 	}
