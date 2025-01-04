@@ -1,8 +1,8 @@
 package tui
 
 import (
+	"fmt"
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
@@ -11,12 +11,7 @@ import (
 	"strings"
 )
 
-// removeIndex is a helper function to delete elements from a slice
-func removeIndex[T any](slice []T, s int) []T {
-	return append(slice[:s], slice[s+1:]...)
-}
-
-type leagueLeaders struct {
+type LeagueLeaders struct {
 	leaderboard table.Model
 	quitting    bool
 	height      int
@@ -25,68 +20,98 @@ type leagueLeaders struct {
 	maxWidth    int
 }
 
-func (m leagueLeaders) Init() tea.Cmd { return nil }
-
-// initLeagueLeadersTable returns a table.Model which is populated with the current league leaders (PPG)
-func initLeagueLeaders(i list.Item, p *tea.Program) (*leagueLeaders, error) {
-	playerStats, headers, err := datamodels.PopulatePlayerStats(datamodels.UnmarshallResponseJSON)
-	if err != nil {
-		log.Println("Could not populate player stats, error:", err)
-		return nil, err
-	}
-	playerStatsString := datamodels.ConvertToString(playerStats)
-
-	var (
-		columns []table.Column
-		column  table.Column
-		rows    []table.Row
-		row     table.Row
-	)
-
-	for _, h := range headers {
-		if !strings.Contains(h, "ID") {
-			column = table.NewColumn(h, h, 15)
-			columns = append(columns, column)
-		}
-	}
-
-	for _, r := range playerStatsString {
-		rowData := make(table.RowData)
-		visibleColumnIndex := 0
-		for i, rd := range r {
-			headerName := headers[i]
-			if strings.Contains(headerName, "ID") {
-				rowData[headerName] = rd
-			} else {
-				columnTitle := columns[visibleColumnIndex].Title()
-				rowData[columnTitle] = rd
-				visibleColumnIndex++
-			}
-
-		}
-		row = table.NewRow(rowData)
-		rows = append(rows, row)
-	}
-
-	t := table.New(columns).
-		WithRows(rows).
-		SelectableRows(true).
-		WithHeaderVisibility(true).
-		Focused(true).
-		WithPageSize(20).
-		WithMaxTotalWidth(150).
-		WithHorizontalFreezeColumnCount(2).
-		WithBaseStyle(lipgloss.NewStyle().
-			BorderStyle(lipgloss.DoubleBorder()))
-
-	m := &leagueLeaders{leaderboard: t, maxHeight: 25, maxWidth: 80}
-
-	return m, nil
+type fetchLeagueLeadersMsg struct {
+	err     error
+	columns []table.Column
+	stats   []table.Row
 }
 
-func (m leagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
+func NewLeagueLeaders(size tea.WindowSizeMsg) (*LeagueLeaders, tea.Cmd, error) {
+	m := &LeagueLeaders{
+		height: size.Height,
+		width:  size.Width,
+	}
+
+	_, _, err := datamodels.PopulatePlayerStats(datamodels.UnmarshallResponseJSON)
+	if err != nil {
+		return &LeagueLeaders{}, nil, fmt.Errorf("failed to populate player stats: %w", err)
+	}
+
+	cmd := fetchLeagueLeadersCmd()
+
+	return m, cmd, nil
+}
+
+// fetchLeagueLeadersCmd fetches the required data from pre-existing JSON files and creates the table structure and rows
+func fetchLeagueLeadersCmd() tea.Cmd {
+	return func() tea.Msg {
+		playerStats, headers, err := datamodels.PopulatePlayerStats(datamodels.UnmarshallResponseJSON)
+		if err != nil {
+			return fetchLeagueLeadersMsg{err: err}
+		}
+
+		playerStatsString := datamodels.ConvertToString(playerStats)
+
+		var (
+			columns []table.Column
+			column  table.Column
+			rows    []table.Row
+			row     table.Row
+		)
+
+		for _, h := range headers {
+			if !strings.Contains(h, "ID") {
+				column = table.NewColumn(h, h, 15)
+				columns = append(columns, column)
+			}
+		}
+
+		for _, r := range playerStatsString {
+			rowData := make(table.RowData)
+			visibleColumnIndex := 0
+			for i, rd := range r {
+				headerName := headers[i]
+				if strings.Contains(headerName, "ID") {
+					rowData[headerName] = rd
+				} else {
+					columnTitle := columns[visibleColumnIndex].Title()
+					rowData[columnTitle] = rd
+					visibleColumnIndex++
+				}
+
+			}
+			row = table.NewRow(rowData)
+			rows = append(rows, row)
+		}
+		return fetchLeagueLeadersMsg{columns: columns, stats: rows}
+	}
+}
+
+func (m LeagueLeaders) Init() tea.Cmd { return nil }
+
+func (m LeagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
+	case fetchLeagueLeadersMsg:
+		if msg.err != nil {
+			log.Println("fetch league leaders:", msg.err)
+			return m, nil
+		}
+
+		t := table.New(msg.columns).
+			WithRows(msg.stats).
+			SelectableRows(true).
+			WithHeaderVisibility(true).
+			Focused(true).
+			WithPageSize(20).
+			WithMaxTotalWidth(150).
+			WithHorizontalFreezeColumnCount(2).
+			WithBaseStyle(lipgloss.NewStyle().
+				BorderStyle(lipgloss.DoubleBorder()))
+
+		m := &LeagueLeaders{leaderboard: t, maxHeight: 25, maxWidth: 80}
+		return m, nil
+
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, Keymap.Back):
@@ -123,12 +148,12 @@ func (m leagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m leagueLeaders) helpView() string {
+func (m LeagueLeaders) helpView() string {
 
 	return HelpStyle("\n" + HelpFooter() + "\n")
 }
 
-func (m leagueLeaders) View() string {
+func (m LeagueLeaders) View() string {
 	if m.quitting {
 		return ""
 	}

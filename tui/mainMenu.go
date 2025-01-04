@@ -122,12 +122,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			selectedItem := m.menu.SelectedItem()
 			switch {
 			case selectedItem.FilterValue() == "League Leaders":
-				ll, err := initLeagueLeaders(selectedItem, Program)
+				ll, cmd, err := NewLeagueLeaders(WindowSize)
 				if err != nil {
 					log.Println(err)
 					os.Exit(1)
 				}
-				return ll.Update(WindowSize)
+				return ll, cmd
 			case selectedItem.FilterValue() == "Daily Scores":
 				dv, cmd, err := NewDailyView(WindowSize)
 				if err != nil {

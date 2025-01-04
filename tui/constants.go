@@ -30,6 +30,7 @@ var DocStyle = lipgloss.NewStyle().Margin(0, 2)
 
 var TableStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.DoubleBorder()).
+	Align(lipgloss.Center, lipgloss.Center).
 	BorderForeground(lipgloss.Color("240"))
 
 // HelpStyle styling for help context menu

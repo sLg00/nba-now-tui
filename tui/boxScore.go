@@ -174,7 +174,7 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 	switch msg := msg.(type) {
 	case boxScoreFetchedMsg:
 		if msg.err != nil {
-			log.Println("error fetching box score")
+			log.Println("error fetching box score:", msg.err)
 			return m, nil
 		}
 		homeTable := table.New(msg.boxScoreTableColumns).
