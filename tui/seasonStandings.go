@@ -48,6 +48,7 @@ func NewSeasonStandings(size tea.WindowSizeMsg) (*SeasonStandings, tea.Cmd, erro
 	return m, cmd, nil
 }
 
+// fetchSeasonStandingsCmd fetches and prepares the data required to display the season standings tables
 func fetchSeasonStandingsCmd() tea.Cmd {
 	return func() tea.Msg {
 		teams, headers, err := datamodels.PopulateTeamStats(datamodels.UnmarshallResponseJSON)
@@ -118,85 +119,6 @@ func fetchSeasonStandingsCmd() tea.Cmd {
 }
 
 func (m SeasonStandings) Init() tea.Cmd { return nil }
-
-//// initSeasonStandings gets, filters and populates the Season Standings tables
-//func initSeasonStandings(i list.Item, p *tea.Program) (*SeasonStandings, error) {
-//	teams, headers, err := datamodels.PopulateTeamStats(datamodels.UnmarshallResponseJSON)
-//	if err != nil {
-//		log.Println("Could not populate player stats, error:", err)
-//		return nil, err
-//	}
-//
-//	eastTeams, westTeams := teams.SplitStandingsPerConference()
-//
-//	eastTeamsStrings := datamodels.ConvertToString(eastTeams)
-//	westTeamsStrings := datamodels.ConvertToString(westTeams)
-//
-//	var (
-//		columns  []table.Column
-//		column   table.Column
-//		rows     []table.Row
-//		row      table.Row
-//		westRows []table.Row
-//		westRow  table.Row
-//	)
-//
-//	for _, h := range headers {
-//		if !strings.Contains(h, "ID") {
-//			column = table.NewColumn(h, h, 15)
-//			columns = append(columns, column)
-//		}
-//	}
-//
-//	for _, r := range eastTeamsStrings {
-//		rowData := make(table.RowData)
-//		visibleColumnIndex := 0
-//		for i, rd := range r {
-//			headerName := headers[i]
-//			if strings.Contains(headerName, "ID") {
-//				rowData[headerName] = rd
-//			} else {
-//				columnTitle := columns[visibleColumnIndex].Title()
-//				rowData[columnTitle] = rd
-//				visibleColumnIndex++
-//			}
-//		}
-//		row = table.NewRow(rowData)
-//		rows = append(rows, row)
-//	}
-//
-//	for _, r := range westTeamsStrings {
-//		rowData := make(table.RowData)
-//		visibleColumnIndex := 0
-//		for i, rd := range r {
-//			headerName := headers[i]
-//			if strings.Contains(headerName, "ID") {
-//				rowData[headerName] = rd
-//			} else {
-//				columnTitle := columns[visibleColumnIndex].Title()
-//				rowData[columnTitle] = rd
-//				visibleColumnIndex++
-//			}
-//		}
-//		westRow = table.NewRow(rowData)
-//		westRows = append(westRows, westRow)
-//	}
-//
-//	eastTable := table.New(columns).
-//		WithRows(rows).
-//		SelectableRows(true).
-//		WithMaxTotalWidth(120).
-//		Focused(true)
-//
-//	westTable := table.New(columns).
-//		WithRows(westRows).
-//		SelectableRows(true).
-//		WithMaxTotalWidth(120)
-//
-//	m := &SeasonStandings{eastTeams: eastTable, westTeams: westTable}
-//
-//	return m, nil
-//}
 
 func (m SeasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	var cmds []tea.Cmd
