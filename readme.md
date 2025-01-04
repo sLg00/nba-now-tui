@@ -3,7 +3,7 @@
 NBA NOW is a simple terminal application built with Go. 
 The TUI is built using [Charm](https://charm.sh)'s suite of libraries and leveraging the Bubble Tea framework.
 
-This is a personal hobby project not to be taken seriously. The current version is lacking a lot of features i want to ultimately
+This is a personal hobby project not to be taken seriously. The current version is lacking a lot of features I want to ultimately
 have - soon:tm:
 
 Big thanks to [Swar's NBA API](https://github.com/swar/nba_api) project's 
@@ -17,7 +17,7 @@ Just 'make' in the root directory runs all the test and builds executables for L
 
 <h4>Run</h4>
 Execute **./binary-d YYYY-MM-DD** to launch the app. Due to the timezone differences between the States
-and the rest of the world, i changed the app logic to take in a specific date. The date
+and the rest of the world, I changed the app logic to take in a specific date. The date
 denotes local time when the games occurred.
 
 <h3>Available Features</h3>
@@ -47,7 +47,7 @@ denotes local time when the games occurred.
 
 
 <h3>Tech details</h3> 
-Concurrently querying NBA APIs and displaying the results in the terminal (revolutionary, i know).
+Concurrently querying NBA APIs and displaying the results in the terminal (revolutionary, I know).
 Results are stored in json files in a designated folder (**~/.config/nba-tui**). Only the necessary files are downloaded
 and parsed. On app initiation the daily scores, league leaders and season standings are queried. Once daily view
 is opened, the files for the box scores are downloaded and parsed.
@@ -55,14 +55,14 @@ is opened, the files for the box scores are downloaded and parsed.
 Logs are written to a dedicated log file (**~/.config/nba-tui/logs/appLog.log**). All downloaded json files, older than 48 hours
 are deleted on app launch to avoid cluttering the filesystem.
 
-Why filesystem and not an sqlite db? The database already exists on NBA's side, so this is just about the terminal client and not
+Why filesystem and not a sqlite db? The database already exists on NBA's side, so this is just about the terminal client and not
 persisting a ton of data.
 
-The app is also not fully leveraging Bubble Tea yet, since i wanted to keep the deep backend logic
-isolated from frontend in the early days, to make sure it's easy to jump off of Bubble Tea, if i didn't like it. 
-But i do like it, so i am going through and refactoring the parts in the tui package asap.
+There is some code repetition in the tui package, because each view utilizes a different model.
+I may explore unifying some of the models and reducing the amount of duplication - especially on the View() and Update()
+methods.
 
-**Currently only tested on Linux, because that's where i use it.** /shrug
+**Currently only tested on Linux, because that's where I use it.** /shrug
 
 <h3>Screenshots</h3>
 
