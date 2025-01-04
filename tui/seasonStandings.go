@@ -1,8 +1,8 @@
 package tui
 
 import (
+	"fmt"
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/list"
 	"strings"
 
 	//"github.com/charmbracelet/bubbles/table"
@@ -13,7 +13,7 @@ import (
 	"log"
 )
 
-type seasonStandings struct {
+type SeasonStandings struct {
 	quitting    bool
 	westTeams   table.Model
 	eastTeams   table.Model
@@ -25,91 +25,201 @@ type seasonStandings struct {
 	focused     bool
 }
 
-func (m seasonStandings) Init() tea.Cmd { return nil }
-
-// initSeasonStandings gets, filters and populates the Season Standings tables
-func initSeasonStandings(i list.Item, p *tea.Program) (*seasonStandings, error) {
-	teams, headers, err := datamodels.PopulateTeamStats(datamodels.UnmarshallResponseJSON)
-	if err != nil {
-		log.Println("Could not populate player stats, error:", err)
-		return nil, err
-	}
-
-	eastTeams, westTeams := teams.SplitStandingsPerConference()
-
-	eastTeamsStrings := datamodels.ConvertToString(eastTeams)
-	westTeamsStrings := datamodels.ConvertToString(westTeams)
-
-	var (
-		columns  []table.Column
-		column   table.Column
-		rows     []table.Row
-		row      table.Row
-		westRows []table.Row
-		westRow  table.Row
-	)
-
-	for _, h := range headers {
-		if !strings.Contains(h, "ID") {
-			column = table.NewColumn(h, h, 15)
-			columns = append(columns, column)
-		}
-	}
-
-	for _, r := range eastTeamsStrings {
-		rowData := make(table.RowData)
-		visibleColumnIndex := 0
-		for i, rd := range r {
-			headerName := headers[i]
-			if strings.Contains(headerName, "ID") {
-				rowData[headerName] = rd
-			} else {
-				columnTitle := columns[visibleColumnIndex].Title()
-				rowData[columnTitle] = rd
-				visibleColumnIndex++
-			}
-		}
-		row = table.NewRow(rowData)
-		rows = append(rows, row)
-	}
-
-	for _, r := range westTeamsStrings {
-		rowData := make(table.RowData)
-		visibleColumnIndex := 0
-		for i, rd := range r {
-			headerName := headers[i]
-			if strings.Contains(headerName, "ID") {
-				rowData[headerName] = rd
-			} else {
-				columnTitle := columns[visibleColumnIndex].Title()
-				rowData[columnTitle] = rd
-				visibleColumnIndex++
-			}
-		}
-		westRow = table.NewRow(rowData)
-		westRows = append(westRows, westRow)
-	}
-
-	eastTable := table.New(columns).
-		WithRows(rows).
-		SelectableRows(true).
-		WithMaxTotalWidth(120).
-		Focused(true)
-
-	westTable := table.New(columns).
-		WithRows(westRows).
-		SelectableRows(true).
-		WithMaxTotalWidth(120)
-
-	m := &seasonStandings{eastTeams: eastTable, westTeams: westTable}
-
-	return m, nil
+type fetchSeasonStandingsMsg struct {
+	err           error
+	columns       []table.Column
+	eastTeamStats []table.Row
+	westTeamStats []table.Row
 }
 
-func (m seasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
+func NewSeasonStandings(size tea.WindowSizeMsg) (*SeasonStandings, tea.Cmd, error) {
+	m := &SeasonStandings{
+		height: size.Height,
+		width:  size.Width,
+	}
+
+	_, _, err := datamodels.PopulateTeamStats(datamodels.UnmarshallResponseJSON)
+	if err != nil {
+		return &SeasonStandings{}, nil, fmt.Errorf("could not populate team stats: %w", err)
+	}
+
+	cmd := fetchSeasonStandingsCmd()
+
+	return m, cmd, nil
+}
+
+func fetchSeasonStandingsCmd() tea.Cmd {
+	return func() tea.Msg {
+		teams, headers, err := datamodels.PopulateTeamStats(datamodels.UnmarshallResponseJSON)
+		if err != nil {
+			return fetchSeasonStandingsMsg{err: err}
+		}
+
+		eastTeams, westTeams := teams.SplitStandingsPerConference()
+
+		eastTeamsStrings := datamodels.ConvertToString(eastTeams)
+		westTeamsStrings := datamodels.ConvertToString(westTeams)
+
+		var (
+			columns  []table.Column
+			column   table.Column
+			eastRows []table.Row
+			eastRow  table.Row
+			westRows []table.Row
+			westRow  table.Row
+		)
+
+		for _, h := range headers {
+			if !strings.Contains(h, "ID") {
+				column = table.NewColumn(h, h, 15)
+				columns = append(columns, column)
+			}
+		}
+
+		for _, r := range eastTeamsStrings {
+			rowData := make(table.RowData)
+			visibleColumnIndex := 0
+			for i, rd := range r {
+				headerName := headers[i]
+				if strings.Contains(headerName, "ID") {
+					rowData[headerName] = rd
+				} else {
+					columnTitle := columns[visibleColumnIndex].Title()
+					rowData[columnTitle] = rd
+					visibleColumnIndex++
+				}
+			}
+			eastRow = table.NewRow(rowData)
+			eastRows = append(eastRows, eastRow)
+		}
+
+		for _, r := range westTeamsStrings {
+			rowData := make(table.RowData)
+			visibleColumnIndex := 0
+			for i, rd := range r {
+				headerName := headers[i]
+				if strings.Contains(headerName, "ID") {
+					rowData[headerName] = rd
+				} else {
+					columnTitle := columns[visibleColumnIndex].Title()
+					rowData[columnTitle] = rd
+					visibleColumnIndex++
+				}
+			}
+			westRow = table.NewRow(rowData)
+			westRows = append(westRows, westRow)
+		}
+
+		return fetchSeasonStandingsMsg{
+			columns:       columns,
+			eastTeamStats: eastRows,
+			westTeamStats: westRows}
+	}
+}
+
+func (m SeasonStandings) Init() tea.Cmd { return nil }
+
+//// initSeasonStandings gets, filters and populates the Season Standings tables
+//func initSeasonStandings(i list.Item, p *tea.Program) (*SeasonStandings, error) {
+//	teams, headers, err := datamodels.PopulateTeamStats(datamodels.UnmarshallResponseJSON)
+//	if err != nil {
+//		log.Println("Could not populate player stats, error:", err)
+//		return nil, err
+//	}
+//
+//	eastTeams, westTeams := teams.SplitStandingsPerConference()
+//
+//	eastTeamsStrings := datamodels.ConvertToString(eastTeams)
+//	westTeamsStrings := datamodels.ConvertToString(westTeams)
+//
+//	var (
+//		columns  []table.Column
+//		column   table.Column
+//		rows     []table.Row
+//		row      table.Row
+//		westRows []table.Row
+//		westRow  table.Row
+//	)
+//
+//	for _, h := range headers {
+//		if !strings.Contains(h, "ID") {
+//			column = table.NewColumn(h, h, 15)
+//			columns = append(columns, column)
+//		}
+//	}
+//
+//	for _, r := range eastTeamsStrings {
+//		rowData := make(table.RowData)
+//		visibleColumnIndex := 0
+//		for i, rd := range r {
+//			headerName := headers[i]
+//			if strings.Contains(headerName, "ID") {
+//				rowData[headerName] = rd
+//			} else {
+//				columnTitle := columns[visibleColumnIndex].Title()
+//				rowData[columnTitle] = rd
+//				visibleColumnIndex++
+//			}
+//		}
+//		row = table.NewRow(rowData)
+//		rows = append(rows, row)
+//	}
+//
+//	for _, r := range westTeamsStrings {
+//		rowData := make(table.RowData)
+//		visibleColumnIndex := 0
+//		for i, rd := range r {
+//			headerName := headers[i]
+//			if strings.Contains(headerName, "ID") {
+//				rowData[headerName] = rd
+//			} else {
+//				columnTitle := columns[visibleColumnIndex].Title()
+//				rowData[columnTitle] = rd
+//				visibleColumnIndex++
+//			}
+//		}
+//		westRow = table.NewRow(rowData)
+//		westRows = append(westRows, westRow)
+//	}
+//
+//	eastTable := table.New(columns).
+//		WithRows(rows).
+//		SelectableRows(true).
+//		WithMaxTotalWidth(120).
+//		Focused(true)
+//
+//	westTable := table.New(columns).
+//		WithRows(westRows).
+//		SelectableRows(true).
+//		WithMaxTotalWidth(120)
+//
+//	m := &SeasonStandings{eastTeams: eastTable, westTeams: westTable}
+//
+//	return m, nil
+//}
+
+func (m SeasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	var cmds []tea.Cmd
 	var selectedRows []table.Row
 	switch msg := msg.(type) {
+	case fetchSeasonStandingsMsg:
+		if msg.err != nil {
+			log.Println("could not fetch season standings:", msg.err)
+			return m, nil
+		}
+		eastTable := table.New(msg.columns).
+			WithRows(msg.eastTeamStats).
+			SelectableRows(true).
+			WithMaxTotalWidth(120).
+			Focused(true)
+
+		westTable := table.New(msg.columns).
+			WithRows(msg.westTeamStats).
+			SelectableRows(true).
+			WithMaxTotalWidth(120)
+
+		m := &SeasonStandings{eastTeams: eastTable, westTeams: westTable}
+		return m, nil
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, Keymap.Back):
@@ -163,12 +273,12 @@ func (m seasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m seasonStandings) helpView() string {
+func (m SeasonStandings) helpView() string {
 
 	return HelpStyle("\n" + HelpFooter() + "\n")
 }
 
-func (m seasonStandings) View() string {
+func (m SeasonStandings) View() string {
 	if m.quitting {
 		return ""
 	}
