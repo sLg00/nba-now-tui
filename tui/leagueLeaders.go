@@ -104,12 +104,11 @@ func (m LeagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			WithHeaderVisibility(true).
 			Focused(true).
 			WithPageSize(20).
-			WithMaxTotalWidth(150).
-			WithHorizontalFreezeColumnCount(2).
-			WithBaseStyle(lipgloss.NewStyle().
-				BorderStyle(lipgloss.DoubleBorder()))
+			WithMaxTotalWidth(145).
+			WithHorizontalFreezeColumnCount(3).
+			WithBaseStyle(lipgloss.NewStyle())
 
-		m := &LeagueLeaders{leaderboard: t, maxHeight: 25, maxWidth: 80}
+		m := &LeagueLeaders{leaderboard: t, maxHeight: 25, maxWidth: 125}
 		return m, nil
 
 	case tea.KeyMsg:

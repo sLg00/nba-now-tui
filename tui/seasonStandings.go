@@ -3,14 +3,12 @@ package tui
 import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/key"
-	"strings"
-
-	//"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
 	"github.com/sLg00/nba-now-tui/cmd/datamodels"
 	"log"
+	"strings"
 )
 
 type SeasonStandings struct {
@@ -132,13 +130,13 @@ func (m SeasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		eastTable := table.New(msg.columns).
 			WithRows(msg.eastTeamStats).
 			SelectableRows(true).
-			WithMaxTotalWidth(120).
+			WithMaxTotalWidth(140).
 			Focused(true)
 
 		westTable := table.New(msg.columns).
 			WithRows(msg.westTeamStats).
 			SelectableRows(true).
-			WithMaxTotalWidth(120)
+			WithMaxTotalWidth(140)
 
 		m := &SeasonStandings{eastTeams: eastTable, westTeams: westTable}
 		return m, nil
