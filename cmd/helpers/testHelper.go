@@ -2,13 +2,13 @@ package helpers
 
 import "os"
 
-type testSetup struct {
+type TestSetup struct {
 	originalArgs []string
 }
 
 // SetupTest just sets the os.Args to a mocked value set for testing purposes
-func SetupTest() *testSetup {
-	ts := &testSetup{
+func SetupTest() *TestSetup {
+	ts := &TestSetup{
 		originalArgs: os.Args,
 	}
 	os.Args = []string{"appName", "-d", "2024-12-01"}
@@ -16,6 +16,6 @@ func SetupTest() *testSetup {
 }
 
 // CleanUpTest reverts os.Args
-func (ts *testSetup) CleanUpTest() {
+func (ts *TestSetup) CleanUpTest() {
 	os.Args = ts.originalArgs
 }
