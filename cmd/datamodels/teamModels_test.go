@@ -2,7 +2,7 @@ package datamodels
 
 import (
 	"fmt"
-	"os"
+	"github.com/sLg00/nba-now-tui/cmd/helpers"
 	"reflect"
 	"testing"
 )
@@ -36,9 +36,8 @@ func mockUnmarshallError(_ string) (ResponseSet, error) {
 }
 
 func TestPopulateTeamStats(t *testing.T) {
-	realArguments := os.Args
-	defer func() { os.Args = realArguments }()
-	os.Args = []string{"appName", "-d", "2024-12-01"}
+	ts := helpers.SetupTest()
+	defer ts.CleanUpTest()
 
 	teams, headers, err := PopulateTeamStats(mockUnmarshall)
 	if err != nil {
@@ -58,9 +57,8 @@ func TestPopulateTeamStats(t *testing.T) {
 }
 
 func TestPopulateTeamStats_Error(t *testing.T) {
-	realArguments := os.Args
-	defer func() { os.Args = realArguments }()
-	os.Args = []string{"appName", "-d", "2024-12-01"}
+	ts := helpers.SetupTest()
+	defer ts.CleanUpTest()
 
 	teams, headers, err := PopulateTeamStats(mockUnmarshallError)
 	if err == nil {

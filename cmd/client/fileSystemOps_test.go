@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/sLg00/nba-now-tui/cmd/helpers"
 	"os"
 	"testing"
 )
@@ -27,9 +28,9 @@ func TestCreateDirectory(t *testing.T) {
 }
 
 func TestWriteToFiles(t *testing.T) {
-	realArguments := os.Args
-	defer func() { os.Args = realArguments }()
-	os.Args = []string{"appName", "-d", "2024-12-01"}
+	ts := helpers.SetupTest()
+	defer ts.CleanUpTest()
+
 	mp := mockPathComponents()
 	fileContents := []byte(`{"key": "value"}`)
 	result := WriteToFiles(mp.Home+mp.Path+mp.LLFile, fileContents)

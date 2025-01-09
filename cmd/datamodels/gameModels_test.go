@@ -1,7 +1,7 @@
 package datamodels
 
 import (
-	"os"
+	"github.com/sLg00/nba-now-tui/cmd/helpers"
 	"testing"
 )
 
@@ -60,9 +60,8 @@ func mockUnmarshallBoxScore(_ string) (ResponseSet, error) {
 }
 
 func TestPopulateDailyGameResults(t *testing.T) {
-	realArguments := os.Args
-	defer func() { os.Args = realArguments }()
-	os.Args = []string{"appName", "-d", "2024-12-01"}
+	ts := helpers.SetupTest()
+	defer ts.CleanUpTest()
 
 	results, headers, err := PopulateDailyGameResults(mockUnmarshallDailyGameResults)
 	if err != nil {
@@ -88,9 +87,8 @@ func TestPopulateDailyGameResults(t *testing.T) {
 }
 
 func TestPopulateBoxScore_Success(t *testing.T) {
-	realArguments := os.Args
-	defer func() { os.Args = realArguments }()
-	os.Args = []string{"appName", "-d", "2024-12-01"}
+	ts := helpers.SetupTest()
+	defer ts.CleanUpTest()
 
 	boxScore, err := PopulateBoxScore("001", mockUnmarshallBoxScore)
 	if err != nil {

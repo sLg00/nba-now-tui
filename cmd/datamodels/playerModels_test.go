@@ -1,7 +1,7 @@
 package datamodels
 
 import (
-	"os"
+	"github.com/sLg00/nba-now-tui/cmd/helpers"
 	"slices"
 	"testing"
 )
@@ -74,9 +74,8 @@ func TestPlayer_ToStringSlice(t *testing.T) {
 }
 
 func TestPopulatePlayerStats(t *testing.T) {
-	realArguments := os.Args
-	defer func() { os.Args = realArguments }()
-	os.Args = []string{"appName", "-d", "2024-12-01"}
+	ts := helpers.SetupTest()
+	defer ts.CleanUpTest()
 
 	mockUnmarshall := func(path string) (ResponseSet, error) {
 		return ResponseSet{

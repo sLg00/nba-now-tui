@@ -4,7 +4,7 @@ import (
 	"bytes"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/exp/teatest"
-	"os"
+	"github.com/sLg00/nba-now-tui/cmd/helpers"
 	"testing"
 )
 
@@ -38,9 +38,8 @@ func TestMenuItemCreation(t *testing.T) {
 }
 
 func TestModelStateManagement(t *testing.T) {
-	realArguments := os.Args
-	defer func() { os.Args = realArguments }()
-	os.Args = []string{"appName", "-d", "2024-12-01"}
+	ts := helpers.SetupTest()
+	defer ts.CleanUpTest()
 
 	model, _ := InitMenu()
 	m := model.(Model)
@@ -63,9 +62,8 @@ func TestModelStateManagement(t *testing.T) {
 }
 
 func TestMenuItemSelection(t *testing.T) {
-	realArguments := os.Args
-	defer func() { os.Args = realArguments }()
-	os.Args = []string{"appName", "-d", "2024-12-01"}
+	ts := helpers.SetupTest()
+	defer ts.CleanUpTest()
 
 	model, _ := InitMenu()
 	m := model.(Model)
@@ -88,9 +86,8 @@ func TestMenuItemSelection(t *testing.T) {
 }
 
 func TestMenuDisplay(t *testing.T) {
-	realArguments := os.Args
-	defer func() { os.Args = realArguments }()
-	os.Args = []string{"appName", "-d", "2024-12-01"}
+	ts := helpers.SetupTest()
+	defer ts.CleanUpTest()
 
 	model, _ := InitMenu()
 	testModel := teatest.NewTestModel(t, model, teatest.WithInitialTermSize(300, 100))
