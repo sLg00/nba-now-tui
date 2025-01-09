@@ -1,7 +1,9 @@
 package tui
 
 import (
+	"bytes"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/x/exp/teatest"
 	"os"
 	"testing"
 )
@@ -83,4 +85,24 @@ func TestMenuItemSelection(t *testing.T) {
 	if _, ok := newModel.(Model); ok {
 		t.Error("expected different model type after selection")
 	}
+}
+
+func TestMenuDisplay(t *testing.T) {
+	realArguments := os.Args
+	defer func() { os.Args = realArguments }()
+	os.Args = []string{"appName", "-d", "2024-12-01"}
+
+	model, _ := InitMenu()
+	testModel := teatest.NewTestModel(t, model, teatest.WithInitialTermSize(300, 100))
+
+	teatest.WaitFor(t, testModel.Output(), func(bts []byte) bool {
+		return bytes.Contains(bts, []byte("NBA on"))
+	})
+
+	testModel.Send(tea.KeyMsg{
+		Type:  tea.KeyRunes,
+		Runes: []rune("q"),
+	})
+
+	testModel.WaitFinished(t)
 }
