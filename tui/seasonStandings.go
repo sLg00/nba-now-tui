@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"fmt"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -35,12 +34,6 @@ func NewSeasonStandings(size tea.WindowSizeMsg) (*SeasonStandings, tea.Cmd, erro
 		height: size.Height,
 		width:  size.Width,
 	}
-
-	_, _, err := datamodels.PopulateTeamStats(datamodels.UnmarshallResponseJSON)
-	if err != nil {
-		return &SeasonStandings{}, nil, fmt.Errorf("could not populate team stats: %w", err)
-	}
-
 	cmd := fetchSeasonStandingsCmd()
 
 	return m, cmd, nil
