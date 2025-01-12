@@ -27,20 +27,19 @@ func FindFiles(path string, pattern string) ([]string, error) {
 	var fileList []string
 	for _, item := range dirContents {
 		if !item.IsDir() {
-			match := validatedRegex.FindStringSubmatch(item.Name())
-			if len(match) > 0 {
-				fileDateStr := match[1]
-				fileDate, err := time.Parse("2006-01-02", fileDateStr)
+			if validatedRegex.MatchString(item.Name()) {
+				filePath := filepath.Join(path, item.Name())
+
+				fileInfo, err := os.Stat(filePath)
 				if err != nil {
-					log.Println("error parsing file date: " + fileDateStr)
+					log.Println("error getting file info for ", filePath)
+					continue
 				}
 
-				if fileDate.Before(time.Now().Add(-time.Hour * 72)) {
-					filePath := filepath.Join(path, item.Name())
+				if time.Since(fileInfo.ModTime()) > 72*time.Hour {
 					fileList = append(fileList, filePath)
 				}
 			}
-
 		}
 	}
 	return fileList, nil
