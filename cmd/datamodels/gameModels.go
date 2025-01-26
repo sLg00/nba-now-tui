@@ -95,6 +95,7 @@ type GameResult struct {
 	AwayTeamName         string
 	AwayTeamPts          int
 	AwayTeamAbbreviation string
+	GameStatusID         int `json:"GAME_STATUS_ID" isVisible:"false"`
 }
 
 type DailyGameResults []GameResult
@@ -176,6 +177,7 @@ func PopulateDailyGameResults(unmarshall func(string) (ResponseSet, error)) (Dai
 		}
 		gameHeader := GameHeader{
 			GameID:        row[2].(string),
+			GameStatusID:  int(row[3].(float64)),
 			HomeTeamID:    int(row[6].(float64)),
 			VisitorTeamID: int(row[7].(float64)),
 		}
@@ -251,7 +253,7 @@ func PopulateDailyGameResults(unmarshall func(string) (ResponseSet, error)) (Dai
 
 	var gameResults DailyGameResults
 	for _, gh := range gameHeaders {
-		result := GameResult{GameID: gh.GameID}
+		result := GameResult{GameID: gh.GameID, GameStatusID: gh.GameStatusID}
 		for _, ls := range lineScores {
 			if ls.GameID == gh.GameID {
 				if ls.TeamID == gh.HomeTeamID {

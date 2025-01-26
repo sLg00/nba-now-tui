@@ -41,9 +41,8 @@ func NewDailyView(size tea.WindowSizeMsg) (*DailyView, tea.Cmd, error) {
 	// Attempt to fetch initial data directly to validate API availability
 	_, _, err := datamodels.PopulateDailyGameResults(datamodels.UnmarshallResponseJSON)
 	if err != nil {
-		return &DailyView{}, nil, fmt.Errorf("failed to populate daily scores: %w", err)
+		return &DailyView{}, nil, fmt.Errorf("failed to populate daily scores: %w\n", err)
 	}
-
 	// Prepare the Init command for fetching dynamic updates
 	cmd := fetchDailyScoresCmd()
 

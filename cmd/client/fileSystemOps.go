@@ -111,15 +111,13 @@ func WriteToFiles(s string, b []byte) error {
 
 // fileChecker is a helper function to check if a file exists in the system
 func fileChecker(s string) bool {
-	_, err := os.Stat(s)
+	fileInfo, err := os.Stat(s)
 	if err == nil {
-		return true
+		if fileInfo.Size() > 1000 {
+			return true
+		}
 	}
-	if os.IsNotExist(err) {
-		return false
-	} else {
-		return false
-	}
+	return false
 }
 
 func CleanOldFiles(pc *PathComponents) error {
