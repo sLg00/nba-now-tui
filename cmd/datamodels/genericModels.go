@@ -96,9 +96,10 @@ func structToStringSlice(obj any) []string {
 	return result
 }
 
-// ConvertToString takes the generic Stringer interface and does type conversion to string. All types that satisfy the
-// Stringer interface can have their attributes converted to strings. For instance Player, Players, Team and Teams
-func ConvertToString[T Stringer](objs []T) [][]string {
+// ConvertToStringMatrix takes the generic Stringer interface and does type conversion to string. All types that satisfy the
+// Stringer interface can have their attributes converted to strings. This function is specifically designed to
+// take in a slice of structures and return a slice of a slice of strings
+func ConvertToStringMatrix[T Stringer](objs []T) [][]string {
 	var stringValues [][]string
 
 	for _, obj := range objs {
@@ -106,6 +107,13 @@ func ConvertToString[T Stringer](objs []T) [][]string {
 	}
 
 	return stringValues
+}
+
+// ConvertToStringFlat takes the generic Stringer interface and does type conversion to string. All types that satisfy the
+// Stringer interface can have their attributes converted to strings. This function is specifically designed to
+// take in an object and return a slice of strings
+func ConvertToStringFlat[T Stringer](obj T) []string {
+	return obj.ToStringSlice()
 }
 
 // FloatToPercent converts a float to a string and formats it as a percentage representation

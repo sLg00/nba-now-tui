@@ -56,7 +56,6 @@ func mockUnmarshallBoxScore(_ string) (ResponseSet, error) {
 			},
 		},
 	}, nil
-
 }
 
 func TestPopulateDailyGameResults(t *testing.T) {

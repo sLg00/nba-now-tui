@@ -77,7 +77,7 @@ func fetchDailyScoresCmd() tea.Cmd {
 		if err != nil {
 			return dailyScoresFetchedMsg{err: err}
 		}
-		return dailyScoresFetchedMsg{scores: datamodels.ConvertToString(dailyScores)}
+		return dailyScoresFetchedMsg{scores: datamodels.ConvertToStringMatrix(dailyScores)}
 	}
 }
 

@@ -5,11 +5,13 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
+	"github.com/sLg00/nba-now-tui/cmd/client"
 	"github.com/sLg00/nba-now-tui/cmd/datamodels"
 	"log"
 	"strings"
 )
 
+// SeasonStandings is the main model of the season standings view, containing all the relevant fields
 type SeasonStandings struct {
 	quitting    bool
 	westTeams   table.Model
@@ -22,11 +24,28 @@ type SeasonStandings struct {
 	focused     bool
 }
 
+// fetchSeasonStandingsMsg is a structure to transform the raw data into the season standings tables
 type fetchSeasonStandingsMsg struct {
 	err           error
 	columns       []table.Column
 	eastTeamStats []table.Row
 	westTeamStats []table.Row
+}
+
+// teamProfileDownloadedMsg is returned by te downloadProfile function to note whether the API call
+// to retrieve team details has succeeded and pass on the teamID attribute for futher processing
+type teamProfileDownloadedMsg struct {
+	err    error
+	teamID string
+}
+
+// downloadProfile executes the call to MakeOnDemandRequests using teamID as an input parameter.
+// It returns a teamProfileDownloadedMsg command
+func downloadProfile(teamID string) tea.Cmd {
+	return func() tea.Msg {
+		err := client.NewClient().MakeOnDemandRequests(teamID)
+		return teamProfileDownloadedMsg{err: err, teamID: teamID}
+	}
 }
 
 func NewSeasonStandings(size tea.WindowSizeMsg) (*SeasonStandings, tea.Cmd, error) {
@@ -49,8 +68,8 @@ func fetchSeasonStandingsCmd() tea.Cmd {
 
 		eastTeams, westTeams := teams.SplitStandingsPerConference()
 
-		eastTeamsStrings := datamodels.ConvertToString(eastTeams)
-		westTeamsStrings := datamodels.ConvertToString(westTeams)
+		eastTeamsStrings := datamodels.ConvertToStringMatrix(eastTeams)
+		westTeamsStrings := datamodels.ConvertToStringMatrix(westTeams)
 
 		var (
 			columns  []table.Column
@@ -161,13 +180,23 @@ func (m SeasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			if len(selectedRows) == 1 {
 				teamID := selectedRows[0].Data["TeamID"].(string)
 				log.Println(teamID)
-				//TODO: add team profile init logic
+				dlp := downloadProfile(teamID)
+				return m, dlp
 			}
 			if len(selectedRows) > 1 || len(selectedRows) < 1 {
 				log.Println("Either 0 rows or more than 1 row were selected")
 				//TODO: Display pop-up with User error! :)
 			}
 		}
+	case teamProfileDownloadedMsg:
+		if msg.err != nil {
+			log.Println("could not download team profile:", msg.err)
+		}
+		tp, cmd, err := NewTeamProfile(msg.teamID, WindowSize)
+		if err != nil {
+			log.Println("could not load team profile:", err)
+		}
+		return tp, cmd
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height

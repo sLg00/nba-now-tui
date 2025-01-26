@@ -50,7 +50,7 @@ func fetchLeagueLeadersCmd() tea.Cmd {
 			return fetchLeagueLeadersMsg{err: err}
 		}
 
-		playerStatsString := datamodels.ConvertToString(playerStats)
+		playerStatsString := datamodels.ConvertToStringMatrix(playerStats)
 
 		var (
 			columns []table.Column

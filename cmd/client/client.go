@@ -156,6 +156,19 @@ func (c *Client) MakeOnDemandRequests(s string) error {
 					return err
 				}
 			}
+		case "teamInfoCommonURL":
+			fileToCheck := c.FileChecker(path.TeamProfileFullPath())
+			if !fileToCheck {
+				json, err := c.InitiateClient(v)
+				if err != nil {
+					return fmt.Errorf("API error %v\n", err)
+				}
+				err = c.WriteToFiles(path.TeamProfileFullPath(), json)
+				if err != nil {
+					err = fmt.Errorf("couldn't write to files: %v", err)
+					log.Println(err)
+				}
+			}
 		}
 	}
 	return nil

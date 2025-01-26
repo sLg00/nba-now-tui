@@ -95,12 +95,17 @@ func boxScoreRequestBuilder(s string) requestURL {
 		s + "&RangeType=0&StartPeriod=1&StartRange=0")
 }
 
+func teamInfoCommonRequestBuilder(s string) requestURL {
+	return requestURL(URL + "teaminfocommon?LeagueID=00&Season=" + identifySeason() + "&SeasonType=&TeamID=" + s)
+}
+
 func BuildRequests(s string) map[string]requestURL {
 	urlMap := map[string]requestURL{
 		"leagueLeadersURL":   leagueLeadersAPIRequestBuilder(),
 		"seasonStandingsURL": seasonStandingsAPIRequestBuilder(),
 		"dailyScoresURL":     dailyScoreboardAPIRequestBuilder(),
 		"boxScoreURL":        boxScoreRequestBuilder(s),
+		"teamInfoCommonURL":  teamInfoCommonRequestBuilder(s),
 	}
 	return urlMap
 }

@@ -102,6 +102,30 @@ type Team struct {
 
 type Teams []Team
 
+type TeamCommonInfo struct {
+	TeamID         int     `json:"TEAM_ID"`
+	SeasonYear     string  `json:"SEASON_YEAR"`
+	TeamCity       string  `json:"TEAM_CITY"`
+	TeamName       string  `json:"TEAM_NAME"`
+	TeamAbbrev     string  `json:"TEAM_ABBREV"`
+	TeamConference string  `json:"TEAM_CONFERENCE"`
+	TeamDivision   string  `json:"TEAM_DIVISION"`
+	TeamCode       string  `json:"TEAM_CODE"`
+	TeamSlug       string  `json:"TEAM_SLUG"`
+	Wins           int     `json:"W"`
+	Losses         int     `json:"L"`
+	WinPct         float64 `json:"PCT"`
+	ConfRank       int     `json:"CONF_RANK"`
+	DivRank        int     `json:"DIV_RANK"`
+	MinYear        int     `json:"MIN_YEAR"`
+	MaxYear        int     `json:"MAX_YEAR"`
+}
+
+// ToStringSlice is a method on the TeamCommonInfo type that enables the attributes of the type to be converted to strings
+func (ti TeamCommonInfo) ToStringSlice() []string {
+	return structToStringSlice(ti)
+}
+
 // ToStringSlice is a method on the Team type that enables the attributes of the type to be converted to strings
 func (t Team) ToStringSlice() []string {
 	return structToStringSlice(t)
@@ -110,6 +134,99 @@ func (t Team) ToStringSlice() []string {
 // ToStringSlice is a method on the Teams type that enables the attributes of type to be converted to strings
 func (ts Teams) ToStringSlice() []string {
 	return structToStringSlice(ts)
+}
+
+func PopulateTeamInfo(s string, unmarshall func(string) (ResponseSet, error)) (TeamCommonInfo, []string, error) {
+	pc := client.NewClient().InstantiatePaths(s).TeamProfileFullPath()
+	response, err := unmarshall(pc)
+	if err != nil {
+		err = fmt.Errorf("could not unmarshall team info: %v", err)
+		log.Println()
+	}
+
+	headers := response.ResultSets[0].Headers
+	if len(headers) == 0 {
+		return TeamCommonInfo{}, nil, fmt.Errorf("could not unmarshall team info: no %v returned", headers)
+	}
+
+	var currentTeam TeamCommonInfo
+	for _, row := range response.ResultSets[0].RowSet {
+		if len(row) != len(headers) {
+			err = fmt.Errorf("header length mismatch with row: %v vs %v", len(headers), len(row))
+			log.Println(err)
+			return TeamCommonInfo{}, nil, err
+		}
+		for i, value := range row {
+			header := headers[i]
+			switch header {
+			case "TEAM_ID":
+				if v, ok := value.(float64); ok {
+					currentTeam.TeamID = int(v)
+				}
+			case "SEASON_YEAR":
+				if v, ok := value.(string); ok {
+					currentTeam.SeasonYear = v
+				}
+			case "TEAM_CITY":
+				if v, ok := value.(string); ok {
+					currentTeam.TeamCity = v
+				}
+			case "TEAM_NAME":
+				if v, ok := value.(string); ok {
+					currentTeam.TeamName = v
+				}
+			case "TEAM_ABBREVIATION":
+				if v, ok := value.(string); ok {
+					currentTeam.TeamAbbrev = v
+				}
+			case "TEAM_CONFERENCE":
+				if v, ok := value.(string); ok {
+					currentTeam.TeamConference = v
+				}
+			case "TEAM_DIVISION":
+				if v, ok := value.(string); ok {
+					currentTeam.TeamDivision = v
+				}
+			case "TEAM_CODE":
+				if v, ok := value.(string); ok {
+					currentTeam.TeamCode = v
+				}
+			case "TEAM_SLUG":
+				if v, ok := value.(string); ok {
+					currentTeam.TeamSlug = v
+				}
+			case "W":
+				if v, ok := value.(float64); ok {
+					currentTeam.Wins = int(v)
+				}
+			case "L":
+				if v, ok := value.(float64); ok {
+					currentTeam.Losses = int(v)
+				}
+			case "PCT":
+				if v, ok := value.(float64); ok {
+					currentTeam.WinPct = v
+				}
+			case "CONF_RANK":
+				if v, ok := value.(float64); ok {
+					currentTeam.ConfRank = int(v)
+				}
+			case "DIV_RANK":
+				if v, ok := value.(float64); ok {
+					currentTeam.DivRank = int(v)
+				}
+			case "MIN_YEAR":
+				if v, ok := value.(float64); ok {
+					currentTeam.MinYear = int(v)
+				}
+			case "MAX_YEAR":
+				if v, ok := value.(float64); ok {
+					currentTeam.MaxYear = int(v)
+				}
+			}
+		}
+	}
+	return currentTeam, headers, nil
 }
 
 // PopulateTeamStats maps the data to Teams struct to display season standings
