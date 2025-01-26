@@ -80,13 +80,24 @@ func fetchDailyScoresCmd() tea.Cmd {
 	}
 }
 
+// fetchGameDataCmd first checks the game's status (1,2,3), then queries the NBA API for box score results if
+// the status is greater than 1
 func fetchGameDataCmd(gameID string) tea.Cmd {
 	return func() tea.Msg {
-		err := client.NewClient().MakeOnDemandRequests(gameID)
+		gameStatus, err := datamodels.CheckGameStatus(gameID)
+		if err != nil {
+			return gameDataFetchedMsg{err: err}
+		}
+		if gameStatus > 1 {
+			err = client.NewClient().MakeOnDemandRequests(gameID)
+			return gameDataFetchedMsg{err: err}
+		}
+
 		return gameDataFetchedMsg{err: err}
 	}
 }
 
+// getGameId extrapolates the gameID from gameCard in order to query the NBA API for the corresponding box score
 func (m DailyView) getGameId() (string, error) {
 	focusedCard := m.gameCards[m.focusIndex]
 	rows := focusedCard.GetVisibleRows()
@@ -114,17 +125,23 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			return m, nil
 		}
 		for _, score := range msg.scores {
-			rows := []table.Row{
-				table.NewRow(table.RowData{"teams": score[4], "scores": score[3], "gameID": score[0]}),
-				table.NewRow(table.RowData{"teams": score[8], "scores": score[7], "gameID": score[0]}),
-			}
-			gameCard, err := newGameCard(rows)
+			gameStatus, err := datamodels.CheckGameStatus(score[0])
 			if err != nil {
-				log.Println("Error creating game card", err)
-				continue
+				log.Println("Error while querying game status", err)
 			}
-			m.gameCards = append(m.gameCards, gameCard)
-			cmds = append(cmds, fetchGameDataCmd(score[0]))
+			if gameStatus > 0 {
+				rows := []table.Row{
+					table.NewRow(table.RowData{"teams": score[4], "scores": score[3], "gameID": score[0]}),
+					table.NewRow(table.RowData{"teams": score[8], "scores": score[7], "gameID": score[0]}),
+				}
+				gameCard, err := newGameCard(rows)
+				if err != nil {
+					log.Println("Error creating game card", err)
+					continue
+				}
+				m.gameCards = append(m.gameCards, gameCard)
+				cmds = append(cmds, fetchGameDataCmd(score[0]))
+			}
 		}
 	case gameDataFetchedMsg:
 		if msg.err != nil {
@@ -142,12 +159,21 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			if err != nil {
 				log.Printf("Could not get game id: %v", err)
 			}
-			bx, cmd, err := NewBoxScore(gameID, WindowSize)
+
+			gameStatus, err := datamodels.CheckGameStatus(gameID)
 			if err != nil {
-				log.Println(err)
-				os.Exit(1)
+				log.Println("Error while querying game status", err)
 			}
-			return bx, cmd
+
+			//only attempt rendering box score unless the game is in progress or finished
+			if gameStatus > 1 {
+				bx, cmd, err := NewBoxScore(gameID, WindowSize)
+				if err != nil {
+					log.Println(err)
+					os.Exit(1)
+				}
+				return bx, cmd
+			}
 		case key.Matches(msg, Keymap.Up):
 			if m.focusIndex >= m.numCols {
 				m.focusIndex -= m.numCols

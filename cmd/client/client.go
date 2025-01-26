@@ -101,16 +101,13 @@ func (c *Client) MakeDefaultRequests() error {
 					}
 				}
 			case "dailyScoresURL":
-				fileToCheck := fileChecker(pc.DSBFullPath())
-				if !fileToCheck {
-					json, err = c.InitiateClient(url)
-					if err != nil {
-						eChan <- fmt.Errorf("API error %v\n", err)
-					}
-					err = c.WriteToFiles(pc.DSBFullPath(), json)
-					if err != nil {
-						eChan <- fmt.Errorf("could not write to files %v\n", err)
-					}
+				json, err = c.InitiateClient(url)
+				if err != nil {
+					eChan <- fmt.Errorf("API error %v\n", err)
+				}
+				err = c.WriteToFiles(pc.DSBFullPath(), json)
+				if err != nil {
+					eChan <- fmt.Errorf("could not write to files %v\n", err)
 				}
 			}
 		}(k, v)

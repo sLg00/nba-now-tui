@@ -273,6 +273,21 @@ func PopulateDailyGameResults(unmarshall func(string) (ResponseSet, error)) (Dai
 	return gameResults, headers, nil
 }
 
+// CheckGameStatus takes a gameId and returns the game's status ID (1 - scheduled, 2 - live, 3 - final)
+func CheckGameStatus(gameID string) (int, error) {
+	data, _, err := PopulateDailyGameResults(UnmarshallResponseJSON)
+	if err != nil {
+		return 0, fmt.Errorf("could not unmarshall json data: %v", err)
+	}
+
+	for _, game := range data {
+		if game.GameID == gameID {
+			return game.GameStatusID, nil
+		}
+	}
+	return 0, fmt.Errorf("could not find game with id: %v", gameID)
+}
+
 // PopulateBoxScore takes a gameID (string) as input and returns the required structures to represent
 // the game's box score in a TUI
 func PopulateBoxScore(s string, unmarshall func(string) (ResponseSet, error)) (BoxScore, error) {
