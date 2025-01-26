@@ -100,6 +100,8 @@ func (c *Client) MakeDefaultRequests() error {
 						eChan <- fmt.Errorf("could not write to files %v\n", err)
 					}
 				}
+				//TODO: refactor client logic to be an interface, so i can bake in refresh logic and add back the
+				//file check to dailyScores
 			case "dailyScoresURL":
 				json, err = c.InitiateClient(url)
 				if err != nil {
