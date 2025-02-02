@@ -12,7 +12,7 @@ import (
 type Client struct {
 	HTTPClient       *http.Client
 	HeaderSet        func() http.Header
-	BuildRequests    func(string) map[string]requestURL
+	BuildRequests    func(string) map[string]RequestURL
 	InstantiatePaths func(string) *PathComponents
 	FileChecker      func(string) bool
 	WriteToFiles     func(string, []byte) error
@@ -31,7 +31,7 @@ func NewClient() *Client {
 }
 
 // InitiateClient initializes client instances with the appropriate request URLs and headers
-func (c *Client) InitiateClient(url requestURL) ([]byte, error) {
+func (c *Client) InitiateClient(url RequestURL) ([]byte, error) {
 	req, _ := http.NewRequest("GET", string(url), nil)
 	req.Header = c.HeaderSet()
 
@@ -71,7 +71,7 @@ func (c *Client) MakeDefaultRequests() error {
 
 	for k, v := range urlMap {
 
-		go func(key string, url requestURL) {
+		go func(key string, url RequestURL) {
 			defer func() { dChan <- struct{}{} }()
 
 			switch key {

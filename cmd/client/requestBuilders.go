@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -11,8 +12,25 @@ import (
 )
 
 type (
-	// requestURL is a custom type that represent the specific URLs required to make requests towards the NBA APIs
-	requestURL string
+	//RequestURL is a custom type that represent the specific URLs required to make requests towards the NBA APIs
+	RequestURL  string
+	RequestType string
+	PerMode     string
+	SeasonType  string
+	Scope       string
+)
+
+const (
+	LeagueID                    = "00"
+	URL                         = "https://stats.nba.com/stats/"
+	LeagueLeaders   RequestType = "leagueleaders"
+	SeasonStandings RequestType = "leaguestandingsv3"
+	DailyScoreboard RequestType = "scoreboardv2"
+	BoxScore        RequestType = "boxscoretraditionalv3"
+	TeamInfo        RequestType = "teaminfocommon"
+	PerGame         PerMode     = "PerGame"
+	RegularSeason   SeasonType  = "Regular Season"
+	ScopeS          Scope       = "S"
 )
 
 // HTTPHeaderSet returns a http header required for the NBA API
@@ -30,12 +48,6 @@ func HTTPHeaderSet() http.Header {
 		"Cache-Control":      {"no-cache"},
 	}
 }
-
-// LeagueID is always 00 for the requests going against NBA APIs
-const (
-	LeagueID = "00"
-	URL      = "https://stats.nba.com/stats/"
-)
 
 // identifySeason determines what season is currently ongoing and formats it in a way that is needed to query NBA APIs
 func identifySeason() string {
@@ -65,42 +77,97 @@ func identifySeason() string {
 	return seasonString
 }
 
-// leagueLeadersAPIRequestBuilder creates the URL for the API request from dynamic- and hardcoded building blocks
-// TODO: SeasonType key can have 3 values, need to add identification for regular season/playoffs/preseason
-func leagueLeadersAPIRequestBuilder() requestURL {
-	return requestURL(URL + "leagueleaders?ActiveFlag=&LeagueID=" +
-		LeagueID + "&PerMode=PerGame&Scope=S&Season=" +
-		identifySeason() + "&SeasonType=Regular+Season&StatCategory=PTS")
+// leagueLeadersAPIRequestBuilder is a builder function to construct the appropriate URL to query leagueLeaders
+func leagueLeadersAPIRequestBuilder() RequestURL {
+	params := url.Values{}
+	params.Set("LeagueID", LeagueID)
+	params.Set("PerMode", string(PerGame))
+	params.Set("Scope", string(ScopeS))
+	params.Set("Season", identifySeason())
+	params.Set("SeasonType", string(RegularSeason))
+	params.Set("StatCategory", "PTS")
+
+	u, err := url.Parse(URL + string(LeagueLeaders))
+	if err != nil {
+		return ""
+	}
+	u.RawQuery = params.Encode()
+	return RequestURL(u.String())
 }
 
-func seasonStandingsAPIRequestBuilder() requestURL {
-	return requestURL(URL + "leaguestandingsv3?LeagueID=" +
-		LeagueID + "&Season=" + identifySeason() + "&SeasonType=Regular+Season")
+func seasonStandingsAPIRequestBuilder() RequestURL {
+	params := url.Values{}
+	params.Set("LeagueID", LeagueID)
+	params.Set("Season", identifySeason())
+	params.Set("SeasonType", string(RegularSeason))
+
+	u, err := url.Parse(URL + string(SeasonStandings))
+	if err != nil {
+		return ""
+	}
+	u.RawQuery = params.Encode()
+	return RequestURL(u.String())
 
 }
 
-func dailyScoreboardAPIRequestBuilder() requestURL {
+func dailyScoreboardAPIRequestBuilder() RequestURL {
 	today, err := GetDateArg()
 	if err != nil {
 		log.Fatal(err)
 	}
-	return requestURL(URL + "scoreboardv2?DayOffset=0&GameDate=" + today + "&LeagueID=" + LeagueID)
+
+	params := url.Values{}
+	params.Set("DayOffset", "0")
+	params.Set("GameDate", today)
+	params.Set("LeagueID", LeagueID)
+
+	u, err := url.Parse(URL + string(DailyScoreboard))
+	if err != nil {
+		return ""
+	}
+
+	u.RawQuery = params.Encode()
+	return RequestURL(u.String())
+
 }
 
-// BoxScoreRequestBuilder creates the URL for the API call to query a specific game's box score.
-// This URL does not go into the urlMap returned by the BuildRequests function.
-// This is due to the fact,that box scores are fetched on-demand, not up front. For now.
-func boxScoreRequestBuilder(s string) requestURL {
-	return requestURL(URL + "boxscoretraditionalv3?EndPeriod=1&EndRange=0&GameID=" +
-		s + "&RangeType=0&StartPeriod=1&StartRange=0")
+// boxScoreRequestBuilder creates the URL for the API call to query a specific game's box score.
+func boxScoreRequestBuilder(s string) RequestURL {
+	params := url.Values{}
+	params.Set("EndPeriod", "4")
+	params.Set("EngRange", "0")
+	params.Set("GameID", s)
+	params.Set("RangeType", "0")
+	params.Set("StartPeriod", "1")
+	params.Set("StartRange", "0")
+
+	u, err := url.Parse(URL + string(BoxScore))
+	if err != nil {
+		return ""
+	}
+
+	u.RawQuery = params.Encode()
+	return RequestURL(u.String())
+
 }
 
-func teamInfoCommonRequestBuilder(s string) requestURL {
-	return requestURL(URL + "teaminfocommon?LeagueID=00&Season=" + identifySeason() + "&SeasonType=&TeamID=" + s)
+func teamInfoCommonRequestBuilder(s string) RequestURL {
+	params := url.Values{}
+	params.Set("LeagueID", LeagueID)
+	params.Set("Season", identifySeason())
+	params.Set("TeamID", s)
+
+	u, err := url.Parse(URL + string(TeamInfo))
+	if err != nil {
+		return ""
+	}
+
+	u.RawQuery = params.Encode()
+	return RequestURL(u.String())
 }
 
-func BuildRequests(s string) map[string]requestURL {
-	urlMap := map[string]requestURL{
+func BuildRequests(s string) map[string]RequestURL {
+	urlMap := map[string]RequestURL{
 		"leagueLeadersURL":   leagueLeadersAPIRequestBuilder(),
 		"seasonStandingsURL": seasonStandingsAPIRequestBuilder(),
 		"dailyScoresURL":     dailyScoreboardAPIRequestBuilder(),
