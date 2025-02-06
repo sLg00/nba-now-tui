@@ -3,6 +3,7 @@ package datamodels
 import (
 	"fmt"
 	"github.com/sLg00/nba-now-tui/cmd/client"
+	"github.com/sLg00/nba-now-tui/cmd/nba/httpAPI"
 	"log"
 )
 
@@ -231,7 +232,7 @@ func PopulateTeamInfo(s string, unmarshall func(string) (ResponseSet, error)) (T
 
 // PopulateTeamStats maps the data to Teams struct to display season standings
 func PopulateTeamStats(unmarshall func(string) (ResponseSet, error)) (Teams, []string, error) {
-	pc := client.NewClient().InstantiatePaths("").SSFullPath()
+	pc := httpAPI.NewNewClient().InstantiatePaths("").SSFullPath()
 	response, err := unmarshall(pc)
 	if err != nil {
 		err = fmt.Errorf("could not unmarshall team stats: %v", err)

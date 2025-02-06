@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/sLg00/nba-now-tui/cmd/client"
+	"github.com/sLg00/nba-now-tui/cmd/nba/httpAPI"
 	"log"
 	"os"
 )
@@ -64,9 +65,10 @@ func createMenuItems() ([]list.Item, error) {
 
 // makeDefaultRequests is used to initiate default api requests and results storing on TUI launch.
 // It's only ran once when the app starts. Subsequent returns to the main menu do not trigger it again.
-func makeDefaultRequests() tea.Cmd {
+func makeInitialRequests() tea.Cmd {
 	return func() tea.Msg {
-		err := client.NewClient().MakeDefaultRequests()
+		//err := httpAPI.NewNewClient().NewMakeDefaultRequests()
+		err := httpAPI.NewNewClient().NewMakeDefaultRequests()
 		return requestsFinishedMsg{err: err}
 	}
 }
@@ -103,7 +105,7 @@ func InitMenu() (tea.Model, tea.Cmd) {
 func (m Model) Init() tea.Cmd {
 	if !m.requestsMade {
 		m.requestsMade = true
-		return tea.Batch(makeDefaultRequests())
+		return tea.Batch(makeInitialRequests())
 	}
 	return nil
 }

@@ -164,7 +164,6 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			if err != nil {
 				log.Println("Error while querying game status", err)
 			}
-
 			//only attempt rendering box score unless the game is in progress or finished
 			if gameStatus > 1 {
 				bx, cmd, err := NewBoxScore(gameID, WindowSize)

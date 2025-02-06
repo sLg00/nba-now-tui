@@ -109,8 +109,8 @@ func WriteToFiles(s string, b []byte) error {
 	return nil
 }
 
-// fileChecker is a helper function to check if a file exists in the system
-func fileChecker(s string) bool {
+// FileChecker is a helper function to check if a file exists in the system
+func FileChecker(s string) bool {
 	fileInfo, err := os.Stat(s)
 	if err == nil {
 		if fileInfo.Size() > 1000 {

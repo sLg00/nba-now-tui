@@ -55,9 +55,10 @@ func UnmarshallResponseJSON(s string) (ResponseSet, error) {
 		log.Println(err)
 		return response, err
 	}
+
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		err = fmt.Errorf("error unmarshalling response from file: %s", s)
+		err = fmt.Errorf("error unmarshalling response from file: %s, error %s ", s, err)
 		log.Println(err)
 		return ResponseSet{}, err
 	}

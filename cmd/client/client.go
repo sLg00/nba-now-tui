@@ -10,9 +10,9 @@ import (
 
 // Client struct encompasses all the functions required to do api calls and filesystem ops
 type Client struct {
-	HTTPClient       *http.Client
-	HeaderSet        func() http.Header
-	BuildRequests    func(string) map[string]RequestURL
+	HTTPClient       *http.Client                       //TODO: httpAPI.HTTPRequester
+	HeaderSet        func() http.Header                 //TODO: remove
+	BuildRequests    func(string) map[string]RequestURL //TODO: RequestsBuilder
 	InstantiatePaths func(string) *PathComponents
 	FileChecker      func(string) bool
 	WriteToFiles     func(string, []byte) error
@@ -25,7 +25,7 @@ func NewClient() *Client {
 		HeaderSet:        HTTPHeaderSet,
 		BuildRequests:    BuildRequests,
 		InstantiatePaths: InstantiatePaths,
-		FileChecker:      fileChecker,
+		FileChecker:      FileChecker,
 		WriteToFiles:     WriteToFiles,
 	}
 }
@@ -89,7 +89,7 @@ func (c *Client) MakeDefaultRequests() error {
 					}
 				}
 			case "seasonStandingsURL":
-				fileToCheck := fileChecker(pc.SSFullPath())
+				fileToCheck := c.FileChecker(pc.SSFullPath())
 				if !fileToCheck {
 					json, err = c.InitiateClient(url)
 					if err != nil {
