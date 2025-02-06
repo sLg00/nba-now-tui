@@ -1,5 +1,7 @@
 <h1>NBA Now</h1>
 
+NOTE: currently undergoing some incremental refactoring moving to a more loosely coupled design, leveraging interfaces.
+
 NBA NOW is a simple terminal application built with Go. 
 The TUI is built using [Charm](https://charm.sh)'s suite of libraries and leveraging the Bubble Tea framework.
 
