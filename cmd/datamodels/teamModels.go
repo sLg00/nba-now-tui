@@ -232,7 +232,7 @@ func PopulateTeamInfo(s string, unmarshall func(string) (ResponseSet, error)) (T
 
 // PopulateTeamStats maps the data to Teams struct to display season standings
 func PopulateTeamStats(unmarshall func(string) (ResponseSet, error)) (Teams, []string, error) {
-	pc := httpAPI.NewNewClient().InstantiatePaths("").SSFullPath()
+	pc := httpAPI.NewNewClient().Paths.GetFullPath("seasonStandings", "")
 	response, err := unmarshall(pc)
 	if err != nil {
 		err = fmt.Errorf("could not unmarshall team stats: %v", err)

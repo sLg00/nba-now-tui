@@ -158,7 +158,7 @@ func (bst BoxScoreTeam) ToStringSlice() []string {
 // Then subsequently converts the 'linescore' to GameResult objects, combining home and away team basic stats.
 // The function could be cleanly split into two, but yolo for now.
 func PopulateDailyGameResults(unmarshall func(string) (ResponseSet, error)) (DailyGameResults, []string, error) {
-	pc := httpAPI.NewNewClient().InstantiatePaths("").DSBFullPath()
+	pc := httpAPI.NewNewClient().Paths.GetFullPath("dailyScores", "")
 	response, err := unmarshall(pc)
 	if err != nil {
 		log.Printf("could not unmarshall json data: %v", err)

@@ -3,6 +3,8 @@ package httpAPI
 import (
 	"fmt"
 	"github.com/sLg00/nba-now-tui/cmd/client"
+	"github.com/sLg00/nba-now-tui/cmd/nba/pathManager"
+	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"io"
 	"log"
 	"net/http"
@@ -27,10 +29,10 @@ type RequestBuilder interface {
 
 type nbaRequestBuilder struct {
 	baseURL string
-	dates   DateProvider
+	dates   types.DateProvider
 }
 
-func NewRequestBuilder(baseURL string, dates DateProvider) RequestBuilder {
+func NewRequestBuilder(baseURL string, dates types.DateProvider) RequestBuilder {
 	return &nbaRequestBuilder{
 		baseURL: baseURL,
 		dates:   dates,
@@ -98,6 +100,7 @@ func (rb *nbaRequestBuilder) BuildDailyScoresRequest() RequestURL {
 type NewClient struct {
 	http             HTTPRequester
 	requests         RequestBuilder
+	Paths            pathManager.PathManager
 	InstantiatePaths func(string) *client.PathComponents
 	FileChecker      func(string) bool
 	WriteToFiles     func(string, []byte) error
@@ -134,17 +137,16 @@ func (h *HTTPClient) Get(url RequestURL) ([]byte, error) {
 func NewNewClient() *NewClient {
 	dateProvider := NewDateProvider(os.Args)
 	return &NewClient{
-		http:             NewHTTPClient(),
-		requests:         NewRequestBuilder(BaseURL, dateProvider),
-		InstantiatePaths: client.InstantiatePaths,
-		FileChecker:      client.FileChecker,
-		WriteToFiles:     client.WriteToFiles,
+		http:         NewHTTPClient(),
+		requests:     NewRequestBuilder(BaseURL, dateProvider),
+		Paths:        pathManager.PathFactory(dateProvider, ""),
+		FileChecker:  client.FileChecker,
+		WriteToFiles: client.WriteToFiles,
 	}
 }
 
 func (c *NewClient) NewMakeDefaultRequests() error {
 	urls := c.requests.BuildRequests("")
-	paths := c.InstantiatePaths("")
 
 	dChan := make(chan struct{}, len(urls))
 	eChan := make(chan error, len(urls))
@@ -153,24 +155,10 @@ func (c *NewClient) NewMakeDefaultRequests() error {
 		go func(name string, reqURL RequestURL) {
 			defer func() { dChan <- struct{}{} }()
 
-			var filePath string
-			switch name {
-			case "leagueLeaders":
-				filePath = paths.LLFullPath()
-				if c.FileChecker(filePath) {
-					return
-				}
-			case "seasonStandings":
-				log.Println("DEV querying url: ", reqURL)
-				filePath = paths.SSFullPath()
-				if c.FileChecker(filePath) {
-					return
-				}
-			case "dailyScores":
-				filePath = paths.DSBFullPath()
+			path := c.Paths.GetFullPath(name, "")
 
-			default:
-				eChan <- fmt.Errorf("unknown endpoint %q", name)
+			if name != "dailyScores" && c.FileChecker(path) {
+				return
 			}
 
 			data, err := c.http.Get(reqURL)
@@ -178,8 +166,8 @@ func (c *NewClient) NewMakeDefaultRequests() error {
 				eChan <- fmt.Errorf("api error: %w", err)
 			}
 
-			if err = c.WriteToFiles(filePath, data); err != nil {
-				eChan <- fmt.Errorf("write error: %w", err)
+			if err = c.WriteToFiles(path, data); err != nil {
+				eChan <- fmt.Errorf("write error for %s: %w", name, err)
 			}
 		}(name, reqURL)
 	}

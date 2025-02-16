@@ -2,6 +2,7 @@ package httpAPI
 
 import (
 	"fmt"
+	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"log"
 	"net/url"
 	"strconv"
@@ -26,11 +27,6 @@ type RequestParams interface {
 	ToValues() url.Values
 	Endpoint() string
 	Validate() error
-}
-
-type DateProvider interface {
-	GetCurrentDate() (string, error)
-	GetCurrentSeason() string
 }
 
 type nbaDateProvider struct {
@@ -58,7 +54,7 @@ type DailyScoresParams struct {
 	LeagueID  string
 }
 
-func NewDateProvider(args []string) DateProvider {
+func NewDateProvider(args []string) types.DateProvider {
 	return &nbaDateProvider{cmdArgs: args}
 }
 
