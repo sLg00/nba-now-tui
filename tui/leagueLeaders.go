@@ -34,7 +34,7 @@ func NewLeagueLeaders(size tea.WindowSizeMsg) (*LeagueLeaders, tea.Cmd, error) {
 		width:  size.Width,
 	}
 
-	cl, err := nbaAPI.NewNewClient().Loader.LoadLeagueLeaders()
+	cl, err := nbaAPI.NewClient().Loader.LoadLeagueLeaders()
 	_, _, err = converters.PopulatePlayerStats(cl)
 	if err != nil {
 		return &LeagueLeaders{}, nil, fmt.Errorf("failed to populate player stats: %w", err)
@@ -48,7 +48,7 @@ func NewLeagueLeaders(size tea.WindowSizeMsg) (*LeagueLeaders, tea.Cmd, error) {
 // fetchLeagueLeadersCmd fetches the required data from pre-existing JSON files and creates the table structure and rows
 func fetchLeagueLeadersCmd() tea.Cmd {
 	return func() tea.Msg {
-		cl, err := nbaAPI.NewNewClient().Loader.LoadLeagueLeaders()
+		cl, err := nbaAPI.NewClient().Loader.LoadLeagueLeaders()
 		if err != nil {
 			log.Println("failed to load league leaders")
 		}

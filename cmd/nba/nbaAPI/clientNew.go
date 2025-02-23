@@ -119,7 +119,7 @@ func (rb *nbaRequestBuilder) BuildTeamInfoRequest(teamID string) RequestURL {
 	return rb.buildURL(params)
 }
 
-type NewClient struct {
+type Client struct {
 	http       HTTPRequester
 	requests   RequestBuilder
 	Dates      types.DateProvider
@@ -157,9 +157,9 @@ func (h *HTTPClient) Get(url RequestURL) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
-func NewNewClient() *NewClient {
+func NewClient() *Client {
 	dateProvider := NewDateProvider(os.Args)
-	return &NewClient{
+	return &Client{
 		Dates:      NewDateProvider(os.Args),
 		http:       NewHTTPClient(),
 		requests:   NewRequestBuilder(BaseURL, dateProvider),
@@ -170,7 +170,7 @@ func NewNewClient() *NewClient {
 	}
 }
 
-func (c *NewClient) NewMakeDefaultRequests() error {
+func (c *Client) MakeDefaultRequests() error {
 	urls := c.requests.BuildRequests("")
 
 	err := c.FileSystem.CleanOldFiles(c.Paths.GetBasePaths())
@@ -224,7 +224,7 @@ func (c *NewClient) NewMakeDefaultRequests() error {
 	return nil
 }
 
-func (c *NewClient) FetchBoxScore(param string) error {
+func (c *Client) FetchBoxScore(param string) error {
 	urls := c.requests.BuildRequests(param)
 
 	for name, reqURL := range urls {
@@ -247,7 +247,7 @@ func (c *NewClient) FetchBoxScore(param string) error {
 	return nil
 }
 
-func (c *NewClient) FetchTeamProfile(param string) error {
+func (c *Client) FetchTeamProfile(param string) error {
 	urls := c.requests.BuildRequests(param)
 
 	for name, reqURL := range urls {

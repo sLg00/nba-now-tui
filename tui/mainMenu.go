@@ -66,8 +66,8 @@ func createMenuItems() ([]list.Item, error) {
 // It's only ran once when the app starts. Subsequent returns to the main menu do not trigger it again.
 func makeInitialRequests() tea.Cmd {
 	return func() tea.Msg {
-		//err := nbaAPI.NewNewClient().NewMakeDefaultRequests()
-		err := nbaAPI.NewNewClient().NewMakeDefaultRequests()
+		//err := nbaAPI.NewClient().MakeDefaultRequests()
+		err := nbaAPI.NewClient().MakeDefaultRequests()
 		return requestsFinishedMsg{err: err}
 	}
 }
@@ -83,7 +83,7 @@ func InitMenu() (tea.Model, tea.Cmd) {
 		top, right, bottom, left := DocStyle.GetMargin()
 		m.menu.SetSize(WindowSize.Width-left-right, WindowSize.Height-top-bottom-1)
 	}
-	currentDate, err := nbaAPI.NewNewClient().Dates.GetCurrentDate()
+	currentDate, err := nbaAPI.NewClient().Dates.GetCurrentDate()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)

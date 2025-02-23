@@ -44,7 +44,7 @@ type teamProfileDownloadedMsg struct {
 // It returns a teamProfileDownloadedMsg command
 func downloadProfile(teamID string) tea.Cmd {
 	return func() tea.Msg {
-		err := nbaAPI.NewNewClient().FetchTeamProfile(teamID)
+		err := nbaAPI.NewClient().FetchTeamProfile(teamID)
 		return teamProfileDownloadedMsg{err: err, teamID: teamID}
 	}
 }
@@ -62,7 +62,7 @@ func NewSeasonStandings(size tea.WindowSizeMsg) (*SeasonStandings, tea.Cmd, erro
 // fetchSeasonStandingsCmd fetches and prepares the data required to display the season standings tables
 func fetchSeasonStandingsCmd() tea.Cmd {
 	return func() tea.Msg {
-		cl, err := nbaAPI.NewNewClient().Loader.LoadSeasonStandings()
+		cl, err := nbaAPI.NewClient().Loader.LoadSeasonStandings()
 		if err != nil {
 			log.Println("Error loading season standings:", err)
 		}

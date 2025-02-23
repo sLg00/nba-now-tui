@@ -40,7 +40,7 @@ func NewDailyView(size tea.WindowSizeMsg) (*DailyView, tea.Cmd, error) {
 	}
 
 	// Attempt to fetch initial data directly to validate API availability
-	cl, err := nbaAPI.NewNewClient().Loader.LoadDailyScoreboard()
+	cl, err := nbaAPI.NewClient().Loader.LoadDailyScoreboard()
 	_, _, err = converters.PopulateDailyGameResults(cl)
 	if err != nil {
 		return &DailyView{}, nil, fmt.Errorf("failed to populate daily scores: %w\n", err)
@@ -74,7 +74,7 @@ func (m DailyView) Init() tea.Cmd { return fetchDailyScoresCmd() }
 
 func fetchDailyScoresCmd() tea.Cmd {
 	return func() tea.Msg {
-		cl, err := nbaAPI.NewNewClient().Loader.LoadDailyScoreboard()
+		cl, err := nbaAPI.NewClient().Loader.LoadDailyScoreboard()
 		if err != nil {
 			log.Println("error loading daily scoreboard:", err)
 		}
@@ -95,7 +95,7 @@ func fetchGameDataCmd(gameID string) tea.Cmd {
 			return gameDataFetchedMsg{err: err}
 		}
 		if gameStatus > 1 {
-			err = nbaAPI.NewNewClient().FetchBoxScore(gameID)
+			err = nbaAPI.NewClient().FetchBoxScore(gameID)
 			return gameDataFetchedMsg{err: err}
 		}
 
@@ -231,7 +231,7 @@ func renderDailyView(m DailyView) string {
 		}
 	}
 
-	dateToDisplayInCaseOfEmpty, _ := nbaAPI.NewNewClient().Dates.GetCurrentDate()
+	dateToDisplayInCaseOfEmpty, _ := nbaAPI.NewClient().Dates.GetCurrentDate()
 	if len(m.gameCards) == 0 {
 		content = "No games happened during " + dateToDisplayInCaseOfEmpty
 	} else {

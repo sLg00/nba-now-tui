@@ -124,7 +124,7 @@ func PopulateDailyGameResults(rs types.ResponseSet) (types.DailyGameResults, []s
 
 // CheckGameStatus takes a gameId and returns the game's status ID (1 - scheduled, 2 - live, 3 - final)
 func CheckGameStatus(gameID string) (int, error) {
-	cl, err := nbaAPI.NewNewClient().Loader.LoadDailyScoreboard()
+	cl, err := nbaAPI.NewClient().Loader.LoadDailyScoreboard()
 	data, _, err := PopulateDailyGameResults(cl)
 	if err != nil {
 		return 0, fmt.Errorf("could not unmarshall json data: %v", err)

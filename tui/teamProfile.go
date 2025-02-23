@@ -28,7 +28,7 @@ func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cm
 		height: size.Height,
 	}
 
-	cl, err := nbaAPI.NewNewClient().Loader.LoadTeamProfile(teamID)
+	cl, err := nbaAPI.NewClient().Loader.LoadTeamProfile(teamID)
 	_, _, err = converters.PopulateTeamInfo(cl)
 	if err != nil {
 		return &TeamProfile{}, nil, err
@@ -41,7 +41,7 @@ func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cm
 
 func fetchTeamProfileMsg(teamID string) tea.Cmd {
 	return func() tea.Msg {
-		cl, err := nbaAPI.NewNewClient().Loader.LoadTeamProfile(teamID)
+		cl, err := nbaAPI.NewClient().Loader.LoadTeamProfile(teamID)
 		if err != nil {
 			log.Println("error loading team profile:", err)
 		}

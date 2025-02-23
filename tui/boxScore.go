@@ -41,7 +41,7 @@ func NewBoxScore(gameId string, size tea.WindowSizeMsg) (*InstantiatedBoxScore, 
 		height: size.Height,
 	}
 
-	cl, err := nbaAPI.NewNewClient().Loader.LoadBoxScore(gameId)
+	cl, err := nbaAPI.NewClient().Loader.LoadBoxScore(gameId)
 	_, err = converters.PopulateBoxScore(cl)
 	if err != nil {
 		return &InstantiatedBoxScore{}, nil, fmt.Errorf("failed to populate box score: %w", err)
@@ -55,7 +55,7 @@ func NewBoxScore(gameId string, size tea.WindowSizeMsg) (*InstantiatedBoxScore, 
 // fetchBoxScoresCmd "fetches" and processes the given game data to eventually render a box score
 func fetchBoxSoresCmd(gameID string) tea.Cmd {
 	return func() tea.Msg {
-		cl, err := nbaAPI.NewNewClient().Loader.LoadBoxScore(gameID)
+		cl, err := nbaAPI.NewClient().Loader.LoadBoxScore(gameID)
 		if err != nil {
 			log.Printf("failed to load box score for game id %s: %v", gameID, err)
 		}
