@@ -6,8 +6,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
-	"github.com/sLg00/nba-now-tui/cmd/client"
-	"github.com/sLg00/nba-now-tui/cmd/datamodels"
+	"github.com/sLg00/nba-now-tui/cmd/converters"
+	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
+	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"log"
 	"os"
 )
@@ -39,7 +40,8 @@ func NewDailyView(size tea.WindowSizeMsg) (*DailyView, tea.Cmd, error) {
 	}
 
 	// Attempt to fetch initial data directly to validate API availability
-	_, _, err := datamodels.PopulateDailyGameResults(datamodels.UnmarshallResponseJSON)
+	cl, err := nbaAPI.NewNewClient().Loader.LoadDailyScoreboard()
+	_, _, err = converters.PopulateDailyGameResults(cl)
 	if err != nil {
 		return &DailyView{}, nil, fmt.Errorf("failed to populate daily scores: %w\n", err)
 	}
@@ -72,11 +74,15 @@ func (m DailyView) Init() tea.Cmd { return fetchDailyScoresCmd() }
 
 func fetchDailyScoresCmd() tea.Cmd {
 	return func() tea.Msg {
-		dailyScores, _, err := datamodels.PopulateDailyGameResults(datamodels.UnmarshallResponseJSON)
+		cl, err := nbaAPI.NewNewClient().Loader.LoadDailyScoreboard()
+		if err != nil {
+			log.Println("error loading daily scoreboard:", err)
+		}
+		dailyScores, _, err := converters.PopulateDailyGameResults(cl)
 		if err != nil {
 			return dailyScoresFetchedMsg{err: err}
 		}
-		return dailyScoresFetchedMsg{scores: datamodels.ConvertToStringMatrix(dailyScores)}
+		return dailyScoresFetchedMsg{scores: types.ConvertToStringMatrix(dailyScores)}
 	}
 }
 
@@ -84,12 +90,12 @@ func fetchDailyScoresCmd() tea.Cmd {
 // the status is greater than 1
 func fetchGameDataCmd(gameID string) tea.Cmd {
 	return func() tea.Msg {
-		gameStatus, err := datamodels.CheckGameStatus(gameID)
+		gameStatus, err := converters.CheckGameStatus(gameID)
 		if err != nil {
 			return gameDataFetchedMsg{err: err}
 		}
 		if gameStatus > 1 {
-			err = client.NewClient().MakeOnDemandRequests(gameID)
+			err = nbaAPI.NewNewClient().FetchBoxScore(gameID)
 			return gameDataFetchedMsg{err: err}
 		}
 
@@ -125,7 +131,7 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			return m, nil
 		}
 		for _, score := range msg.scores {
-			gameStatus, err := datamodels.CheckGameStatus(score[0])
+			gameStatus, err := converters.CheckGameStatus(score[0])
 			if err != nil {
 				log.Println("Error while querying game status", err)
 			}
@@ -160,7 +166,7 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 				log.Printf("Could not get game id: %v", err)
 			}
 
-			gameStatus, err := datamodels.CheckGameStatus(gameID)
+			gameStatus, err := converters.CheckGameStatus(gameID)
 			if err != nil {
 				log.Println("Error while querying game status", err)
 			}
@@ -225,7 +231,7 @@ func renderDailyView(m DailyView) string {
 		}
 	}
 
-	dateToDisplayInCaseOfEmpty, _ := client.GetDateArg()
+	dateToDisplayInCaseOfEmpty, _ := nbaAPI.NewNewClient().Dates.GetCurrentDate()
 	if len(m.gameCards) == 0 {
 		content = "No games happened during " + dateToDisplayInCaseOfEmpty
 	} else {

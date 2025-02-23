@@ -6,7 +6,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
-	"github.com/sLg00/nba-now-tui/cmd/datamodels"
+	"github.com/sLg00/nba-now-tui/cmd/converters"
+	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
+	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"log"
 	"strings"
 )
@@ -32,7 +34,8 @@ func NewLeagueLeaders(size tea.WindowSizeMsg) (*LeagueLeaders, tea.Cmd, error) {
 		width:  size.Width,
 	}
 
-	_, _, err := datamodels.PopulatePlayerStats(datamodels.UnmarshallResponseJSON)
+	cl, err := nbaAPI.NewNewClient().Loader.LoadLeagueLeaders()
+	_, _, err = converters.PopulatePlayerStats(cl)
 	if err != nil {
 		return &LeagueLeaders{}, nil, fmt.Errorf("failed to populate player stats: %w", err)
 	}
@@ -45,12 +48,16 @@ func NewLeagueLeaders(size tea.WindowSizeMsg) (*LeagueLeaders, tea.Cmd, error) {
 // fetchLeagueLeadersCmd fetches the required data from pre-existing JSON files and creates the table structure and rows
 func fetchLeagueLeadersCmd() tea.Cmd {
 	return func() tea.Msg {
-		playerStats, headers, err := datamodels.PopulatePlayerStats(datamodels.UnmarshallResponseJSON)
+		cl, err := nbaAPI.NewNewClient().Loader.LoadLeagueLeaders()
+		if err != nil {
+			log.Println("failed to load league leaders")
+		}
+		playerStats, headers, err := converters.PopulatePlayerStats(cl)
 		if err != nil {
 			return fetchLeagueLeadersMsg{err: err}
 		}
 
-		playerStatsString := datamodels.ConvertToStringMatrix(playerStats)
+		playerStatsString := types.ConvertToStringMatrix(playerStats)
 
 		var (
 			columns []table.Column

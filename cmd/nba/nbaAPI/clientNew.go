@@ -1,8 +1,8 @@
-package httpAPI
+package nbaAPI
 
 import (
 	"fmt"
-	"github.com/sLg00/nba-now-tui/cmd/client"
+	filesystemops "github.com/sLg00/nba-now-tui/cmd/nba/filesystem"
 	"github.com/sLg00/nba-now-tui/cmd/nba/pathManager"
 	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"io"
@@ -23,8 +23,8 @@ type RequestBuilder interface {
 	BuildLeagueLeadersRequest() RequestURL
 	BuildSeasonStandingsRequest() RequestURL
 	BuildDailyScoresRequest() RequestURL
-	//BuildBoxScoresRequest(gameID string) RequestURL
-	//BuildTeamInfoRequest(teamID string) RequestURL
+	BuildBoxScoreRequest(gameID string) RequestURL
+	BuildTeamInfoRequest(teamID string) RequestURL
 }
 
 type nbaRequestBuilder struct {
@@ -44,8 +44,8 @@ func (rb *nbaRequestBuilder) BuildRequests(param string) map[string]RequestURL {
 		"leagueLeaders":   rb.BuildLeagueLeadersRequest(),
 		"seasonStandings": rb.BuildSeasonStandingsRequest(),
 		"dailyScores":     rb.BuildDailyScoresRequest(),
-		//"boxScores:" rb.BuildBoxScoresRequests(),
-		//"teamInfo":     rb.BuildTeamInfoRequest(),
+		"boxScore":        rb.BuildBoxScoreRequest(param),
+		"teamInfo":        rb.BuildTeamInfoRequest(param),
 	}
 }
 
@@ -97,13 +97,35 @@ func (rb *nbaRequestBuilder) BuildDailyScoresRequest() RequestURL {
 	return rb.buildURL(params)
 }
 
+func (rb *nbaRequestBuilder) BuildBoxScoreRequest(gameID string) RequestURL {
+	params := BoxScoreParams{
+		EndPeriod:   "4",
+		EndRange:    "0",
+		GameID:      gameID,
+		RangeType:   "0",
+		StartPeriod: "1",
+		StartRange:  "0",
+	}
+	return rb.buildURL(params)
+}
+
+func (rb *nbaRequestBuilder) BuildTeamInfoRequest(teamID string) RequestURL {
+	season := rb.dates.GetCurrentSeason()
+	params := TeamProfileParams{
+		LeagueID: LeagueID,
+		Season:   season,
+		TeamID:   teamID,
+	}
+	return rb.buildURL(params)
+}
+
 type NewClient struct {
-	http             HTTPRequester
-	requests         RequestBuilder
-	Paths            pathManager.PathManager
-	InstantiatePaths func(string) *client.PathComponents
-	FileChecker      func(string) bool
-	WriteToFiles     func(string, []byte) error
+	http       HTTPRequester
+	requests   RequestBuilder
+	Dates      types.DateProvider
+	Paths      pathManager.PathManager
+	FileSystem filesystemops.FileSystemHandler
+	Loader     filesystemops.DataLoader
 }
 
 type HTTPClient struct {
@@ -118,6 +140,7 @@ func NewHTTPClient() *HTTPClient {
 
 func (h *HTTPClient) Get(url RequestURL) ([]byte, error) {
 	req, _ := http.NewRequest("GET", string(url), nil)
+	log.Printf("request URL: %v\n", url)
 	req.Header = h.SetHeaders()
 
 	resp, err := h.client.Do(req)
@@ -137,39 +160,51 @@ func (h *HTTPClient) Get(url RequestURL) ([]byte, error) {
 func NewNewClient() *NewClient {
 	dateProvider := NewDateProvider(os.Args)
 	return &NewClient{
-		http:         NewHTTPClient(),
-		requests:     NewRequestBuilder(BaseURL, dateProvider),
-		Paths:        pathManager.PathFactory(dateProvider, ""),
-		FileChecker:  client.FileChecker,
-		WriteToFiles: client.WriteToFiles,
+		Dates:      NewDateProvider(os.Args),
+		http:       NewHTTPClient(),
+		requests:   NewRequestBuilder(BaseURL, dateProvider),
+		Paths:      pathManager.PathFactory(dateProvider, ""),
+		FileSystem: filesystemops.NewDefaultFsHandler(),
+		Loader: filesystemops.NewDataLoader(filesystemops.NewDefaultFsHandler(),
+			pathManager.PathFactory(dateProvider, "")),
 	}
 }
 
 func (c *NewClient) NewMakeDefaultRequests() error {
 	urls := c.requests.BuildRequests("")
 
+	err := c.FileSystem.CleanOldFiles(c.Paths.GetBasePaths())
+	if err != nil {
+		log.Printf("failed to clean old files: %v", err)
+	}
+
 	dChan := make(chan struct{}, len(urls))
 	eChan := make(chan error, len(urls))
 
 	for name, reqURL := range urls {
-		go func(name string, reqURL RequestURL) {
-			defer func() { dChan <- struct{}{} }()
+		switch name {
+		case "dailyScores", "leagueLeaders", "seasonStandings":
+			go func(name string, reqURL RequestURL) {
+				defer func() { dChan <- struct{}{} }()
 
-			path := c.Paths.GetFullPath(name, "")
+				path := c.Paths.GetFullPath(name, "")
 
-			if name != "dailyScores" && c.FileChecker(path) {
-				return
-			}
+				if name != "dailyScores" && c.FileSystem.FileExists(path) {
+					return
+				}
 
-			data, err := c.http.Get(reqURL)
-			if err != nil {
-				eChan <- fmt.Errorf("api error: %w", err)
-			}
+				data, err := c.http.Get(reqURL)
+				if err != nil {
+					eChan <- fmt.Errorf("api error: %w", err)
+				}
 
-			if err = c.WriteToFiles(path, data); err != nil {
-				eChan <- fmt.Errorf("write error for %s: %w", name, err)
-			}
-		}(name, reqURL)
+				if err = c.FileSystem.WriteFile(path, data); err != nil {
+					eChan <- fmt.Errorf("write error for %s: %w", name, err)
+				}
+			}(name, reqURL)
+		default:
+			continue
+		}
 	}
 
 	for i := 0; i < len(urls); i++ {
@@ -179,12 +214,58 @@ func (c *NewClient) NewMakeDefaultRequests() error {
 
 	var errs []error
 
-	for err := range eChan {
+	for err = range eChan {
 		errs = append(errs, err)
 	}
 
 	if len(errs) > 0 {
 		return fmt.Errorf("encountered %d errors during API requests", len(errs))
+	}
+	return nil
+}
+
+func (c *NewClient) FetchBoxScore(param string) error {
+	urls := c.requests.BuildRequests(param)
+
+	for name, reqURL := range urls {
+		switch name {
+		case "boxScore":
+			path := c.Paths.GetFullPath(name, param)
+			if !c.FileSystem.FileExists(path) {
+				data, err := c.http.Get(reqURL)
+				if err != nil {
+					return fmt.Errorf("api error: %w", err)
+				}
+				if err = c.FileSystem.WriteFile(path, data); err != nil {
+					return fmt.Errorf("write error for %s: %w", name, err)
+				}
+			}
+		default:
+			continue
+		}
+	}
+	return nil
+}
+
+func (c *NewClient) FetchTeamProfile(param string) error {
+	urls := c.requests.BuildRequests(param)
+
+	for name, reqURL := range urls {
+		switch name {
+		case "teamInfo":
+			path := c.Paths.GetFullPath(name, param)
+			if !c.FileSystem.FileExists(path) {
+				data, err := c.http.Get(reqURL)
+				if err != nil {
+					return fmt.Errorf("api error: %w", err)
+				}
+				if err = c.FileSystem.WriteFile(path, data); err != nil {
+					return fmt.Errorf("write error for %s: %w", name, err)
+				}
+			}
+		default:
+			continue
+		}
 	}
 	return nil
 }

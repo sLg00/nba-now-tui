@@ -13,7 +13,6 @@ type PathManager interface {
 }
 
 type PathComps struct {
-	Dates           types.DateProvider
 	Home            string //home directory of the current OS user
 	Path            string //path to the config directory of the cmd
 	LLFile          string //league leaders file name
@@ -21,8 +20,10 @@ type PathComps struct {
 	DSBFile         string //daily scoreboard file name
 	BoxScorePath    string //folder to store box scores
 	BoxScoreFile    string //box score file name
+	BoxScoreID      string //id of specific box score
 	TeamProfilePath string //folder to store profile pages
 	TeamProfileFile string // team profile file
+	TeamProfileID   string //id of specific team
 }
 
 func PathFactory(dates types.DateProvider, id string) *PathComps {
@@ -45,8 +46,10 @@ func PathFactory(dates types.DateProvider, id string) *PathComps {
 		SSFile:          today + "_ss",
 		DSBFile:         today + "_dsb",
 		BoxScorePath:    "boxscores/",
-		BoxScoreFile:    today + "_" + id,
-		TeamProfilePath: "teamprofiles/" + id,
+		BoxScoreFile:    today + "_",
+		BoxScoreID:      id,
+		TeamProfilePath: "teamprofiles/",
+		TeamProfileID:   id,
 	}
 }
 
@@ -60,8 +63,8 @@ func (p *PathComps) GetFullPath(fileType string, id string) string {
 	case "dailyScores":
 		return base + p.DSBFile
 	case "boxScore":
-		return base + p.BoxScorePath + id
-	case "teamProfile":
+		return base + p.BoxScorePath + p.BoxScoreFile + id
+	case "teamInfo":
 		return base + p.TeamProfilePath + id
 	default:
 		return base
@@ -72,6 +75,5 @@ func (p *PathComps) GetBasePaths() []string {
 	return []string{
 		p.Home + p.Path,
 		p.Home + p.Path + p.BoxScorePath,
-		p.Home + p.Path + p.TeamProfilePath,
 	}
 }

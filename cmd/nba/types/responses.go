@@ -1,10 +1,8 @@
-package datamodels
+package types
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"reflect"
 	"strconv"
 )
@@ -42,27 +40,6 @@ type ResponseSet struct {
 	ResultSet  ResultSet   `json:"resultSet"`
 	ResultSets []ResultSet `json:"resultSets"`
 	BoxScore   BoxScore    `json:"boxScoreTraditional"`
-}
-
-// UnmarshallResponseJSON unmarshalls JSON from the appropriate JSON file.
-// Takes string (full path to file) as an input and returns a ResponseSet struct
-func UnmarshallResponseJSON(s string) (ResponseSet, error) {
-	var response ResponseSet
-
-	data, err := os.ReadFile(s)
-	if err != nil {
-		err = fmt.Errorf("error reading file %s", s)
-		log.Println(err)
-		return response, err
-	}
-
-	err = json.Unmarshal(data, &response)
-	if err != nil {
-		err = fmt.Errorf("error unmarshalling response from file: %s, error %s ", s, err)
-		log.Println(err)
-		return ResponseSet{}, err
-	}
-	return response, nil
 }
 
 // structToStringSlice is the core function that converts type attributes from Float64 and Int to String,

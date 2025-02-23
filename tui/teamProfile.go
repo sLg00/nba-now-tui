@@ -5,7 +5,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
-	"github.com/sLg00/nba-now-tui/cmd/datamodels"
+	"github.com/sLg00/nba-now-tui/cmd/converters"
+	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
+	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"log"
 )
 
@@ -26,7 +28,8 @@ func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cm
 		height: size.Height,
 	}
 
-	_, _, err := datamodels.PopulateTeamInfo(teamID, datamodels.UnmarshallResponseJSON)
+	cl, err := nbaAPI.NewNewClient().Loader.LoadTeamProfile(teamID)
+	_, _, err = converters.PopulateTeamInfo(cl)
 	if err != nil {
 		return &TeamProfile{}, nil, err
 	}
@@ -38,12 +41,16 @@ func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cm
 
 func fetchTeamProfileMsg(teamID string) tea.Cmd {
 	return func() tea.Msg {
-		data, headers, err := datamodels.PopulateTeamInfo(teamID, datamodels.UnmarshallResponseJSON)
+		cl, err := nbaAPI.NewNewClient().Loader.LoadTeamProfile(teamID)
+		if err != nil {
+			log.Println("error loading team profile:", err)
+		}
+		data, headers, err := converters.PopulateTeamInfo(cl)
 		if err != nil {
 			return teamProfileFetchedMsg{err: err}
 		}
 
-		teamProfileStrings := datamodels.ConvertToStringFlat(data)
+		teamProfileStrings := types.ConvertToStringFlat(data)
 
 		var column table.Column
 		var columns []table.Column

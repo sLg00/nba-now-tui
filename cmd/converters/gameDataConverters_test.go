@@ -1,4 +1,4 @@
-package datamodels
+package converters
 
 import (
 	"github.com/sLg00/nba-now-tui/cmd/helpers"

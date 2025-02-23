@@ -5,8 +5,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
-	"github.com/sLg00/nba-now-tui/cmd/client"
-	"github.com/sLg00/nba-now-tui/cmd/datamodels"
+	"github.com/sLg00/nba-now-tui/cmd/converters"
+	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
+	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"log"
 	"strings"
 )
@@ -43,7 +44,7 @@ type teamProfileDownloadedMsg struct {
 // It returns a teamProfileDownloadedMsg command
 func downloadProfile(teamID string) tea.Cmd {
 	return func() tea.Msg {
-		err := client.NewClient().MakeOnDemandRequests(teamID)
+		err := nbaAPI.NewNewClient().FetchTeamProfile(teamID)
 		return teamProfileDownloadedMsg{err: err, teamID: teamID}
 	}
 }
@@ -61,15 +62,19 @@ func NewSeasonStandings(size tea.WindowSizeMsg) (*SeasonStandings, tea.Cmd, erro
 // fetchSeasonStandingsCmd fetches and prepares the data required to display the season standings tables
 func fetchSeasonStandingsCmd() tea.Cmd {
 	return func() tea.Msg {
-		teams, headers, err := datamodels.PopulateTeamStats(datamodels.UnmarshallResponseJSON)
+		cl, err := nbaAPI.NewNewClient().Loader.LoadSeasonStandings()
+		if err != nil {
+			log.Println("Error loading season standings:", err)
+		}
+		teams, headers, err := converters.PopulateTeamStats(cl)
 		if err != nil {
 			return fetchSeasonStandingsMsg{err: err}
 		}
 
 		eastTeams, westTeams := teams.SplitStandingsPerConference()
 
-		eastTeamsStrings := datamodels.ConvertToStringMatrix(eastTeams)
-		westTeamsStrings := datamodels.ConvertToStringMatrix(westTeams)
+		eastTeamsStrings := types.ConvertToStringMatrix(eastTeams)
+		westTeamsStrings := types.ConvertToStringMatrix(westTeams)
 
 		var (
 			columns  []table.Column

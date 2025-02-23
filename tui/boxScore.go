@@ -6,7 +6,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
-	"github.com/sLg00/nba-now-tui/cmd/datamodels"
+	"github.com/sLg00/nba-now-tui/cmd/converters"
+	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
+	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"log"
 	"os"
 	"reflect"
@@ -39,7 +41,8 @@ func NewBoxScore(gameId string, size tea.WindowSizeMsg) (*InstantiatedBoxScore, 
 		height: size.Height,
 	}
 
-	_, err := datamodels.PopulateBoxScore(gameId, datamodels.UnmarshallResponseJSON)
+	cl, err := nbaAPI.NewNewClient().Loader.LoadBoxScore(gameId)
+	_, err = converters.PopulateBoxScore(cl)
 	if err != nil {
 		return &InstantiatedBoxScore{}, nil, fmt.Errorf("failed to populate box score: %w", err)
 	}
@@ -52,7 +55,11 @@ func NewBoxScore(gameId string, size tea.WindowSizeMsg) (*InstantiatedBoxScore, 
 // fetchBoxScoresCmd "fetches" and processes the given game data to eventually render a box score
 func fetchBoxSoresCmd(gameID string) tea.Cmd {
 	return func() tea.Msg {
-		boxScoreData, err := datamodels.PopulateBoxScore(gameID, datamodels.UnmarshallResponseJSON)
+		cl, err := nbaAPI.NewNewClient().Loader.LoadBoxScore(gameID)
+		if err != nil {
+			log.Printf("failed to load box score for game id %s: %v", gameID, err)
+		}
+		boxScoreData, err := converters.PopulateBoxScore(cl)
 		if err != nil {
 			return boxScoreFetchedMsg{err: err}
 		}
@@ -155,7 +162,7 @@ func extractStatistics(v interface{}) ([]string, []string) {
 		keys = append(keys, field.Name)
 		if fieldValue.Kind() == reflect.Float64 {
 			if tag == "true" {
-				values = append(values, datamodels.FloatToPercent(fieldValue.Float()))
+				values = append(values, types.FloatToPercent(fieldValue.Float()))
 			}
 		} else {
 			values = append(values, fmt.Sprintf("%v", fieldValue.Interface()))

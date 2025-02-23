@@ -1,4 +1,4 @@
-package httpAPI
+package nbaAPI
 
 import "net/http"
 

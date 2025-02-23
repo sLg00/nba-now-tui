@@ -1,4 +1,4 @@
-package httpAPI
+package nbaAPI
 
 import (
 	"fmt"
@@ -52,6 +52,21 @@ type DailyScoresParams struct {
 	DayOffset string
 	GameDate  string
 	LeagueID  string
+}
+
+type BoxScoreParams struct {
+	EndPeriod   string
+	EndRange    string
+	GameID      string
+	RangeType   string
+	StartPeriod string
+	StartRange  string
+}
+
+type TeamProfileParams struct {
+	LeagueID string
+	Season   string
+	TeamID   string
 }
 
 func NewDateProvider(args []string) types.DateProvider {
@@ -160,6 +175,49 @@ func (p DailyScoresParams) Validate() error {
 	}
 	if p.GameDate == "" {
 		return fmt.Errorf("gameDate is required")
+	}
+	return nil
+}
+
+func (p BoxScoreParams) ToValues() url.Values {
+	values := url.Values{}
+	values.Set("EndPeriod", p.EndPeriod)
+	values.Set("EndRange", p.EndRange)
+	values.Set("GameID", p.GameID)
+	values.Set("RangeType", p.RangeType)
+	values.Set("StartPeriod", p.StartPeriod)
+	values.Set("StartRange", p.StartRange)
+	return values
+}
+
+func (p BoxScoreParams) Endpoint() string { return "boxscoretraditionalv3" }
+
+func (p BoxScoreParams) Validate() error {
+	if p.GameID == "" {
+		return fmt.Errorf("gameID is required")
+	}
+	if p.EndPeriod == "" {
+		return fmt.Errorf("endPeriod is required")
+	}
+	return nil
+}
+
+func (p TeamProfileParams) ToValues() url.Values {
+	values := url.Values{}
+	values.Set("LeagueID", p.LeagueID)
+	values.Set("Season", p.Season)
+	values.Set("TeamID", p.TeamID)
+	return values
+}
+
+func (p TeamProfileParams) Endpoint() string { return "teaminfocommon" }
+
+func (p TeamProfileParams) Validate() error {
+	if p.LeagueID == "" {
+		return fmt.Errorf("leagueID is required")
+	}
+	if p.TeamID == "" {
+		return fmt.Errorf("teamID is required")
 	}
 	return nil
 }
