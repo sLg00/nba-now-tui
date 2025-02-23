@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 )
 
+// FileSystemHandler provides capabilities that enable I/O ops within the local fs
 type FileSystemHandler interface {
 	WriteFile(file string, data []byte) error
 	ReadFile(file string) ([]byte, error)
@@ -13,10 +14,12 @@ type FileSystemHandler interface {
 	CleanOldFiles(pc []string) error
 }
 
+// DefaultFsHandler implements the FileSystemHandler interface
 type DefaultFsHandler struct {
 	baseDirectory string
 }
 
+// NewDefaultFsHandler is a factory function that returns a pointer to the DefaultFsHandler struct
 func NewDefaultFsHandler() *DefaultFsHandler {
 	home, err := os.UserHomeDir()
 	if err != nil {
