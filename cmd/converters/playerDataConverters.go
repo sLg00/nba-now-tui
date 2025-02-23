@@ -19,6 +19,7 @@ func PopulatePlayerStats(rs types.ResponseSet) (types.Players, []string, error) 
 			log.Println(err)
 			return nil, nil, err
 		}
+
 		var player types.Player
 		for i, value := range row {
 			switch v := value.(type) {

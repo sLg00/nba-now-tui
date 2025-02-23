@@ -6,6 +6,8 @@ import (
 	"log"
 )
 
+// PopulateTeamInfo maps the team info request result et to the appropriate
+// internal structs for further processing and use
 func PopulateTeamInfo(rs types.ResponseSet) (types.TeamCommonInfo, []string, error) {
 	response := rs
 	headers := response.ResultSets[0].Headers

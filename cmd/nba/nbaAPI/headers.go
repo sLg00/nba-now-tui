@@ -2,6 +2,7 @@ package nbaAPI
 
 import "net/http"
 
+// SetHeaders returns the required headers to query NBA APIs
 func (h *HTTPClient) SetHeaders() http.Header {
 	return http.Header{
 		"User-Agent":         {"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0), Gecko/20100101, Firefox/72.0"},

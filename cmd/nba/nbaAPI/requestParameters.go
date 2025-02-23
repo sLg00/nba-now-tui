@@ -73,6 +73,8 @@ func NewDateProvider(args []string) types.DateProvider {
 	return &nbaDateProvider{cmdArgs: args}
 }
 
+// GetCurrentDate is the implementation to parse the command line arguments to start the app. The value is used in
+// multiple parts of the application. The function returns a date as string and an error
 func (dp *nbaDateProvider) GetCurrentDate() (string, error) {
 	if len(dp.cmdArgs) != 3 {
 		log.Println("Cannot invoke program, date not provided in command line arguments.")
@@ -92,6 +94,7 @@ func (dp *nbaDateProvider) GetCurrentDate() (string, error) {
 	return dateStr, nil
 }
 
+// GetCurrentSeason calculates and provides the season date string in the format of YYYY-YY.
 func (dp *nbaDateProvider) GetCurrentSeason() string {
 	date, err := dp.GetCurrentDate()
 	if err != nil {

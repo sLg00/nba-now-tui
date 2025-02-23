@@ -26,7 +26,7 @@ type PathComps struct {
 	TeamProfileID   string //id of specific team
 }
 
-func PathFactory(dates types.DateProvider, id string) *PathComps {
+func PathFactory(dates types.DateProvider, id string) PathManager {
 
 	home, err := os.UserHomeDir()
 	if err != nil {

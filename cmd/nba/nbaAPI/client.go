@@ -32,6 +32,19 @@ type nbaRequestBuilder struct {
 	dates   types.DateProvider
 }
 
+type Client struct {
+	http       HTTPRequester
+	requests   RequestBuilder
+	Dates      types.DateProvider
+	Paths      pathManager.PathManager
+	FileSystem filesystemops.FileSystemHandler
+	Loader     filesystemops.DataLoader
+}
+
+type HTTPClient struct {
+	client *http.Client
+}
+
 func NewRequestBuilder(baseURL string, dates types.DateProvider) RequestBuilder {
 	return &nbaRequestBuilder{
 		baseURL: baseURL,
@@ -119,19 +132,6 @@ func (rb *nbaRequestBuilder) BuildTeamInfoRequest(teamID string) RequestURL {
 	return rb.buildURL(params)
 }
 
-type Client struct {
-	http       HTTPRequester
-	requests   RequestBuilder
-	Dates      types.DateProvider
-	Paths      pathManager.PathManager
-	FileSystem filesystemops.FileSystemHandler
-	Loader     filesystemops.DataLoader
-}
-
-type HTTPClient struct {
-	client *http.Client
-}
-
 func NewHTTPClient() *HTTPClient {
 	return &HTTPClient{
 		client: &http.Client{Timeout: time.Duration(8) * time.Second},
@@ -157,6 +157,7 @@ func (h *HTTPClient) Get(url RequestURL) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
+// NewClient instantiates a *Client struct with the relevant interface implementations
 func NewClient() *Client {
 	dateProvider := NewDateProvider(os.Args)
 	return &Client{
@@ -170,6 +171,7 @@ func NewClient() *Client {
 	}
 }
 
+// MakeDefaultRequests is responsible for executing the initial API calls (concurrently) to NBA when the TUI is loaded
 func (c *Client) MakeDefaultRequests() error {
 	urls := c.requests.BuildRequests("")
 
@@ -224,6 +226,8 @@ func (c *Client) MakeDefaultRequests() error {
 	return nil
 }
 
+// FetchBoxScore calls the NBA API with a gameID and writes the response to a file.
+// That file will be used by LoadBoxScore to render the boxscore in the TUI
 func (c *Client) FetchBoxScore(param string) error {
 	urls := c.requests.BuildRequests(param)
 
@@ -247,6 +251,8 @@ func (c *Client) FetchBoxScore(param string) error {
 	return nil
 }
 
+// FetchTeamProfile calls the NBA API with a teamID and writes the response to a file.
+// That file will be used by LoadTeamInfo to feed basic team info into the TUI
 func (c *Client) FetchTeamProfile(param string) error {
 	urls := c.requests.BuildRequests(param)
 

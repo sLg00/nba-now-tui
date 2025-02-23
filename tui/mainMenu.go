@@ -66,7 +66,6 @@ func createMenuItems() ([]list.Item, error) {
 // It's only ran once when the app starts. Subsequent returns to the main menu do not trigger it again.
 func makeInitialRequests() tea.Cmd {
 	return func() tea.Msg {
-		//err := nbaAPI.NewClient().MakeDefaultRequests()
 		err := nbaAPI.NewClient().MakeDefaultRequests()
 		return requestsFinishedMsg{err: err}
 	}
