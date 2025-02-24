@@ -151,7 +151,40 @@ func TestNbaRequestBuilder_BuildDailyScoresRequest(t *testing.T) {
 }
 
 func TestNbaRequestBuilder_BuildBoxScoreRequest(t *testing.T) {
-	return
+	tests := []struct {
+		name      string
+		want      string
+		gameID    string
+		gameIDErr error
+		date      string
+	}{
+		{
+			name:   "successful request",
+			gameID: "0052300101",
+			date:   "",
+			want: "https://stats.nba.com/stats/boxscoretraditionalv3?" +
+				"EndPeriod=4&EndRange=0&GameID=0052300101&RangeType=0&StartPeriod=1&StartRange=0",
+		},
+		{
+			name:      "gameID not found",
+			gameID:    "",
+			want:      "",
+			gameIDErr: errors.New("gameID not found"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockDates := &MockDateProvider{
+				currentDate: tt.date,
+			}
+			rb := NewRequestBuilder(BaseURL, mockDates)
+			got := string(rb.BuildBoxScoreRequest(tt.gameID))
+			if !urlsEqual(t, tt.want, got) {
+				t.Errorf("BuildBoxScoreRequest() got %s, wanted %s", got, tt.want)
+			}
+		})
+	}
 }
 
 func TestClient_MakeDefaultRequests(t *testing.T) {
