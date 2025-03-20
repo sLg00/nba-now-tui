@@ -2,12 +2,13 @@ package converters
 
 import (
 	"github.com/sLg00/nba-now-tui/cmd/helpers"
+	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"testing"
 )
 
-func mockUnmarshallDailyGameResults(_ string) (ResponseSet, error) {
-	return ResponseSet{
-		ResultSets: []ResultSet{
+func mockUnmarshallDailyGameResults(_ string) (types.ResponseSet, error) {
+	return types.ResponseSet{
+		ResultSets: []types.ResultSet{
 			{
 				Name: "GameHeader", // Simulate the first set as metadata
 				Headers: []string{
@@ -38,17 +39,17 @@ func mockUnmarshallDailyGameResults(_ string) (ResponseSet, error) {
 	}, nil
 }
 
-func mockUnmarshallBoxScore(_ string) (ResponseSet, error) {
-	return ResponseSet{
-		BoxScore: BoxScore{
+func mockUnmarshallBoxScore(_ string) (types.ResponseSet, error) {
+	return types.ResponseSet{
+		BoxScore: types.BoxScore{
 			GameID: "001",
-			HomeTeam: BoxScoreTeam{
+			HomeTeam: types.BoxScoreTeam{
 				TeamID:      101,
 				TeamCity:    "New York",
 				TeamName:    "Knicks",
 				TeamTriCode: "NYK",
 			},
-			AwayTeam: BoxScoreTeam{
+			AwayTeam: types.BoxScoreTeam{
 				TeamID:      102,
 				TeamCity:    "Miami",
 				TeamName:    "Heat",
@@ -62,7 +63,12 @@ func TestPopulateDailyGameResults(t *testing.T) {
 	ts := helpers.SetupTest()
 	defer ts.CleanUpTest()
 
-	results, headers, err := PopulateDailyGameResults(mockUnmarshallDailyGameResults)
+	bs, err := mockUnmarshallBoxScore("")
+	if err != nil {
+		t.Errorf("unmarshalling failed")
+	}
+
+	results, headers, err := PopulateDailyGameResults(bs)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -89,7 +95,12 @@ func TestPopulateBoxScore_Success(t *testing.T) {
 	ts := helpers.SetupTest()
 	defer ts.CleanUpTest()
 
-	boxScore, err := PopulateBoxScore("001", mockUnmarshallBoxScore)
+	bs, err := mockUnmarshallBoxScore("")
+	if err != nil {
+		t.Errorf("unmarshalling failed")
+	}
+
+	boxScore, err := PopulateBoxScore(bs)
 	if err != nil {
 		t.Fatalf("Expected no error, got: %v", err)
 	}

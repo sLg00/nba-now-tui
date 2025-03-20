@@ -3,13 +3,14 @@ package converters
 import (
 	"fmt"
 	"github.com/sLg00/nba-now-tui/cmd/helpers"
+	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"reflect"
 	"testing"
 )
 
-func mockUnmarshall(_ string) (ResponseSet, error) {
-	return ResponseSet{
-		ResultSets: []ResultSet{
+func mockUnmarshall(_ string) (types.ResponseSet, error) {
+	return types.ResponseSet{
+		ResultSets: []types.ResultSet{
 			{
 				Headers: []string{
 					"LeagueID", "SeasonID", "TeamID", "TeamCity", "TeamName", "TeamSlug", "Conference",
@@ -24,9 +25,9 @@ func mockUnmarshall(_ string) (ResponseSet, error) {
 	}, nil
 }
 
-func mockUnmarshallError(_ string) (ResponseSet, error) {
-	return ResponseSet{
-		ResultSets: []ResultSet{
+func mockUnmarshallError(_ string) (types.ResponseSet, error) {
+	return types.ResponseSet{
+		ResultSets: []types.ResultSet{
 			{
 				Headers: nil,
 				RowSet:  nil,
@@ -39,7 +40,8 @@ func TestPopulateTeamStats(t *testing.T) {
 	ts := helpers.SetupTest()
 	defer ts.CleanUpTest()
 
-	teams, headers, err := PopulateTeamStats(mockUnmarshall)
+	teamStats, _ := mockUnmarshall("")
+	teams, headers, err := PopulateTeamStats(teamStats)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -60,7 +62,8 @@ func TestPopulateTeamStats_Error(t *testing.T) {
 	ts := helpers.SetupTest()
 	defer ts.CleanUpTest()
 
-	teams, headers, err := PopulateTeamStats(mockUnmarshallError)
+	teamStats, _ := mockUnmarshallError("")
+	teams, headers, err := PopulateTeamStats(teamStats)
 	if err == nil {
 		t.Errorf("Expected an error, got nil")
 	}
@@ -76,7 +79,7 @@ func TestPopulateTeamStats_Error(t *testing.T) {
 
 // TestSplitStandingsPerConference checks if teams are split correctly by conference.
 func TestSplitStandingsPerConference(t *testing.T) {
-	teams := Teams{
+	teams := types.Teams{
 		{TeamID: 1, TeamCity: "Boston", TeamName: "Celtics", Conference: "East"},
 		{TeamID: 2, TeamCity: "Golden State", TeamName: "Warriors", Conference: "West"},
 		{TeamID: 3, TeamCity: "Milwaukee", TeamName: "Bucks", Conference: "East"},
@@ -104,7 +107,7 @@ func TestSplitStandingsPerConference(t *testing.T) {
 
 // TestSplitStandingsPerConference_Empty checks behavior when there are no teams.
 func TestSplitStandingsPerConference_Empty(t *testing.T) {
-	teams := Teams{}
+	teams := types.Teams{}
 
 	eastTeams, westTeams := teams.SplitStandingsPerConference()
 	if len(eastTeams) != 0 {

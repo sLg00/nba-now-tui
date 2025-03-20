@@ -2,12 +2,13 @@ package converters
 
 import (
 	"github.com/sLg00/nba-now-tui/cmd/helpers"
+	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"slices"
 	"testing"
 )
 
 func TestPlayerStatistics_ToStringSlice(t *testing.T) {
-	testStats := PlayerStatistics{
+	testStats := types.PlayerStatistics{
 		Minutes:                 "69:12",
 		FieldGoalsMade:          30,
 		FieldGoalsAttempted:     60,
@@ -32,7 +33,7 @@ func TestPlayerStatistics_ToStringSlice(t *testing.T) {
 }
 
 func TestBoxScorePlayer_ToStringSlice(t *testing.T) {
-	player := BoxScorePlayer{
+	player := types.BoxScorePlayer{
 		PersonId:  123123,
 		FirstName: "Domantas",
 	}
@@ -52,7 +53,7 @@ func TestBoxScorePlayer_ToStringSlice(t *testing.T) {
 }
 
 func TestPlayer_ToStringSlice(t *testing.T) {
-	player := Player{
+	player := types.Player{
 		PlayerID:   123123,
 		PlayerName: "Jalen Brunson",
 		TeamAbbr:   "NYK",
@@ -77,9 +78,9 @@ func TestPopulatePlayerStats(t *testing.T) {
 	ts := helpers.SetupTest()
 	defer ts.CleanUpTest()
 
-	mockUnmarshall := func(path string) (ResponseSet, error) {
-		return ResponseSet{
-			ResultSet: ResultSet{
+	mockPlayerUnmarshall := func(path string) (types.ResponseSet, error) {
+		return types.ResponseSet{
+			ResultSet: types.ResultSet{
 				Headers: []string{"PLAYER_ID", "PLAYER", "TEAM", "GP", "PTS"},
 				RowSet: [][]interface{}{
 					{1, "Domantas Sabonis", "SAC", 70, 28.5},
@@ -89,7 +90,8 @@ func TestPopulatePlayerStats(t *testing.T) {
 		}, nil
 	}
 
-	players, headers, err := PopulatePlayerStats(mockUnmarshall)
+	ps, _ := mockPlayerUnmarshall("")
+	players, headers, err := PopulatePlayerStats(ps)
 
 	if err != nil {
 		t.Errorf("Expected no errors, got error %v", err)
