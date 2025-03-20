@@ -24,6 +24,23 @@ type MockRequestBuilder struct {
 	buildTeamInfoRequests        func(teamID string) RequestURL
 }
 
+type MockHTTPClient struct {
+	getFunc        func(url RequestURL) ([]byte, error)
+	setHeadersFunc func() http.Header
+}
+
+type MockFileSystem struct {
+	writeFileFunc     func(path string, data []byte) error
+	readFileFunc      func(path string) ([]byte, error)
+	fileExistsFunc    func(path string) bool
+	cleanOldFilesFunc func(path []string) error
+}
+
+type MockPathManager struct {
+	basePathsFunc func() []string
+	fullPathFunc  func(name, param string) string
+}
+
 func (m *MockRequestBuilder) BuildRequests(param string) map[string]RequestURL {
 	if m.buildRequests != nil {
 		return m.buildRequests(param)
@@ -78,11 +95,6 @@ func (m *MockDateProvider) GetCurrentSeason() string {
 	return m.currentSeason
 }
 
-type MockHTTPClient struct {
-	getFunc        func(url RequestURL) ([]byte, error)
-	setHeadersFunc func() http.Header
-}
-
 func (m *MockHTTPClient) Get(url RequestURL) ([]byte, error) {
 	if m.getFunc != nil {
 		return m.getFunc(url)
@@ -95,13 +107,6 @@ func (m *MockHTTPClient) SetHeaders() http.Header {
 		return m.setHeadersFunc()
 	}
 	return http.Header{}
-}
-
-type MockFileSystem struct {
-	writeFileFunc     func(path string, data []byte) error
-	readFileFunc      func(path string) ([]byte, error)
-	fileExistsFunc    func(path string) bool
-	cleanOldFilesFunc func(path []string) error
 }
 
 func (m *MockFileSystem) WriteFile(path string, data []byte) error {
@@ -130,11 +135,6 @@ func (m *MockFileSystem) CleanOldFiles(path []string) error {
 		return m.cleanOldFilesFunc(path)
 	}
 	return nil
-}
-
-type MockPathManager struct {
-	basePathsFunc func() []string
-	fullPathFunc  func(name, param string) string
 }
 
 func (m *MockPathManager) GetBasePaths() []string {
