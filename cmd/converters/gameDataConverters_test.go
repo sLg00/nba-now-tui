@@ -63,7 +63,7 @@ func TestPopulateDailyGameResults(t *testing.T) {
 	ts := helpers.SetupTest()
 	defer ts.CleanUpTest()
 
-	bs, err := mockUnmarshallBoxScore("")
+	bs, err := mockUnmarshallDailyGameResults("")
 	if err != nil {
 		t.Errorf("unmarshalling failed")
 	}
