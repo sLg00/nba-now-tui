@@ -140,7 +140,6 @@ func NewHTTPClient() *HTTPClient {
 
 func (h *HTTPClient) Get(url RequestURL) ([]byte, error) {
 	req, _ := http.NewRequest("GET", string(url), nil)
-	log.Printf("request URL: %v\n", url)
 	req.Header = h.SetHeaders()
 
 	resp, err := h.client.Do(req)

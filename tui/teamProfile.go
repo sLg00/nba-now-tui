@@ -2,6 +2,7 @@ package tui
 
 import (
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
@@ -12,14 +13,18 @@ import (
 )
 
 type TeamProfile struct {
-	teamTable table.Model
-	width     int
-	height    int
+	teamTable       table.Model
+	width           int
+	height          int
+	mainPort        viewport.Model
+	teamBasicInfo   table.Model
+	seasonStatsPort table.Model
+	rosterPort      table.Model
 }
 
-type teamProfileFetchedMsg struct {
-	err         error
-	teamProfile table.Model
+type teamBasicInfoFetchedMsg struct {
+	err           error
+	teamBasicInfo table.Model
 }
 
 func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cmd, error) {
@@ -34,46 +39,54 @@ func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cm
 		return &TeamProfile{}, nil, err
 	}
 
-	cmd := fetchTeamProfileMsg(teamID)
+	cmd := fetchBasicTeamInfoMsg(teamID)
 
 	return m, cmd, nil
 }
 
-func fetchTeamProfileMsg(teamID string) tea.Cmd {
+func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 	return func() tea.Msg {
 		cl, err := nbaAPI.NewClient().Loader.LoadTeamInfo(teamID)
 		if err != nil {
 			log.Println("error loading team profile:", err)
 		}
-		data, headers, err := converters.PopulateTeamInfo(cl)
+		data, _, err := converters.PopulateTeamInfo(cl)
 		if err != nil {
-			return teamProfileFetchedMsg{err: err}
+			return teamBasicInfoFetchedMsg{err: err}
 		}
 
-		teamProfileStrings := types.ConvertToStringFlat(data)
+		teamBasicsStrings := types.ConvertToStringFlat(data)
+		season := teamBasicsStrings[1]
+		name := teamBasicsStrings[3]
+		city := teamBasicsStrings[2]
+		conf := teamBasicsStrings[5]
+		div := teamBasicsStrings[6]
+		//wins := teamBasicsStrings[9]
+		//losses := teamBasicsStrings[10]
+		//winPct := teamBasicsStrings[11]
+		//confRank := teamBasicsStrings[12]
+		//divRank := teamBasicsStrings[13]
 
-		var column table.Column
+		logo := LoadTeamLogo(name)
+
 		var columns []table.Column
-		var row table.Row
 		var rows []table.Row
+		logoColumn := table.NewColumn("logo", "", 130)
+		dataColumn := table.NewColumn("data", "", 100)
+		columns = append(columns, logoColumn, dataColumn)
 
-		for _, h := range headers {
-			column = table.NewColumn(h, h, 20)
-			columns = append(columns, column)
-		}
-
-		usedRow := teamProfileStrings
 		rowData := make(table.RowData)
-		for i, cell := range usedRow {
-			headerName := headers[i]
-			rowData[headerName] = cell
-			row = table.NewRow(rowData)
-		}
+		rowData["logo"] = logo
+		rowData["data"] = city + " " + name + "\n\n" +
+			season + " Season \n\n " + conf + " | " + div + "\n\n"
+
+		row := table.NewRow(rowData)
 		rows = append(rows, row)
 
-		teamTable := table.New(columns).WithRows(rows)
-
-		return teamProfileFetchedMsg{err: nil, teamProfile: teamTable}
+		basicInfoTable := table.New(columns).WithRows(rows).
+			WithHeaderVisibility(false).
+			WithMultiline(true).WithBaseStyle(InvisibleTableStyle)
+		return teamBasicInfoFetchedMsg{err: nil, teamBasicInfo: basicInfoTable}
 	}
 }
 
@@ -87,12 +100,12 @@ func (m TeamProfile) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			log.Println("could not download team profile:", msg.err)
 			return m, nil
 		}
-	case teamProfileFetchedMsg:
+	case teamBasicInfoFetchedMsg:
 		if msg.err != nil {
 			log.Println("could not load team profile:", msg.err)
 			return m, nil
 		}
-		m := &TeamProfile{teamTable: msg.teamProfile}
+		m := &TeamProfile{teamBasicInfo: msg.teamBasicInfo}
 		return m, nil
 	case tea.KeyMsg:
 		switch {
@@ -106,7 +119,7 @@ func (m TeamProfile) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		m.height = msg.Height
 	}
 
-	m.teamTable, cmd = m.teamTable.Update(msg)
+	m.teamBasicInfo, cmd = m.teamBasicInfo.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
@@ -118,7 +131,7 @@ func (m TeamProfile) helpView() string {
 }
 
 func (m TeamProfile) View() string {
-	renderedTable := TableStyle.Render(m.teamTable.View()) + "\n"
+	renderedTable := InvisibleTableStyle.Render(m.teamBasicInfo.View()) + "\n"
 	comboView := lipgloss.JoinVertical(lipgloss.Left, "\n", renderedTable, m.helpView())
 	return DocStyle.Render(comboView)
 }

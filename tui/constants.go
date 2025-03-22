@@ -33,6 +33,11 @@ var TableStyle = lipgloss.NewStyle().
 	Align(lipgloss.Center, lipgloss.Center).
 	BorderForeground(lipgloss.Color("240"))
 
+var InvisibleTableStyle = lipgloss.NewStyle().
+	BorderStyle(lipgloss.HiddenBorder()).
+	Align(lipgloss.Center, lipgloss.Center).
+	BorderForeground(lipgloss.Color("#000000"))
+
 // HelpStyle styling for help context menu
 var HelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render
 
