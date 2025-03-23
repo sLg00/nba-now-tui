@@ -58,6 +58,11 @@ func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 		teamBasicsStrings := types.ConvertToStringFlat(data)
 		season := teamBasicsStrings[1]
 		name := teamBasicsStrings[3]
+		//TODO: remove this stupid temporary hack
+		if name == "Trail Blazers" {
+			name = "TrailBlazers"
+		}
+
 		city := teamBasicsStrings[2]
 		conf := teamBasicsStrings[5]
 		div := teamBasicsStrings[6]
@@ -78,7 +83,7 @@ func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 		rowData := make(table.RowData)
 		rowData["logo"] = logo
 		rowData["data"] = city + " " + name + "\n\n" +
-			season + " Season \n\n " + conf + " | " + div + "\n\n"
+			season + " Season\n\n " + conf + " | " + div + "\n\n"
 
 		row := table.NewRow(rowData)
 		rows = append(rows, row)
