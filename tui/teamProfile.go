@@ -6,6 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
+	"github.com/sLg00/nba-now-tui/assets/logos"
 	"github.com/sLg00/nba-now-tui/cmd/converters"
 	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
 	"github.com/sLg00/nba-now-tui/cmd/nba/types"
@@ -72,7 +73,7 @@ func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 		//confRank := teamBasicsStrings[12]
 		//divRank := teamBasicsStrings[13]
 
-		logo := LoadTeamLogo(name)
+		logo := logos.LoadTeamLogo(name)
 
 		var columns []table.Column
 		var rows []table.Row
