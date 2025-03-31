@@ -26,12 +26,6 @@ type keymap struct {
 	Space key.Binding
 }
 
-// TODO: add all team colors to be used in sections of the profile
-type TeamColors struct {
-	Sixers lipgloss.Color
-	Bucks  lipgloss.Color
-}
-
 var DocStyle = lipgloss.NewStyle().Margin(2, 2).BorderStyle(lipgloss.HiddenBorder())
 
 var TableStyle = lipgloss.NewStyle().
@@ -85,6 +79,27 @@ var Keymap = keymap{
 // CenterStyle takes a variable width and returns a centered style based on that. Used to align content in viewports
 func CenterStyle(w int) lipgloss.Style {
 	return lipgloss.NewStyle().Width(w).Align(lipgloss.Center)
+}
+
+// TeamColor returns a lipgloss.Color object, representing the dominant color for the specific team
+func TeamColor(s string) lipgloss.Color {
+
+	//this map contains the names:colors mappings
+	clrs := map[string]lipgloss.Color{
+		"76ers": lipgloss.Color("#ED174C"),
+		"Bucks": lipgloss.Color("#00471B"),
+	}
+	if clr, ok := clrs[s]; ok {
+		return clr
+	}
+	return lipgloss.Color("#FFFFFF")
+}
+
+func TeamViewPortStyle(clr lipgloss.Color) lipgloss.Style {
+	return lipgloss.NewStyle().
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(clr).
+		Margin(1, 1).Padding(1, 1)
 }
 
 // HelpFooter returns a fully-fledged help footer to be used in all nba-tui views

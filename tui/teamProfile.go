@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -35,20 +36,21 @@ type teamSeasonSnapshotFetchedMsg struct {
 }
 
 func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cmd, error) {
-
 	vp := viewport.New(size.Width-4, size.Height-8)
-	vp.Style = ViewPortBaseStyle
+
+	dataStr, err := TeamDataStrings(teamID)
+	if err != nil {
+		return nil, nil, err
+	}
+	name := dataStr[3]
+
+	teamStyle := TeamViewPortStyle(TeamColor(name))
+	vp.Style = teamStyle
 
 	m := &TeamProfile{
 		mainPort: vp,
 		width:    size.Width,
 		height:   size.Height,
-	}
-
-	cl, err := nbaAPI.NewClient().Loader.LoadTeamInfo(teamID)
-	_, _, err = converters.PopulateTeamInfo(cl)
-	if err != nil {
-		return &TeamProfile{}, nil, err
 	}
 
 	cmds := tea.Batch(fetchBasicTeamInfoMsg(teamID), fetchTeamSeasonSnapshotMsg(teamID))
@@ -58,16 +60,11 @@ func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cm
 
 func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 	return func() tea.Msg {
-		cl, err := nbaAPI.NewClient().Loader.LoadTeamInfo(teamID)
-		if err != nil {
-			log.Println("error loading team profile:", err)
-		}
-		data, _, err := converters.PopulateTeamInfo(cl)
+		teamBasicsStrings, err := TeamDataStrings(teamID)
 		if err != nil {
 			return teamBasicInfoFetchedMsg{err: err}
 		}
 
-		teamBasicsStrings := types.ConvertToStringFlat(data)
 		season := teamBasicsStrings[1]
 		name := teamBasicsStrings[3]
 		//TODO: remove this stupid temporary hack
@@ -104,16 +101,10 @@ func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 
 func fetchTeamSeasonSnapshotMsg(teamID string) tea.Cmd {
 	return func() tea.Msg {
-		cl, err := nbaAPI.NewClient().Loader.LoadTeamInfo(teamID)
-		if err != nil {
-			log.Println("error loading team profile:", err)
-		}
-		data, _, err := converters.PopulateTeamInfo(cl)
+		teamBasicsStrings, err := TeamDataStrings(teamID)
 		if err != nil {
 			return teamBasicInfoFetchedMsg{err: err}
 		}
-
-		teamBasicsStrings := types.ConvertToStringFlat(data)
 
 		wins := teamBasicsStrings[9]
 		losses := teamBasicsStrings[10]
@@ -216,4 +207,17 @@ func (m *TeamProfile) helpView() string {
 func (m *TeamProfile) View() string {
 	comboView := lipgloss.JoinVertical(lipgloss.Left, m.mainPort.View(), m.helpView())
 	return DocStyle.Render(comboView)
+}
+
+// TeamDataStrings is a helper function to reduce code duplication (just converts the structs to strings)
+func TeamDataStrings(teamID string) ([]string, error) {
+	cl, err := nbaAPI.NewClient().Loader.LoadTeamInfo(teamID)
+	data, _, err := converters.PopulateTeamInfo(cl)
+	if err != nil {
+		return nil, fmt.Errorf("error getting team info: %w", err)
+	}
+
+	dataStr := types.ConvertToStringFlat(data)
+
+	return dataStr, nil
 }
