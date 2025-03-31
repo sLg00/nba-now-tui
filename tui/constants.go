@@ -26,7 +26,13 @@ type keymap struct {
 	Space key.Binding
 }
 
-var DocStyle = lipgloss.NewStyle().Margin(0, 2)
+// TODO: add all team colors to be used in sections of the profile
+type TeamColors struct {
+	Sixers lipgloss.Color
+	Bucks  lipgloss.Color
+}
+
+var DocStyle = lipgloss.NewStyle().Margin(2, 2).BorderStyle(lipgloss.HiddenBorder())
 
 var TableStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.DoubleBorder()).
@@ -37,6 +43,11 @@ var InvisibleTableStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.HiddenBorder()).
 	Align(lipgloss.Center, lipgloss.Center).
 	BorderForeground(lipgloss.Color("#000000"))
+
+var ViewPortBaseStyle = lipgloss.NewStyle().
+	BorderStyle(lipgloss.NormalBorder()).
+	BorderForeground(lipgloss.Color("4")).
+	Margin(1, 1).Padding(1, 1)
 
 // HelpStyle styling for help context menu
 var HelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render
@@ -69,6 +80,11 @@ var Keymap = keymap{
 	Space: key.NewBinding(
 		key.WithKeys("space"),
 		key.WithHelp("space", "mark for selection")),
+}
+
+// CenterStyle takes a variable width and returns a centered style based on that. Used to align content in viewports
+func CenterStyle(w int) lipgloss.Style {
+	return lipgloss.NewStyle().Width(w).Align(lipgloss.Center)
 }
 
 // HelpFooter returns a fully-fledged help footer to be used in all nba-tui views

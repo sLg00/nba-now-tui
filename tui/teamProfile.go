@@ -14,13 +14,14 @@ import (
 )
 
 type TeamProfile struct {
-	teamTable       table.Model
-	width           int
-	height          int
-	mainPort        viewport.Model
-	teamBasicInfo   table.Model
-	seasonStatsPort table.Model
-	rosterPort      table.Model
+	teamTable          table.Model
+	width              int
+	height             int
+	mainPort           viewport.Model
+	teamBasicInfo      table.Model
+	teamSeasonSnapshot table.Model
+	seasonStatsPort    table.Model
+	rosterPort         table.Model
 }
 
 type teamBasicInfoFetchedMsg struct {
@@ -28,10 +29,20 @@ type teamBasicInfoFetchedMsg struct {
 	teamBasicInfo table.Model
 }
 
+type teamSeasonSnapshotFetchedMsg struct {
+	err                error
+	teamSeasonSnapshot table.Model
+}
+
 func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cmd, error) {
+
+	vp := viewport.New(size.Width-4, size.Height-8)
+	vp.Style = ViewPortBaseStyle
+
 	m := &TeamProfile{
-		width:  size.Width,
-		height: size.Height,
+		mainPort: vp,
+		width:    size.Width,
+		height:   size.Height,
 	}
 
 	cl, err := nbaAPI.NewClient().Loader.LoadTeamInfo(teamID)
@@ -40,9 +51,9 @@ func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cm
 		return &TeamProfile{}, nil, err
 	}
 
-	cmd := fetchBasicTeamInfoMsg(teamID)
+	cmds := tea.Batch(fetchBasicTeamInfoMsg(teamID), fetchTeamSeasonSnapshotMsg(teamID))
 
-	return m, cmd, nil
+	return m, cmds, nil
 }
 
 func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
@@ -67,18 +78,13 @@ func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 		city := teamBasicsStrings[2]
 		conf := teamBasicsStrings[5]
 		div := teamBasicsStrings[6]
-		//wins := teamBasicsStrings[9]
-		//losses := teamBasicsStrings[10]
-		//winPct := teamBasicsStrings[11]
-		//confRank := teamBasicsStrings[12]
-		//divRank := teamBasicsStrings[13]
 
 		logo := logos.LoadTeamLogo(name)
 
 		var columns []table.Column
 		var rows []table.Row
 		logoColumn := table.NewColumn("logo", "", 130)
-		dataColumn := table.NewColumn("data", "", 100)
+		dataColumn := table.NewColumn("data", "", WindowSize.Width-142)
 		columns = append(columns, logoColumn, dataColumn)
 
 		rowData := make(table.RowData)
@@ -96,9 +102,71 @@ func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 	}
 }
 
-func (m TeamProfile) Init() tea.Cmd { return nil }
+func fetchTeamSeasonSnapshotMsg(teamID string) tea.Cmd {
+	return func() tea.Msg {
+		cl, err := nbaAPI.NewClient().Loader.LoadTeamInfo(teamID)
+		if err != nil {
+			log.Println("error loading team profile:", err)
+		}
+		data, _, err := converters.PopulateTeamInfo(cl)
+		if err != nil {
+			return teamBasicInfoFetchedMsg{err: err}
+		}
 
-func (m TeamProfile) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
+		teamBasicsStrings := types.ConvertToStringFlat(data)
+
+		wins := teamBasicsStrings[9]
+		losses := teamBasicsStrings[10]
+		winPct := teamBasicsStrings[11]
+		confRank := teamBasicsStrings[12]
+		divRank := teamBasicsStrings[13]
+
+		var columns []table.Column
+		var rows []table.Row
+
+		winsColumn := table.NewColumn("wins", "Wins", 25)
+		lossesColumn := table.NewColumn("losses", "Losses", 25)
+		winPctColumn := table.NewColumn("winPct", "WinPct", 25)
+		confRankColumn := table.NewColumn("confRank", "Conference Rank", 25)
+		divRankColumn := table.NewColumn("divRank", "Division Rank", 25)
+		columns = append(columns, winsColumn, lossesColumn, winPctColumn, confRankColumn, divRankColumn)
+
+		rowData := make(table.RowData)
+		rowData["wins"] = wins
+		rowData["losses"] = losses
+		rowData["winPct"] = winPct
+		rowData["confRank"] = confRank
+		rowData["divRank"] = divRank
+
+		row := table.NewRow(rowData)
+		rows = append(rows, row)
+
+		seasonSnapsShotTable := table.New(columns).WithRows(rows).
+			WithHeaderVisibility(true).WithBaseStyle(TableStyle)
+
+		return teamSeasonSnapshotFetchedMsg{err: nil, teamSeasonSnapshot: seasonSnapsShotTable}
+
+	}
+}
+
+func (m *TeamProfile) Init() tea.Cmd { return nil }
+
+func (m *TeamProfile) updateViewPortContent() {
+
+	centered := CenterStyle(m.mainPort.Width - 4)
+
+	sections := []string{
+		InvisibleTableStyle.Render(m.teamBasicInfo.View()),
+		"\n\n",
+		centered.Render(" << SEASON AT A GLANCE >>"),
+		centered.Render(m.teamSeasonSnapshot.View()),
+		"\n\n\n",
+	}
+	content := lipgloss.JoinVertical(lipgloss.Left, sections...)
+	m.mainPort.SetContent(content)
+}
+
+func (m *TeamProfile) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
 	case teamProfileDownloadedMsg:
@@ -111,7 +179,16 @@ func (m TeamProfile) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			log.Println("could not load team profile:", msg.err)
 			return m, nil
 		}
-		m := &TeamProfile{teamBasicInfo: msg.teamBasicInfo}
+		m.teamBasicInfo = msg.teamBasicInfo
+		m.updateViewPortContent()
+		return m, nil
+	case teamSeasonSnapshotFetchedMsg:
+		if msg.err != nil {
+			log.Println("could not load season snapshot:", msg.err)
+			return m, nil
+		}
+		m.teamSeasonSnapshot = msg.teamSeasonSnapshot
+		m.updateViewPortContent()
 		return m, nil
 	case tea.KeyMsg:
 		switch {
@@ -121,23 +198,22 @@ func (m TeamProfile) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
+		m.mainPort.Width = msg.Width - 2
+		m.mainPort.Height = msg.Height - 2
 	}
 
-	m.teamBasicInfo, cmd = m.teamBasicInfo.Update(msg)
+	m.mainPort, cmd = m.mainPort.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
 }
 
-func (m TeamProfile) helpView() string {
+func (m *TeamProfile) helpView() string {
 
 	return HelpStyle("\n" + HelpFooter() + "\n")
 }
 
-func (m TeamProfile) View() string {
-	renderedTable := InvisibleTableStyle.Render(m.teamBasicInfo.View()) + "\n"
-	comboView := lipgloss.JoinVertical(lipgloss.Left, "\n", renderedTable, m.helpView())
+func (m *TeamProfile) View() string {
+	comboView := lipgloss.JoinVertical(lipgloss.Left, m.mainPort.View(), m.helpView())
 	return DocStyle.Render(comboView)
 }

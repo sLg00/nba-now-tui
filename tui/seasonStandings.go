@@ -231,6 +231,6 @@ func (m SeasonStandings) View() string {
 	}
 	renderedEastTable := TableStyle.Render(m.eastTeams.View()) + "\n"
 	renderedWestTable := TableStyle.Render(m.westTeams.View()) + "\n"
-	comboView := lipgloss.JoinVertical(lipgloss.Left, "\n", renderedEastTable, renderedWestTable, m.helpView())
+	comboView := lipgloss.JoinVertical(lipgloss.Left, "\n\n", renderedEastTable, renderedWestTable, m.helpView())
 	return DocStyle.Render(comboView)
 }
