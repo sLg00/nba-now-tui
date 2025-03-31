@@ -86,8 +86,36 @@ func TeamColor(s string) lipgloss.Color {
 
 	//this map contains the names:colors mappings
 	clrs := map[string]lipgloss.Color{
-		"76ers": lipgloss.Color("#ED174C"),
-		"Bucks": lipgloss.Color("#00471B"),
+		"76ers":        lipgloss.Color("#ED174C"),
+		"Bucks":        lipgloss.Color("#00471B"),
+		"Bulls":        lipgloss.Color("#CE1141"),
+		"Cavaliers":    lipgloss.Color("#860038"),
+		"Celtics":      lipgloss.Color("#007A33"),
+		"Clippers":     lipgloss.Color("#1d428a"),
+		"Grizzlies":    lipgloss.Color("#5D76A9"),
+		"Hawks":        lipgloss.Color("#C8102E"),
+		"Heat":         lipgloss.Color("#db3eb1"),
+		"Hornets":      lipgloss.Color("#00788C"),
+		"Jazz":         lipgloss.Color("#F9A01B"),
+		"Kings":        lipgloss.Color("#5a2d81"),
+		"Knicks":       lipgloss.Color("#F58426"),
+		"Lakers":       lipgloss.Color("#552583"),
+		"Magic":        lipgloss.Color("#C4ced4"),
+		"Mavericks":    lipgloss.Color("#00538C"),
+		"Nets":         lipgloss.Color("#FFFFFF"),
+		"Nuggets":      lipgloss.Color("#1D428A"),
+		"Pacers":       lipgloss.Color("#FDBB30"),
+		"Pelicans":     lipgloss.Color("#85714D"),
+		"Pistons":      lipgloss.Color("#1d42ba"),
+		"Raptors":      lipgloss.Color("#ce1141"),
+		"Rockets":      lipgloss.Color("#CE1141"),
+		"Spurs":        lipgloss.Color("#c4ced4"),
+		"Suns":         lipgloss.Color("#e56020"),
+		"Thunder":      lipgloss.Color("#007ac1"),
+		"Timberwolves": lipgloss.Color("#78BE20"),
+		"TrailBlazers": lipgloss.Color("#E03A3E"),
+		"Warriors":     lipgloss.Color("#ffc72c"),
+		"Wizards":      lipgloss.Color("#002B5C"),
 	}
 	if clr, ok := clrs[s]; ok {
 		return clr
