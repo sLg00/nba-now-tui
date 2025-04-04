@@ -1,6 +1,7 @@
 package converters
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
 	"github.com/sLg00/nba-now-tui/cmd/nba/types"
@@ -11,15 +12,14 @@ import (
 // Then subsequently converts the 'linescore' to GameResult objects, combining home and away team basic stats.
 // The function could be cleanly split into two, but yolo for now.
 func PopulateDailyGameResults(rs types.ResponseSet) (types.DailyGameResults, []string, error) {
-	response := rs
 
 	// ResultSets[1] is the "linescore" part of the response, which is used to create a gameCard
-	if len(response.ResultSets) < 2 || len(response.ResultSets[1].Headers) == 0 {
+	if len(rs.ResultSets) < 2 || len(rs.ResultSets[1].Headers) == 0 {
 		return nil, nil, fmt.Errorf("no headers or insufficient result sets in response")
 	}
 
 	gameHeaders := make(map[string]types.GameHeader)
-	for _, row := range response.ResultSets[0].RowSet {
+	for _, row := range rs.ResultSets[0].RowSet {
 		if len(row) < 8 {
 			err := fmt.Errorf("not enough header rows in response, expected at least 8 bytes, got %d", len(row))
 			return nil, nil, err
@@ -33,8 +33,8 @@ func PopulateDailyGameResults(rs types.ResponseSet) (types.DailyGameResults, []s
 		gameHeaders[gameHeader.GameID] = gameHeader
 	}
 
-	headers := response.ResultSets[1].Headers
-	rowSet := response.ResultSets[1].RowSet
+	headers := rs.ResultSets[1].Headers
+	rowSet := rs.ResultSets[1].RowSet
 
 	var lineScores []types.LineScore
 	for _, row := range rowSet {
@@ -43,60 +43,22 @@ func PopulateDailyGameResults(rs types.ResponseSet) (types.DailyGameResults, []s
 			return nil, nil, fmt.Errorf("header row length does not match row length: %v != %v", len(headers), len(row))
 		}
 
-		lineScore := types.LineScore{}
+		gameData := make(map[string]interface{})
 		for i, value := range row {
-			header := headers[i]
-			switch header {
-			case "GAME_DATE_EST":
-				if v, ok := value.(string); ok {
-					lineScore.GameDateEst = v
-				}
-			case "GAME_ID":
-				if v, ok := value.(string); ok {
-					lineScore.GameID = v
-				}
-			case "TEAM_ID":
-				if v, ok := value.(float64); ok {
-					lineScore.TeamID = int(v)
-				}
-			case "TEAM_ABBREVIATION":
-				if v, ok := value.(string); ok {
-					lineScore.TeamAbbreviation = v
-				}
-			case "TEAM_CITY_NAME":
-				if v, ok := value.(string); ok {
-					lineScore.TeamCityName = v
-				}
-			case "PTS":
-				if v, ok := value.(float64); ok {
-					lineScore.Pts = int(v)
-				}
-			case "FG_PCT":
-				if v, ok := value.(float64); ok {
-					lineScore.FgPct = v
-				}
-			case "FT_PCT":
-				if v, ok := value.(float64); ok {
-					lineScore.FtPct = v
-				}
-			case "FG3_PCT":
-				if v, ok := value.(float64); ok {
-					lineScore.Fg3Pct = v
-				}
-			case "AST":
-				if v, ok := value.(float64); ok {
-					lineScore.Ast = int(v)
-				}
-			case "REB":
-				if v, ok := value.(float64); ok {
-					lineScore.Reb = int(v)
-				}
-			case "TOV":
-				if v, ok := value.(float64); ok {
-					lineScore.Tov = int(v)
-				}
-			}
+			gameData[headers[i]] = value
 		}
+
+		jsonData, err := json.Marshal(gameData)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to marshal json data: %v", err)
+		}
+
+		var lineScore types.LineScore
+		err = json.Unmarshal(jsonData, &lineScore)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to unmarshal json data: %v", err)
+		}
+
 		lineScores = append(lineScores, lineScore)
 	}
 
@@ -141,8 +103,7 @@ func CheckGameStatus(gameID string) (int, error) {
 // PopulateBoxScore takes a gameID (string) as input and returns the required structures to represent
 // the game's box score in a TUI
 func PopulateBoxScore(rs types.ResponseSet) (types.BoxScore, error) {
-	response := rs
-	boxScore := response.BoxScore
+	boxScore := rs.BoxScore
 
 	return boxScore, nil
 }
