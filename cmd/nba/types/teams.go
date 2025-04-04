@@ -111,8 +111,8 @@ type TeamCommonInfo struct {
 	WinPct         float64 `json:"PCT"`
 	ConfRank       int     `json:"CONF_RANK"`
 	DivRank        int     `json:"DIV_RANK"`
-	MinYear        int     `json:"MIN_YEAR"`
-	MaxYear        int     `json:"MAX_YEAR"`
+	MinYear        string  `json:"MIN_YEAR"`
+	MaxYear        string  `json:"MAX_YEAR"`
 }
 
 // ToStringSlice is a method on the TeamCommonInfo type that enables the attributes of the type to be converted to strings

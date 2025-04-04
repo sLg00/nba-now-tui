@@ -38,11 +38,6 @@ var InvisibleTableStyle = lipgloss.NewStyle().
 	Align(lipgloss.Center, lipgloss.Center).
 	BorderForeground(lipgloss.Color("#000000"))
 
-var ViewPortBaseStyle = lipgloss.NewStyle().
-	BorderStyle(lipgloss.NormalBorder()).
-	BorderForeground(lipgloss.Color("4")).
-	Margin(1, 1).Padding(1, 1)
-
 // HelpStyle styling for help context menu
 var HelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render
 
@@ -120,9 +115,11 @@ func TeamColor(s string) lipgloss.Color {
 	if clr, ok := clrs[s]; ok {
 		return clr
 	}
+	//default is white
 	return lipgloss.Color("#FFFFFF")
 }
 
+// TeamViewPortStyle just returns the style with the corresponding team color
 func TeamViewPortStyle(clr lipgloss.Color) lipgloss.Style {
 	return lipgloss.NewStyle().
 		BorderStyle(lipgloss.NormalBorder()).

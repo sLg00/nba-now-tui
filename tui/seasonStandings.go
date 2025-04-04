@@ -200,6 +200,8 @@ func (m SeasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		tp, cmd, err := NewTeamProfile(msg.teamID, WindowSize)
 		if err != nil {
 			log.Println("could not load team profile:", err)
+			//TODO: add error modal
+			return InitMenu()
 		}
 		return tp, cmd
 	case tea.WindowSizeMsg:
