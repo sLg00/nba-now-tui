@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
 	"github.com/sLg00/nba-now-tui/cmd/nba/types"
-	"log"
 )
 
 // PopulateDailyGameResults extracts 'linescores' from the NBA API response for DailyScoreboard.
@@ -39,7 +38,6 @@ func PopulateDailyGameResults(rs types.ResponseSet) (types.DailyGameResults, []s
 	var lineScores []types.LineScore
 	for _, row := range rowSet {
 		if len(row) != len(headers) {
-			log.Printf("header row length does not match row length: %v != %v", len(headers), len(row))
 			return nil, nil, fmt.Errorf("header row length does not match row length: %v != %v", len(headers), len(row))
 		}
 
