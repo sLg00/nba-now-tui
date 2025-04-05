@@ -25,6 +25,7 @@ type RequestBuilder interface {
 	BuildDailyScoresRequest() RequestURL
 	BuildBoxScoreRequest(gameID string) RequestURL
 	BuildTeamInfoRequest(teamID string) RequestURL
+	BuildPlayerIndexRequest(teamID string) RequestURL
 }
 
 type nbaRequestBuilder struct {
@@ -59,6 +60,7 @@ func (rb *nbaRequestBuilder) BuildRequests(param string) map[string]RequestURL {
 		"dailyScores":     rb.BuildDailyScoresRequest(),
 		"boxScore":        rb.BuildBoxScoreRequest(param),
 		"teamInfo":        rb.BuildTeamInfoRequest(param),
+		"playerIndex":     rb.BuildPlayerIndexRequest(param),
 	}
 }
 
@@ -125,6 +127,16 @@ func (rb *nbaRequestBuilder) BuildBoxScoreRequest(gameID string) RequestURL {
 func (rb *nbaRequestBuilder) BuildTeamInfoRequest(teamID string) RequestURL {
 	season := rb.dates.GetCurrentSeason()
 	params := TeamProfileParams{
+		LeagueID: LeagueID,
+		Season:   season,
+		TeamID:   teamID,
+	}
+	return rb.buildURL(params)
+}
+
+func (rb *nbaRequestBuilder) BuildPlayerIndexRequest(teamID string) RequestURL {
+	season := rb.dates.GetCurrentSeason()
+	params := PlayerIndexParams{
 		LeagueID: LeagueID,
 		Season:   season,
 		TeamID:   teamID,
@@ -204,7 +216,7 @@ func (c *Client) MakeDefaultRequests() error {
 				}
 			}(name, reqURL)
 		default:
-			continue
+			break
 		}
 	}
 
@@ -244,7 +256,7 @@ func (c *Client) FetchBoxScore(param string) error {
 				}
 			}
 		default:
-			continue
+			break
 		}
 	}
 	return nil
@@ -255,22 +267,42 @@ func (c *Client) FetchBoxScore(param string) error {
 func (c *Client) FetchTeamProfile(param string) error {
 	urls := c.requests.BuildRequests(param)
 
+	dChan := make(chan struct{}, len(urls))
+	eChan := make(chan error, len(urls))
+
 	for name, reqURL := range urls {
 		switch name {
-		case "teamInfo":
-			path := c.Paths.GetFullPath(name, param)
-			if !c.FileSystem.FileExists(path) {
+		case "teamInfo", "playerIndex":
+			go func(name string, reqURL RequestURL) {
+				defer func() { dChan <- struct{}{} }()
+
+				path := c.Paths.GetFullPath(name, param)
 				data, err := c.http.Get(reqURL)
 				if err != nil {
-					return fmt.Errorf("api error: %w", err)
+					eChan <- fmt.Errorf("api error: %w", err)
 				}
 				if err = c.FileSystem.WriteFile(path, data); err != nil {
-					return fmt.Errorf("write error for %s: %w", name, err)
+					eChan <- fmt.Errorf("write error for %s: %w", name, err)
 				}
-			}
+			}(name, reqURL)
 		default:
-			continue
+			break
 		}
+	}
+
+	for i := 0; i < len(urls); i++ {
+		<-dChan
+	}
+	close(eChan)
+
+	var errs []error
+
+	for err := range eChan {
+		errs = append(errs, err)
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("encountered %d errors during API requests", len(errs))
 	}
 	return nil
 }

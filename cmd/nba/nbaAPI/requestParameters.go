@@ -69,6 +69,12 @@ type TeamProfileParams struct {
 	TeamID   string
 }
 
+type PlayerIndexParams struct {
+	LeagueID string
+	Season   string
+	TeamID   string
+}
+
 func NewDateProvider(args []string) types.DateProvider {
 	return &nbaDateProvider{cmdArgs: args}
 }
@@ -220,6 +226,31 @@ func (p TeamProfileParams) Validate() error {
 		return fmt.Errorf("leagueID is required")
 	}
 	if p.TeamID == "" {
+		return fmt.Errorf("teamID is required")
+	}
+	return nil
+}
+
+func (pi PlayerIndexParams) ToValues() url.Values {
+	values := url.Values{}
+	values.Set("LeagueID", pi.LeagueID)
+	values.Set("Season", pi.Season)
+	values.Set("TeamID", pi.TeamID)
+	return values
+}
+
+func (pi PlayerIndexParams) Endpoint() string {
+	return "playerindex"
+}
+
+func (pi PlayerIndexParams) Validate() error {
+	if pi.LeagueID == "" {
+		return fmt.Errorf("leagueID is required")
+	}
+	if pi.Season == "" {
+		return fmt.Errorf("season is required")
+	}
+	if pi.TeamID == "" {
 		return fmt.Errorf("teamID is required")
 	}
 	return nil

@@ -151,7 +151,9 @@ func (m *TeamProfile) updateViewPortContent() {
 		"\n\n",
 		centered.Render(" << SEASON AT A GLANCE >>"),
 		centered.Render(m.teamSeasonSnapshot.View()),
-		"\n\n\n",
+		"\n\n",
+		centered.Render(" << ROSTER >>"),
+		"\n\n",
 	}
 	content := lipgloss.JoinVertical(lipgloss.Left, sections...)
 	m.mainPort.SetContent(content)

@@ -14,6 +14,7 @@ type DataLoader interface {
 	LoadSeasonStandings() (types.ResponseSet, error)
 	LoadBoxScore(gameID string) (types.ResponseSet, error)
 	LoadTeamInfo(teamID string) (types.ResponseSet, error)
+	LoadPlayerIndex(teamID string) (types.ResponseSet, error)
 }
 
 // nbaDataLoader implements the DataLoader interface
@@ -52,6 +53,11 @@ func (dl *nbaDataLoader) LoadBoxScore(gameID string) (types.ResponseSet, error) 
 
 func (dl *nbaDataLoader) LoadTeamInfo(teamID string) (types.ResponseSet, error) {
 	path := dl.paths.GetFullPath("teamInfo", teamID)
+	return dl.loadAndUnmarshall(path)
+}
+
+func (dl *nbaDataLoader) LoadPlayerIndex(teamID string) (types.ResponseSet, error) {
+	path := dl.paths.GetFullPath("playerIndex", teamID)
 	return dl.loadAndUnmarshall(path)
 }
 
