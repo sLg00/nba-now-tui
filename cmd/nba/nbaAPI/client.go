@@ -267,8 +267,15 @@ func (c *Client) FetchBoxScore(param string) error {
 func (c *Client) FetchTeamProfile(param string) error {
 	urls := c.requests.BuildRequests(param)
 
-	dChan := make(chan struct{}, len(urls))
-	eChan := make(chan error, len(urls))
+	requestCount := 0
+	for name := range urls {
+		if name == "teamInfo" || name == "playerIndex" {
+			requestCount++
+		}
+	}
+
+	dChan := make(chan struct{}, requestCount)
+	eChan := make(chan error, requestCount)
 
 	for name, reqURL := range urls {
 		switch name {
@@ -290,7 +297,7 @@ func (c *Client) FetchTeamProfile(param string) error {
 		}
 	}
 
-	for i := 0; i < len(urls); i++ {
+	for i := 0; i < requestCount; i++ {
 		<-dChan
 	}
 	close(eChan)
