@@ -26,7 +26,7 @@ denotes local time when the games occurred.
 * Box scores
 * League leaders
 * Season standings
-* Team Profiles
+* Team Profiles (with ASCII logos and team-colors)
 
 
 <h3>Shit still missing, yo</h3>
