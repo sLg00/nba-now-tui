@@ -108,7 +108,7 @@ type TeamCommonInfo struct {
 	TeamSlug       string  `json:"TEAM_SLUG"`
 	Wins           int     `json:"W"`
 	Losses         int     `json:"L"`
-	WinPct         float64 `json:"PCT"`
+	WinPct         float64 `json:"PCT" percentage:"true"`
 	ConfRank       int     `json:"CONF_RANK"`
 	DivRank        int     `json:"DIV_RANK"`
 	MinYear        string  `json:"MIN_YEAR"`

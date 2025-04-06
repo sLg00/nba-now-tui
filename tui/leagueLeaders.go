@@ -101,7 +101,6 @@ func (m LeagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	switch msg := msg.(type) {
 	case fetchLeagueLeadersMsg:
 		if msg.err != nil {
-			log.Println("fetch league leaders:", msg.err)
 			return m, nil
 		}
 

@@ -35,6 +35,11 @@ type teamSeasonSnapshotFetchedMsg struct {
 	teamSeasonSnapshot table.Model
 }
 
+type playerIndexFetchedMsg struct {
+	err    error
+	roster table.Model
+}
+
 func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cmd, error) {
 	vp := viewport.New(size.Width-4, size.Height-8)
 
@@ -53,7 +58,7 @@ func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cm
 		height:   size.Height,
 	}
 
-	cmds := tea.Batch(fetchBasicTeamInfoMsg(teamID), fetchTeamSeasonSnapshotMsg(teamID))
+	cmds := tea.Batch(fetchBasicTeamInfoMsg(teamID), fetchTeamSeasonSnapshotMsg(teamID), fetchPlayerIndexMsg(teamID))
 
 	return m, cmds, nil
 }
@@ -140,6 +145,24 @@ func fetchTeamSeasonSnapshotMsg(teamID string) tea.Cmd {
 	}
 }
 
+func fetchPlayerIndexMsg(teamID string) tea.Cmd {
+	return func() tea.Msg {
+		cl, err := nbaAPI.NewClient().Loader.LoadPlayerIndex(teamID)
+		if err != nil {
+			return playerIndexFetchedMsg{err: err}
+		}
+		players, headers, err := converters.PopulatePlayerIndex(cl)
+		if err != nil {
+			return playerIndexFetchedMsg{err: err}
+		}
+		playerStrings := types.ConvertToStringMatrix(players)
+
+		tableModel := buildTables(headers, playerStrings, types.IndexPlayer{})
+
+		return playerIndexFetchedMsg{roster: tableModel, err: nil}
+	}
+}
+
 func (m *TeamProfile) Init() tea.Cmd { return nil }
 
 func (m *TeamProfile) updateViewPortContent() {
@@ -153,6 +176,8 @@ func (m *TeamProfile) updateViewPortContent() {
 		centered.Render(m.teamSeasonSnapshot.View()),
 		"\n\n",
 		centered.Render(" << ROSTER >>"),
+		"\n\n",
+		centered.Render(m.rosterPort.View()),
 		"\n\n",
 	}
 	content := lipgloss.JoinVertical(lipgloss.Left, sections...)
@@ -181,6 +206,14 @@ func (m *TeamProfile) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			return m, nil
 		}
 		m.teamSeasonSnapshot = msg.teamSeasonSnapshot
+		m.updateViewPortContent()
+		return m, nil
+	case playerIndexFetchedMsg:
+		if msg.err != nil {
+			log.Println("could not load player index:", msg.err)
+			return m, nil
+		}
+		m.rosterPort = msg.roster
 		m.updateViewPortContent()
 		return m, nil
 	case tea.KeyMsg:

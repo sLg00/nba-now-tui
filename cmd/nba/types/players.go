@@ -40,7 +40,7 @@ type BoxScorePlayers []BoxScorePlayer
 // Player struct represents a player row with their current statistical averages based on the input parameters
 // Can be totals, per game averages, per 48 minutes etc.
 type Player struct {
-	PlayerID    int     `json:"PLAYER_ID" isVisible:"false"`
+	PlayerID    int     `json:"PLAYER_ID" isVisible:"false" isID:"true"`
 	Rank        int     `json:"RANK"`
 	PlayerName  string  `json:"PLAYER"`
 	TeamID      int     `json:"TEAM_ID" isVisible:"false"`
@@ -69,8 +69,8 @@ type Player struct {
 
 type Players []Player
 
-type PlayerIndex struct {
-	PlayerID        int     `json:"PERSON_ID" isVisible:"false"`
+type IndexPlayer struct {
+	PlayerID        int     `json:"PERSON_ID" isVisible:"true" isID:"true"`
 	PlayerLastName  string  `json:"PLAYER_LAST_NAME" isVisible:"true"`
 	PlayerFirstName string  `json:"PLAYER_FIRST_NAME" isVisible:"true"`
 	PlayerSlug      string  `json:"PLAYER_SLUG" isVisible:"false"`
@@ -78,7 +78,7 @@ type PlayerIndex struct {
 	TeamID          int     `json:"TEAM_ID" isVisible:"false"`
 	TeamCity        string  `json:"TEAM_CITY" isVisible:"false"`
 	TeamName        string  `json:"TEAM" isVisible:"false"`
-	TeamAbbr        string  `json:"TEAM_ABBREVIATION" isVisible:"true"`
+	TeamAbbr        string  `json:"TEAM_ABBREVIATION" isVisible:"false"`
 	JerseyNumber    string  `json:"JERSEY_NUMBER" isVisible:"true"`
 	Position        string  `json:"POSITION" isVisible:"true"`
 	Height          string  `json:"HEIGHT" isVisible:"true"`
@@ -96,6 +96,8 @@ type PlayerIndex struct {
 	Assists         float64 `json:"ASSISTS" isVisible:"true"`
 	StatsTimeframe  string  `json:"STATS_TIMEFRAME" isVisible:"false"`
 }
+
+type IndexPlayers []IndexPlayer
 
 func (pst PlayerStatistics) ToStringSlice() []string {
 	return structToStringSlice(pst)
@@ -115,6 +117,10 @@ func (ps Players) ToStringSlice() []string {
 	return structToStringSlice(ps)
 }
 
-func (pi PlayerIndex) ToStringSlice() []string {
-	return structToStringSlice(pi)
+func (ip IndexPlayer) ToStringSlice() []string {
+	return structToStringSlice(ip)
+}
+
+func (ips IndexPlayers) ToStringSlice() []string {
+	return structToStringSlice(ips)
 }
