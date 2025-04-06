@@ -1,7 +1,5 @@
 <h1>NBA Now</h1>
 
-NOTE: currently undergoing some incremental refactoring moving to a more loosely coupled design, leveraging interfaces.
-
 NBA NOW is a simple terminal application built with Go. 
 The TUI is built using [Charm](https://charm.sh)'s suite of libraries and leveraging the Bubble Tea framework.
 
@@ -28,11 +26,11 @@ denotes local time when the games occurred.
 * Box scores
 * League leaders
 * Season standings
+* Team Profiles
 
 
 <h3>Shit still missing, yo</h3>
 
-* _(feature)_ Team profile pages (these will be persistent, and updated with stats)
 * _(feature)_ Player profile pages (on-demand, when a player is selected from an existing view)
 * _(feature)_ Playoff bracket
 * _(feature)_ News headlines
@@ -73,3 +71,7 @@ methods.
 ![Alt text](/screenshots/sc2.png?raw=true "Daily View")
 
 ![Alt text](/screenshots/sc3.png?raw=true "Box Score")
+
+![Alt text](/screenshots/sc4.png?raw=true "Team Profile 1")
+
+![Alt text](/screenshots/sc5.png?raw=true "Team Profile 2")
