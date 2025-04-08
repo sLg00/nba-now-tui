@@ -44,7 +44,7 @@ type playerIndexFetchedMsg struct {
 func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cmd, error) {
 	vp := viewport.New(size.Width-4, size.Height-8)
 
-	dataStr, err := TeamDataStrings(teamID)
+	dataStr, _, err := TeamDataStrings(teamID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -66,7 +66,7 @@ func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cm
 
 func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 	return func() tea.Msg {
-		teamBasicsStrings, err := TeamDataStrings(teamID)
+		teamBasicsStrings, _, err := TeamDataStrings(teamID)
 		if err != nil {
 			return teamBasicInfoFetchedMsg{err: err}
 		}
@@ -107,39 +107,12 @@ func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 
 func fetchTeamSeasonSnapshotMsg(teamID string) tea.Cmd {
 	return func() tea.Msg {
-		teamBasicsStrings, err := TeamDataStrings(teamID)
+		teamBasicsStrings, headers, err := TeamDataStrings(teamID)
 		if err != nil {
 			return teamBasicInfoFetchedMsg{err: err}
 		}
 
-		wins := teamBasicsStrings[9]
-		losses := teamBasicsStrings[10]
-		winPct := teamBasicsStrings[11]
-		confRank := teamBasicsStrings[12]
-		divRank := teamBasicsStrings[13]
-
-		var columns []table.Column
-		var rows []table.Row
-
-		winsColumn := table.NewColumn("wins", "Wins", 25)
-		lossesColumn := table.NewColumn("losses", "Losses", 25)
-		winPctColumn := table.NewColumn("winPct", "WinPct", 25)
-		confRankColumn := table.NewColumn("confRank", "Conference Rank", 25)
-		divRankColumn := table.NewColumn("divRank", "Division Rank", 25)
-		columns = append(columns, winsColumn, lossesColumn, winPctColumn, confRankColumn, divRankColumn)
-
-		rowData := make(table.RowData)
-		rowData["wins"] = wins
-		rowData["losses"] = losses
-		rowData["winPct"] = winPct
-		rowData["confRank"] = confRank
-		rowData["divRank"] = divRank
-
-		row := table.NewRow(rowData)
-		rows = append(rows, row)
-
-		seasonSnapsShotTable := table.New(columns).WithRows(rows).
-			WithHeaderVisibility(true).WithBaseStyle(TableStyle).Focused(false)
+		seasonSnapsShotTable := buildTables(headers, teamBasicsStrings, types.TeamCommonInfo{})
 
 		return teamSeasonSnapshotFetchedMsg{err: nil, teamSeasonSnapshot: seasonSnapsShotTable}
 
@@ -250,14 +223,14 @@ func (m *TeamProfile) View() string {
 }
 
 // TeamDataStrings is a helper function to reduce code duplication (just converts the structs to strings)
-func TeamDataStrings(teamID string) ([]string, error) {
+func TeamDataStrings(teamID string) ([]string, []string, error) {
 	cl, err := nbaAPI.NewClient().Loader.LoadTeamInfo(teamID)
-	data, _, err := converters.PopulateTeamInfo(cl)
+	data, headers, err := converters.PopulateTeamInfo(cl)
 	if err != nil {
-		return nil, fmt.Errorf("error getting team info: %w", err)
+		return nil, nil, fmt.Errorf("error getting team info: %w", err)
 	}
 
 	dataStr := types.ConvertToStringFlat(data)
 
-	return dataStr, nil
+	return dataStr, headers, nil
 }

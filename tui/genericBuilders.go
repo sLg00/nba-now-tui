@@ -6,7 +6,11 @@ import (
 	"strings"
 )
 
-func buildTables[T any](headers []string, rows [][]string, sampleType T) table.Model {
+// buildTables is a generic function that takes 'headers' as []string, rows as interface{}
+// (to support multiline and single-line resultsets) and any type (to use as a sampleType for field mappings)
+// and returns a table.Model object which uses the struct tags to define field visibility and more.
+// It's extendable and usable across all TUI views that have tables
+func buildTables[T any](headers []string, rows interface{}, sampleType T) table.Model {
 	itemType := reflect.TypeOf(sampleType)
 
 	isVisible := make(map[string]bool)
@@ -54,24 +58,37 @@ func buildTables[T any](headers []string, rows [][]string, sampleType T) table.M
 	}
 
 	var tableRows []table.Row
-	for _, row := range rows {
-		rowMap := make(table.RowData)
 
-		for i, value := range row {
+	switch typedRows := rows.(type) {
+	case [][]string:
+		for _, row := range typedRows {
+			rowMap := make(table.RowData)
+			for i, value := range row {
+				if i < len(headers) {
+					headerName := headers[i]
+					if isVisible[headers[i]] || isID[headers[i]] {
+						rowMap[headerName] = value
+					}
+				}
+			}
+			tableRows = append(tableRows, table.NewRow(rowMap))
+		}
+
+	case []string:
+		rowMap := make(table.RowData)
+		for i, value := range typedRows {
 			if i < len(headers) {
 				headerName := headers[i]
-
-				if isVisible[headerName] || isID[headerName] {
+				if isVisible[headers[i]] || isID[headers[i]] {
 					rowMap[headerName] = value
 				}
 			}
 		}
-
 		tableRows = append(tableRows, table.NewRow(rowMap))
 	}
 
 	return table.New(tableColumns).WithRows(tableRows).
 		SelectableRows(false).
 		WithMaxTotalWidth(WindowSize.Width - 10).WithBaseStyle(TableStyle).
-		Focused(true)
+		Focused(false)
 }

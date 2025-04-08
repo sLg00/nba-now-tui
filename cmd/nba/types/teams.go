@@ -98,21 +98,21 @@ type Teams []Team
 
 type TeamCommonInfo struct {
 	TeamID         int     `json:"TEAM_ID" isVisible:"false" isID:"true"`
-	SeasonYear     string  `json:"SEASON_YEAR" isVisible:"true" isID:"false"`
-	TeamCity       string  `json:"TEAM_CITY" isVisible:"true" isID:"false"`
-	TeamName       string  `json:"TEAM_NAME" isVisible:"true" isID:"false"`
+	SeasonYear     string  `json:"SEASON_YEAR" isVisible:"false" isID:"false"`
+	TeamCity       string  `json:"TEAM_CITY" isVisible:"false" isID:"false"`
+	TeamName       string  `json:"TEAM_NAME" isVisible:"false" isID:"false"`
 	TeamAbbrev     string  `json:"TEAM_ABBREV" isVisible:"false" isID:"false"`
-	TeamConference string  `json:"TEAM_CONFERENCE" isVisible:"true" isID:"false"`
-	TeamDivision   string  `json:"TEAM_DIVISION" isVisible:"true" isID:"false"`
+	TeamConference string  `json:"TEAM_CONFERENCE" isVisible:"false" isID:"false"`
+	TeamDivision   string  `json:"TEAM_DIVISION" isVisible:"false" isID:"false"`
 	TeamCode       string  `json:"TEAM_CODE" isVisible:"false" isID:"false"`
 	TeamSlug       string  `json:"TEAM_SLUG" isVisible:"false" isID:"false"`
-	Wins           int     `json:"W" isVisible:"true" isID:"false"`
-	Losses         int     `json:"L" isVisible:"true" isID:"false"`
-	WinPct         float64 `json:"PCT" percentage:"true" isVisible:"true" isID:"false"`
-	ConfRank       int     `json:"CONF_RANK" isVisible:"true" isID:"false"`
-	DivRank        int     `json:"DIV_RANK" isVisible:"true" isID:"false"`
-	MinYear        string  `json:"MIN_YEAR" isVisible:"true" isID:"false"`
-	MaxYear        string  `json:"MAX_YEAR" isVisible:"true" isID:"false"`
+	Wins           int     `json:"W" isVisible:"true" isID:"false" display:"Wins"`
+	Losses         int     `json:"L" isVisible:"true" isID:"false" display:"Losses"`
+	WinPct         float64 `json:"PCT" percentage:"true" isVisible:"true" isID:"false" display:"Win %"`
+	ConfRank       int     `json:"CONF_RANK" isVisible:"true" isID:"false" display:"Conf rank"`
+	DivRank        int     `json:"DIV_RANK" isVisible:"true" isID:"false" display:"Div rank"`
+	MinYear        string  `json:"MIN_YEAR" isVisible:"false" isID:"false"`
+	MaxYear        string  `json:"MAX_YEAR" isVisible:"false" isID:"false"`
 }
 
 // ToStringSlice is a method on the TeamCommonInfo type that enables the attributes of the type to be converted to strings
