@@ -106,7 +106,7 @@ type TeamCommonInfo struct {
 	TeamDivision   string  `json:"TEAM_DIVISION" isVisible:"false" isID:"false"`
 	TeamCode       string  `json:"TEAM_CODE" isVisible:"false" isID:"false"`
 	TeamSlug       string  `json:"TEAM_SLUG" isVisible:"false" isID:"false"`
-	Wins           int     `json:"W" isVisible:"true" isID:"false" display:"Wins" width:"20"`
+	Wins           int     `json:"W" isVisible:"true" isID:"false" display:"Wins"`
 	Losses         int     `json:"L" isVisible:"true" isID:"false" display:"Losses"`
 	WinPct         float64 `json:"PCT" percentage:"true" isVisible:"true" isID:"false" display:"Win %"`
 	ConfRank       int     `json:"CONF_RANK" isVisible:"true" isID:"false" display:"Conf rank"`

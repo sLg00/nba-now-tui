@@ -79,11 +79,11 @@ type IndexPlayer struct {
 	TeamCity        string  `json:"TEAM_CITY" isVisible:"false"`
 	TeamName        string  `json:"TEAM" isVisible:"false"`
 	TeamAbbr        string  `json:"TEAM_ABBREVIATION" isVisible:"false"`
-	JerseyNumber    string  `json:"JERSEY_NUMBER" isVisible:"true" display:"Number"`
-	Position        string  `json:"POSITION" isVisible:"true" display:"Position"`
-	Height          string  `json:"HEIGHT" isVisible:"true" display:"Height"`
-	Weight          string  `json:"WEIGHT" isVisible:"true" display:"Weight"`
-	College         string  `json:"COLLEGE" isVisible:"true" display:"College"`
+	JerseyNumber    string  `json:"JERSEY_NUMBER" isVisible:"true" display:"Number" width:"10"`
+	Position        string  `json:"POSITION" isVisible:"true" display:"Position" width:"10"`
+	Height          string  `json:"HEIGHT" isVisible:"true" display:"Height" width:"10"`
+	Weight          string  `json:"WEIGHT" isVisible:"true" display:"Weight" width:"10"`
+	College         string  `json:"COLLEGE" isVisible:"true" display:"College" width:"25"`
 	Country         string  `json:"COUNTRY" isVisible:"true" display:"Country"`
 	DraftYear       int     `json:"DRAFT_YEAR" isVisible:"true" display:"Draft Year"`
 	DraftRound      int     `json:"DRAFT_ROUND" isVisible:"true" display:"Draft Round"`
