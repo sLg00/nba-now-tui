@@ -64,6 +64,9 @@ func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cm
 	return m, cmds, nil
 }
 
+// fetchBasicTeamInfoMsg is the exception to the rule that all TUI tables should use the generic buildTables function.
+// The reason is that this function builds a unique, two column, single row table which holds the team logo.
+// So it does not conform to the table standards
 func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 	return func() tea.Msg {
 		teamBasicsStrings, _, err := TeamDataStrings(teamID)
