@@ -71,29 +71,29 @@ type Players []Player
 
 type IndexPlayer struct {
 	PlayerID        int     `json:"PERSON_ID" isVisible:"true" isID:"true"`
-	PlayerLastName  string  `json:"PLAYER_LAST_NAME" isVisible:"true"`
-	PlayerFirstName string  `json:"PLAYER_FIRST_NAME" isVisible:"true"`
+	PlayerLastName  string  `json:"PLAYER_LAST_NAME" isVisible:"true" display:"Last Name"`
+	PlayerFirstName string  `json:"PLAYER_FIRST_NAME" isVisible:"true" display:"First Name"`
 	PlayerSlug      string  `json:"PLAYER_SLUG" isVisible:"false"`
 	TeamSlug        string  `json:"TEAM_SLUG" isVisible:"false"`
 	TeamID          int     `json:"TEAM_ID" isVisible:"false"`
 	TeamCity        string  `json:"TEAM_CITY" isVisible:"false"`
 	TeamName        string  `json:"TEAM" isVisible:"false"`
 	TeamAbbr        string  `json:"TEAM_ABBREVIATION" isVisible:"false"`
-	JerseyNumber    string  `json:"JERSEY_NUMBER" isVisible:"true"`
-	Position        string  `json:"POSITION" isVisible:"true"`
-	Height          string  `json:"HEIGHT" isVisible:"true"`
-	Weight          string  `json:"WEIGHT" isVisible:"true"`
-	College         string  `json:"COLLEGE" isVisible:"true"`
-	Country         string  `json:"COUNTRY" isVisible:"true"`
-	DraftYear       int     `json:"DRAFT_YEAR" isVisible:"true"`
-	DraftRound      int     `json:"DRAFT_ROUND" isVisible:"true"`
-	DraftNumber     int     `json:"DRAFT_NUMBER" isVisible:"true"`
+	JerseyNumber    string  `json:"JERSEY_NUMBER" isVisible:"true" display:"Number"`
+	Position        string  `json:"POSITION" isVisible:"true" display:"Position"`
+	Height          string  `json:"HEIGHT" isVisible:"true" display:"Height"`
+	Weight          string  `json:"WEIGHT" isVisible:"true" display:"Weight"`
+	College         string  `json:"COLLEGE" isVisible:"true" display:"College"`
+	Country         string  `json:"COUNTRY" isVisible:"true" display:"Country"`
+	DraftYear       int     `json:"DRAFT_YEAR" isVisible:"true" display:"Draft Year"`
+	DraftRound      int     `json:"DRAFT_ROUND" isVisible:"true" display:"Draft Round"`
+	DraftNumber     int     `json:"DRAFT_NUMBER" isVisible:"true" display:"Draft Number"`
 	RosterStatus    float64 `json:"ROSTER_STATUS" isVisible:"false"`
 	FromYear        string  `json:"FROM_YEAR" isVisible:"false"`
 	ToYear          string  `json:"TO_YEAR" isVisible:"false"`
-	Points          float64 `json:"PTS" isVisible:"true"`
-	Rebounds        float64 `json:"REB" isVisible:"true"`
-	Assists         float64 `json:"ASSISTS" isVisible:"true"`
+	Points          float64 `json:"PTS" isVisible:"true" display:"Points"`
+	Rebounds        float64 `json:"REB" isVisible:"true" display:"Rebounds"`
+	Assists         float64 `json:"ASSISTS" isVisible:"true" display:"Assists"`
 	StatsTimeframe  string  `json:"STATS_TIMEFRAME" isVisible:"false"`
 }
 

@@ -29,7 +29,7 @@ type keymap struct {
 var DocStyle = lipgloss.NewStyle().Margin(2, 2).BorderStyle(lipgloss.HiddenBorder())
 
 var TableStyle = lipgloss.NewStyle().
-	BorderStyle(lipgloss.DoubleBorder()).
+	BorderStyle(lipgloss.NormalBorder()).
 	Align(lipgloss.Center, lipgloss.Center).
 	BorderForeground(lipgloss.Color("240"))
 
