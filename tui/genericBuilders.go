@@ -3,6 +3,7 @@ package tui
 import (
 	"github.com/evertras/bubble-table/table"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -16,6 +17,7 @@ func buildTables[T any](headers []string, rows interface{}, sampleType T) table.
 	isVisible := make(map[string]bool)
 	isID := make(map[string]bool)
 	displayMap := make(map[string]string)
+	columnWidthMap := make(map[string]string)
 
 	for i := 0; i < itemType.NumField(); i++ {
 		field := itemType.Field(i)
@@ -44,16 +46,25 @@ func buildTables[T any](headers []string, rows interface{}, sampleType T) table.
 		} else {
 			displayMap[jsonName] = jsonName
 		}
+
+		columnWidthTag := field.Tag.Get("width")
+		if columnWidthTag != "" {
+			columnWidthMap[jsonName] = columnWidthTag
+		}
 	}
 
 	var tableColumns []table.Column
 	for _, header := range headers {
 		if isVisible[header] && !isID[header] {
 			displayName := header
+			columnWidthInt := 13
 			if name, ok := displayMap[header]; ok {
 				displayName = name
 			}
-			tableColumns = append(tableColumns, table.NewColumn(header, displayName, 15))
+			if name, ok := columnWidthMap[header]; ok {
+				columnWidthInt, _ = strconv.Atoi(name)
+			}
+			tableColumns = append(tableColumns, table.NewColumn(header, displayName, columnWidthInt))
 		}
 	}
 
