@@ -162,7 +162,7 @@ func (m LeagueLeaders) View() string {
 	if m.quitting {
 		return ""
 	}
-	renderedLeaders := TableStyle.Render(m.leaderboard.View()) + "\n"
+	renderedLeaders := m.leaderboard.View() + "\n"
 	comboView := lipgloss.JoinVertical(lipgloss.Left, "\n", renderedLeaders, m.helpView())
 	return DocStyle.Render(comboView)
 }

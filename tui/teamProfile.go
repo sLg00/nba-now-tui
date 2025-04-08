@@ -15,7 +15,6 @@ import (
 )
 
 type TeamProfile struct {
-	teamTable          table.Model
 	width              int
 	height             int
 	mainPort           viewport.Model
@@ -23,6 +22,8 @@ type TeamProfile struct {
 	teamSeasonSnapshot table.Model
 	seasonStatsPort    table.Model
 	rosterPort         table.Model
+	activeTable        int
+	focused            bool
 }
 
 type teamBasicInfoFetchedMsg struct {
@@ -99,7 +100,7 @@ func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 
 		basicInfoTable := table.New(columns).WithRows(rows).
 			WithHeaderVisibility(false).
-			WithMultiline(true).WithBaseStyle(InvisibleTableStyle)
+			WithMultiline(true).WithBaseStyle(InvisibleTableStyle).Focused(false)
 		return teamBasicInfoFetchedMsg{err: nil, teamBasicInfo: basicInfoTable}
 	}
 }
@@ -138,7 +139,7 @@ func fetchTeamSeasonSnapshotMsg(teamID string) tea.Cmd {
 		rows = append(rows, row)
 
 		seasonSnapsShotTable := table.New(columns).WithRows(rows).
-			WithHeaderVisibility(true).WithBaseStyle(TableStyle)
+			WithHeaderVisibility(true).WithBaseStyle(TableStyle).Focused(false)
 
 		return teamSeasonSnapshotFetchedMsg{err: nil, teamSeasonSnapshot: seasonSnapsShotTable}
 
@@ -151,13 +152,14 @@ func fetchPlayerIndexMsg(teamID string) tea.Cmd {
 		if err != nil {
 			return playerIndexFetchedMsg{err: err}
 		}
+
 		players, headers, err := converters.PopulatePlayerIndex(cl)
 		if err != nil {
 			return playerIndexFetchedMsg{err: err}
 		}
-		playerStrings := types.ConvertToStringMatrix(players)
 
-		tableModel := buildTables(headers, playerStrings, types.IndexPlayer{})
+		playerStrings := types.ConvertToStringMatrix(players)
+		tableModel := buildTables(headers, playerStrings, types.IndexPlayer{}).Focused(true)
 
 		return playerIndexFetchedMsg{roster: tableModel, err: nil}
 	}
@@ -176,9 +178,9 @@ func (m *TeamProfile) updateViewPortContent() {
 		centered.Render(m.teamSeasonSnapshot.View()),
 		"\n\n",
 		centered.Render(" << ROSTER >>"),
-		"\n\n",
 		centered.Render(m.rosterPort.View()),
 		"\n\n",
+		centered.Render("<< MOAR >>"),
 	}
 	content := lipgloss.JoinVertical(lipgloss.Left, sections...)
 	m.mainPort.SetContent(content)
@@ -218,8 +220,11 @@ func (m *TeamProfile) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		return m, nil
 	case tea.KeyMsg:
 		switch {
+		case key.Matches(msg, Keymap.Tab):
+
 		case key.Matches(msg, Keymap.Back):
-			return InitMenu()
+			ss, cmd, _ := NewSeasonStandings(WindowSize)
+			return ss, cmd
 		case key.Matches(msg, Keymap.Quit):
 			return m, tea.Quit
 		}
