@@ -39,12 +39,6 @@ type playerIndexFetchedMsg struct {
 	roster table.Model
 }
 
-type teamTablesReadyMsg struct {
-	err        error
-	tables     []table.Model
-	tableNames []string
-}
-
 func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cmd, error) {
 	vp := viewport.New(size.Width-4, size.Height-8)
 
