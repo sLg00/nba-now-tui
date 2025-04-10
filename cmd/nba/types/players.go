@@ -1,38 +1,38 @@
 package types
 
 type PlayerStatistics struct {
-	Minutes                 string  `json:"minutes"`
-	FieldGoalsMade          int     `json:"fieldGoalsMade"`
-	FieldGoalsAttempted     int     `json:"fieldGoalsAttempted"`
-	FieldGoalsPercentage    float64 `json:"fieldGoalsPercentage" percentage:"true"`
-	ThreePointersMade       int     `json:"threePointersMade"`
-	ThreePointersAttempted  int     `json:"threePointersAttempted"`
-	ThreePointersPercentage float64 `json:"threePointersPercentage" percentage:"true"`
-	FreeThrowsMade          int     `json:"freeThrowsMade"`
-	FreeThrowsAttempted     int     `json:"freeThrowsAttempted"`
-	FreeThrowsPercentage    float64 `json:"freeThrowsPercentage" percentage:"true"`
-	ReboundsOffensive       int     `json:"reboundsOffensive"`
-	ReboundsDefensive       int     `json:"reboundsDefensive"`
-	ReboundsTotal           int     `json:"reboundsTotal"`
-	Assists                 int     `json:"assists"`
-	Steals                  int     `json:"steals"`
-	Blocks                  int     `json:"blocks"`
-	Turnovers               int     `json:"turnovers"`
-	FoulsPersonal           int     `json:"foulsPersonal"`
-	Points                  int     `json:"points"`
-	PlusMinusPoints         float64 `json:"plusMinusPoints"`
+	Minutes                 string  `json:"minutes" isVisible:"true" display:"Minutes"`
+	FieldGoalsMade          int     `json:"fieldGoalsMade" isVisible:"true" display:"FG Made"`
+	FieldGoalsAttempted     int     `json:"fieldGoalsAttempted" isVisible:"true" display:"FG Attempted"`
+	FieldGoalsPercentage    float64 `json:"fieldGoalsPercentage" percentage:"true" display:"FG%"`
+	ThreePointersMade       int     `json:"threePointersMade" isVisible:"true" display:"3PT Made"`
+	ThreePointersAttempted  int     `json:"threePointersAttempted" isVisible:"true" display:"3PT Attempted"`
+	ThreePointersPercentage float64 `json:"threePointersPercentage" percentage:"true" display:"3PT%"`
+	FreeThrowsMade          int     `json:"freeThrowsMade" isVisible:"true" display:"FT Made"`
+	FreeThrowsAttempted     int     `json:"freeThrowsAttempted" isVisible:"true" display:"FT Attempted"`
+	FreeThrowsPercentage    float64 `json:"freeThrowsPercentage" percentage:"true" display:"FT %"`
+	ReboundsOffensive       int     `json:"reboundsOffensive" isVisible:"true" display:"Off. Reb"`
+	ReboundsDefensive       int     `json:"reboundsDefensive" isVisible:"true" display:"Def. Reb"`
+	ReboundsTotal           int     `json:"reboundsTotal" isVisible:"true" display:"Rebounds"`
+	Assists                 int     `json:"assists" isVisible:"true" display:"Assists"`
+	Steals                  int     `json:"steals" isVisible:"true" display:"Steals"`
+	Blocks                  int     `json:"blocks" isVisible:"true" display:"Blocks"`
+	Turnovers               int     `json:"turnovers" isVisible:"true" display:"Turnovers"`
+	FoulsPersonal           int     `json:"foulsPersonal" isVisible:"true" display:"Fouls"`
+	Points                  int     `json:"points" isVisible:"true" display:"Points"`
+	PlusMinusPoints         float64 `json:"plusMinusPoints" isVisible:"true" display:"+/- Points"`
 }
 
 type BoxScorePlayer struct {
-	PersonId   int              `json:"personId" isVisible:"false"`
-	FirstName  string           `json:"firstName"`
-	FamilyName string           `json:"familyName"`
-	NameI      string           `json:"nameI"`
-	PlayerSlug string           `json:"playerSlug"`
-	Position   string           `json:"position"`
-	Comment    string           `json:"comment"`
-	JerseyNum  string           `json:"jerseyNum"`
-	Statistics PlayerStatistics `json:"statistics"`
+	PersonId   int              `json:"personId" isVisible:"false" isID:"true"`
+	FirstName  string           `json:"firstName" isVisible:"true" display:"First Name"`
+	FamilyName string           `json:"familyName" isVisible:"true" display:"Last Name"`
+	NameI      string           `json:"nameI" isVisible:"false"`
+	PlayerSlug string           `json:"playerSlug" isVisible:"false"`
+	Position   string           `json:"position" isVisible:"true" display:"Position"`
+	Comment    string           `json:"comment" isVisible:"false"`
+	JerseyNum  string           `json:"jerseyNum" isVisible:"true"`
+	Statistics PlayerStatistics `json:"statistics" isVisible:"false"`
 }
 
 type BoxScorePlayers []BoxScorePlayer
@@ -41,30 +41,30 @@ type BoxScorePlayers []BoxScorePlayer
 // Can be totals, per game averages, per 48 minutes etc.
 type Player struct {
 	PlayerID    int     `json:"PLAYER_ID" isVisible:"false" isID:"true"`
-	Rank        int     `json:"RANK"`
-	PlayerName  string  `json:"PLAYER"`
-	TeamID      int     `json:"TEAM_ID" isVisible:"false"`
-	TeamAbbr    string  `json:"TEAM"`
-	GamesPlayed int     `json:"GP"`
-	Minutes     float64 `json:"MIN"`
-	FGM         float64 `json:"FGM"`
-	FGA         float64 `json:"FGA"`
-	FGPCT       float64 `json:"FG_PCT" percentage:"true"`
-	FG3PTM      float64 `json:"FG3PTM"`
-	FG3PTA      float64 `json:"FG3PTA"`
-	FG3PTPCT    float64 `json:"FG3PT_PCT" percentage:"true"`
-	FTM         float64 `json:"FTM"`
-	FTA         float64 `json:"FTA"`
-	FTPCT       float64 `json:"FT_PCT" percentage:"true"`
-	OREB        float64 `json:"OREB"`
-	DREB        float64 `json:"DREB"`
-	REB         float64 `json:"REB"`
-	AST         float64 `json:"AST"`
-	STL         float64 `json:"STL"`
-	BLK         float64 `json:"BLK"`
-	TOV         float64 `json:"TOV"`
-	PTS         float64 `json:"PTS"`
-	EFF         float64 `json:"EFF"`
+	Rank        int     `json:"RANK" isVisible:"true" display:"Rank" width:"8"`
+	PlayerName  string  `json:"PLAYER" isVisible:"true" display:"Player" width:"25"`
+	TeamID      int     `json:"TEAM_ID" isVisible:"false" isID:"true"`
+	TeamAbbr    string  `json:"TEAM" isVisible:"true" display:"Team" width:"8"`
+	GamesPlayed int     `json:"GP" isVisible:"true" display:"GP" width:"8"`
+	Minutes     float64 `json:"MIN" isVisible:"true" display:"Minutes"`
+	FGM         float64 `json:"FGM" isVisible:"true" display:"FG Made"`
+	FGA         float64 `json:"FGA" isVisible:"true" display:"FG Attempted"`
+	FGPCT       float64 `json:"FG_PCT" percentage:"true" isVisible:"true" display:"FG%"`
+	FG3PTM      float64 `json:"FG3PTM" isVisible:"true" display:"3PT Made"`
+	FG3PTA      float64 `json:"FG3PTA" isVisible:"true" display:"3PT Attempted"`
+	FG3PTPCT    float64 `json:"FG3PT_PCT" percentage:"true" isVisible:"true" display:"3PT%"`
+	FTM         float64 `json:"FTM" isVisible:"true" display:"FT Made"`
+	FTA         float64 `json:"FTA" isVisible:"true" display:"FT Attempted"`
+	FTPCT       float64 `json:"FT_PCT" percentage:"true" isVisible:"true" display:"FT%"`
+	OREB        float64 `json:"OREB" isVisible:"true" display:"Off. Reb"`
+	DREB        float64 `json:"DREB" isVisible:"true" display:"Def. Reb"`
+	REB         float64 `json:"REB" isVisible:"true" display:"Rebounds"`
+	AST         float64 `json:"AST" isVisible:"true" display:"Assists"`
+	STL         float64 `json:"STL" isVisible:"true" display:"Steals"`
+	BLK         float64 `json:"BLK" isVisible:"true" display:"Blocks"`
+	TOV         float64 `json:"TOV" isVisible:"true" display:"Turnovers"`
+	PTS         float64 `json:"PTS" isVisible:"true" display:"Points"`
+	EFF         float64 `json:"EFF" isVisible:"true" display:"Efficiency"`
 }
 
 type Players []Player
@@ -93,7 +93,7 @@ type IndexPlayer struct {
 	ToYear          string  `json:"TO_YEAR" isVisible:"false"`
 	Points          float64 `json:"PTS" isVisible:"true" display:"Points"`
 	Rebounds        float64 `json:"REB" isVisible:"true" display:"Rebounds"`
-	Assists         float64 `json:"ASSISTS" isVisible:"true" display:"Assists"`
+	Assists         float64 `json:"AST" isVisible:"true" display:"Assists"`
 	StatsTimeframe  string  `json:"STATS_TIMEFRAME" isVisible:"false"`
 }
 

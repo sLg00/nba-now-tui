@@ -10,7 +10,6 @@ import (
 	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
 	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"log"
-	"strings"
 )
 
 type LeagueLeaders struct {
@@ -23,9 +22,8 @@ type LeagueLeaders struct {
 }
 
 type fetchLeagueLeadersMsg struct {
-	err     error
-	columns []table.Column
-	stats   []table.Row
+	err   error
+	table table.Model
 }
 
 func NewLeagueLeaders(size tea.WindowSizeMsg) (*LeagueLeaders, tea.Cmd, error) {
@@ -58,39 +56,12 @@ func fetchLeagueLeadersCmd() tea.Cmd {
 		}
 
 		playerStatsString := types.ConvertToStringMatrix(playerStats)
+		tableModel := buildTables(headers, playerStatsString, types.Player{}).
+			Focused(true).
+			WithBaseStyle(TableStyle).
+			WithPageSize(20)
 
-		var (
-			columns []table.Column
-			column  table.Column
-			rows    []table.Row
-			row     table.Row
-		)
-
-		for _, h := range headers {
-			if !strings.Contains(h, "ID") {
-				column = table.NewColumn(h, h, 15)
-				columns = append(columns, column)
-			}
-		}
-
-		for _, r := range playerStatsString {
-			rowData := make(table.RowData)
-			visibleColumnIndex := 0
-			for i, rd := range r {
-				headerName := headers[i]
-				if strings.Contains(headerName, "ID") {
-					rowData[headerName] = rd
-				} else {
-					columnTitle := columns[visibleColumnIndex].Title()
-					rowData[columnTitle] = rd
-					visibleColumnIndex++
-				}
-
-			}
-			row = table.NewRow(rowData)
-			rows = append(rows, row)
-		}
-		return fetchLeagueLeadersMsg{columns: columns, stats: rows}
+		return fetchLeagueLeadersMsg{table: tableModel, err: nil}
 	}
 }
 
@@ -103,18 +74,7 @@ func (m LeagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		if msg.err != nil {
 			return m, nil
 		}
-
-		t := table.New(msg.columns).
-			WithRows(msg.stats).
-			SelectableRows(true).
-			WithHeaderVisibility(true).
-			Focused(true).
-			WithPageSize(20).
-			WithMaxTotalWidth(145).
-			WithHorizontalFreezeColumnCount(3).
-			WithBaseStyle(lipgloss.NewStyle())
-
-		m := &LeagueLeaders{leaderboard: t, maxHeight: 25, maxWidth: 125}
+		m := &LeagueLeaders{leaderboard: msg.table, maxHeight: 25, maxWidth: 125}
 		return m, nil
 
 	case tea.KeyMsg:
