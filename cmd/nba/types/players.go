@@ -24,15 +24,15 @@ type PlayerStatistics struct {
 }
 
 type BoxScorePlayer struct {
-	PersonId   int              `json:"personId" isVisible:"false" isID:"true"`
-	FirstName  string           `json:"firstName" isVisible:"true" display:"First Name"`
-	FamilyName string           `json:"familyName" isVisible:"true" display:"Last Name"`
-	NameI      string           `json:"nameI" isVisible:"false"`
+	PersonId   int              `json:"personId" isVisible:"true" isID:"true" display:"ID"`
+	FirstName  string           `json:"firstName" isVisible:"false"`
+	FamilyName string           `json:"familyName" isVisible:"false"`
+	NameI      string           `json:"nameI" isVisible:"true" display:"Name"`
 	PlayerSlug string           `json:"playerSlug" isVisible:"false"`
 	Position   string           `json:"position" isVisible:"true" display:"Position"`
 	Comment    string           `json:"comment" isVisible:"false"`
-	JerseyNum  string           `json:"jerseyNum" isVisible:"true"`
-	Statistics PlayerStatistics `json:"statistics" isVisible:"false"`
+	JerseyNum  string           `json:"jerseyNum" isVisible:"true" display:"No."`
+	Statistics PlayerStatistics `json:"statistics" isVisible:"true"`
 }
 
 type BoxScorePlayers []BoxScorePlayer

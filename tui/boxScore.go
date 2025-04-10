@@ -12,6 +12,8 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"strconv"
+	"strings"
 )
 
 type InstantiatedBoxScore struct {
@@ -73,17 +75,21 @@ func fetchBoxSoresCmd(gameID string) tea.Cmd {
 		var homeRows []table.Row
 		var awayRows []table.Row
 
-		cols, _ := getColsAndValues(homeDataSet[0])
+		cols, _, widths := getColsAndValues(homeDataSet[0])
 
 		columns = make([]table.Column, len(cols))
 		for i, col := range cols {
-			column = table.NewColumn(col, col, 15)
+			width := 15
+			if i < len(widths) {
+				width = widths[i]
+			}
+			column = table.NewColumn(col, col, width)
 			columns[i] = column
 		}
 
 		for _, player := range homeDataSet {
 			rowData := make(table.RowData)
-			_, values := getColsAndValues(player)
+			_, values, _ := getColsAndValues(player)
 			for i, value := range values {
 				columnTitle := columns[i].Title()
 				rowData[columnTitle] = value
@@ -94,7 +100,7 @@ func fetchBoxSoresCmd(gameID string) tea.Cmd {
 
 		for _, player := range awayDataSet {
 			rowData := make(table.RowData)
-			_, values := getColsAndValues(player)
+			_, values, _ := getColsAndValues(player)
 			for i, value := range values {
 				columnTitle := columns[i].Title()
 				rowData[columnTitle] = value
@@ -114,9 +120,11 @@ func fetchBoxSoresCmd(gameID string) tea.Cmd {
 // getColsAndValues is a function to extract and filter fields and values from complex structs.
 // Used currently on the boxScore rendering logic, to filter out unnecessary fields, YET
 // leave the original data structures intact to preserve integrity and have the ability to extend and alter
-func getColsAndValues(v interface{}) ([]string, []string) {
+func getColsAndValues(v interface{}) ([]string, []string, []int) {
 	var keys []string
 	var values []string
+	var widths []int
+
 	val := reflect.ValueOf(v)
 	typ := reflect.TypeOf(v)
 
@@ -124,8 +132,28 @@ func getColsAndValues(v interface{}) ([]string, []string) {
 		field := typ.Field(i)
 		fieldValue := val.Field(i)
 
+		isVisibleTag := field.Tag.Get("isVisible")
+		if isVisibleTag == "false" {
+			continue
+		}
+
 		if field.Name == "NameI" || field.Name == "Position" || field.Name == "PersonId" {
-			keys = append(keys, field.Name)
+
+			displayName := field.Tag.Get("display")
+			if displayName == "" {
+				displayName = field.Name
+			}
+			keys = append(keys, displayName)
+
+			width := 15
+			widthTag := field.Tag.Get("width")
+			if widthTag != "" {
+				if w, err := strconv.Atoi(widthTag); err == nil {
+					width = w
+				}
+			}
+			widths = append(widths, width)
+
 			if fieldValue.Kind() == reflect.String {
 				values = append(values, fieldValue.String())
 			} else {
@@ -133,21 +161,23 @@ func getColsAndValues(v interface{}) ([]string, []string) {
 			}
 
 		} else if field.Name == "Statistics" {
-			nestedKeys, nestedValues := extractStatistics(fieldValue.Interface())
-			for _, nestedKey := range nestedKeys {
+			nestedKeys, nestedValues, nestedWidths := extractStatistics(fieldValue.Interface())
+			for i, nestedKey := range nestedKeys {
 				keys = append(keys, fmt.Sprintf("%s", nestedKey))
+				widths = append(widths, nestedWidths[i])
 			}
 			values = append(values, nestedValues...)
 		}
 	}
-	return keys, values
+	return keys, values, widths
 }
 
 // extractStatistics is a companion function to getColsAndValues. It is used to handle extracting data
 // from nested structures. It can be altered to be more generic in the future
-func extractStatistics(v interface{}) ([]string, []string) {
+func extractStatistics(v interface{}) ([]string, []string, []int) {
 	var keys []string
 	var values []string
+	var widths []int
 
 	val := reflect.ValueOf(v)
 	typ := reflect.TypeOf(v)
@@ -156,21 +186,47 @@ func extractStatistics(v interface{}) ([]string, []string) {
 	for i := 0; i < val.NumField(); i++ {
 		field := typ.Field(i)
 		fieldValue := val.Field(i)
-		tag := field.Tag.Get("percentage")
 
-		// Extract keys and values
-		keys = append(keys, field.Name)
-		if fieldValue.Kind() == reflect.Float64 {
-			if tag == "true" {
-				values = append(values, types.FloatToPercent(fieldValue.Float()))
+		// Check visibility
+		isVisibleTag := field.Tag.Get("isVisible")
+		if isVisibleTag == "false" {
+			continue // Skip invisible fields
+		}
+
+		// Get display name
+		displayName := field.Tag.Get("display")
+		jsonTag := field.Tag.Get("json")
+		if displayName == "" && jsonTag != "" {
+			tagParts := strings.Split(jsonTag, ",")
+			displayName = tagParts[0]
+		}
+		if displayName == "" {
+			displayName = field.Name
+		}
+
+		// Get column width
+		width := 15 // Default width
+		widthTag := field.Tag.Get("width")
+		if widthTag != "" {
+			if w, err := strconv.Atoi(widthTag); err == nil {
+				width = w
 			}
+		}
+
+		// Add key, width, and format value
+		keys = append(keys, displayName)
+		widths = append(widths, width)
+
+		// Format value (handle percentages, etc.)
+		tag := field.Tag.Get("percentage")
+		if fieldValue.Kind() == reflect.Float64 && tag == "true" {
+			values = append(values, types.FloatToPercent(fieldValue.Float()))
 		} else {
 			values = append(values, fmt.Sprintf("%v", fieldValue.Interface()))
 		}
-
 	}
 
-	return keys, values
+	return keys, values, widths
 }
 
 func (m InstantiatedBoxScore) Init() tea.Cmd { return nil }
