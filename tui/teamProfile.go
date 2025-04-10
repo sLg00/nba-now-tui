@@ -194,25 +194,6 @@ func (m *TeamProfile) assembleTables() {
 
 func (m *TeamProfile) Init() tea.Cmd { return nil }
 
-//func (m *TeamProfile) updateViewPortContent() {
-//
-//	centered := CenterStyle(m.mainPort.Width - 4)
-//
-//	sections := []string{
-//		InvisibleTableStyle.Render(m.teamBasicInfo.View()),
-//		"\n\n",
-//		centered.Render(" << SEASON AT A GLANCE >>"),
-//		centered.Render(m.teamSeasonSnapshot.View()),
-//		"\n\n",
-//		centered.Render(" << ROSTER >>"),
-//		centered.Render(m.rosterPort.View()),
-//		"\n\n",
-//		centered.Render("<< MOAR >>"),
-//	}
-//	content := lipgloss.JoinVertical(lipgloss.Left, sections...)
-//	m.mainPort.SetContent(content)
-//}
-
 func (m *TeamProfile) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
