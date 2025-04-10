@@ -15,15 +15,13 @@ import (
 )
 
 type TeamProfile struct {
-	width              int
-	height             int
-	mainPort           viewport.Model
-	teamBasicInfo      table.Model
-	teamSeasonSnapshot table.Model
-	seasonStatsPort    table.Model
-	rosterPort         table.Model
-	activeTable        int
-	focused            bool
+	width            int
+	height           int
+	mainPort         viewport.Model
+	tables           []table.Model
+	tableNames       []string
+	activeTableIndex int
+	quitting         bool
 }
 
 type teamBasicInfoFetchedMsg struct {
@@ -41,6 +39,12 @@ type playerIndexFetchedMsg struct {
 	roster table.Model
 }
 
+type teamTablesReadyMsg struct {
+	err        error
+	tables     []table.Model
+	tableNames []string
+}
+
 func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cmd, error) {
 	vp := viewport.New(size.Width-4, size.Height-8)
 
@@ -54,19 +58,25 @@ func NewTeamProfile(teamID string, size tea.WindowSizeMsg) (*TeamProfile, tea.Cm
 	vp.Style = teamStyle
 
 	m := &TeamProfile{
-		mainPort: vp,
-		width:    size.Width,
-		height:   size.Height,
+		mainPort:         vp,
+		width:            size.Width,
+		height:           size.Height,
+		tables:           make([]table.Model, 3),
+		tableNames:       []string{"Team Info", "SEASON STATS", "ROSTER"},
+		activeTableIndex: 1,
+		quitting:         false,
 	}
 
-	cmds := tea.Batch(fetchBasicTeamInfoMsg(teamID), fetchTeamSeasonSnapshotMsg(teamID), fetchPlayerIndexMsg(teamID))
+	cmds := tea.Batch(fetchBasicTeamInfoMsg(teamID),
+		fetchTeamSeasonSnapshotMsg(teamID),
+		fetchPlayerIndexMsg(teamID))
 
 	return m, cmds, nil
 }
 
 // fetchBasicTeamInfoMsg is the exception to the rule that all TUI tables should use the generic buildTables function.
 // The reason is that this function builds a unique, two column, single row table which holds the team logo.
-// So it does not conform to the table standards
+// So it does not conform to the table standards.
 func fetchBasicTeamInfoMsg(teamID string) tea.Cmd {
 	return func() tea.Msg {
 		teamBasicsStrings, _, err := TeamDataStrings(teamID)
@@ -141,26 +151,67 @@ func fetchPlayerIndexMsg(teamID string) tea.Cmd {
 	}
 }
 
-func (m *TeamProfile) Init() tea.Cmd { return nil }
+func (m *TeamProfile) assembleTables() {
+	if len(m.tables) == 0 {
+		return
+	}
 
-func (m *TeamProfile) updateViewPortContent() {
+	//the team info table is never focused
+	m.tables[0] = m.tables[0].Focused(false)
+
+	for i := 1; i < len(m.tables); i++ {
+		if i == m.activeTableIndex {
+			m.tables[i] = m.tables[i].Focused(true)
+		} else {
+			m.tables[i] = m.tables[i].Focused(false)
+		}
+	}
 
 	centered := CenterStyle(m.mainPort.Width - 4)
+	headerStyle := lipgloss.NewStyle().Bold(true)
+	activeHeaderStyle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("5")) //TODO: team color
 
-	sections := []string{
-		InvisibleTableStyle.Render(m.teamBasicInfo.View()),
-		"\n\n",
-		centered.Render(" << SEASON AT A GLANCE >>"),
-		centered.Render(m.teamSeasonSnapshot.View()),
-		"\n\n",
-		centered.Render(" << ROSTER >>"),
-		centered.Render(m.rosterPort.View()),
-		"\n\n",
-		centered.Render("<< MOAR >>"),
+	var sections []string
+	sections = append(sections, InvisibleTableStyle.Render(m.tables[0].View()), "\n\n")
+
+	for i := 1; i < len(m.tables); i++ {
+		var headerContent string
+		if i == m.activeTableIndex {
+			headerContent = activeHeaderStyle.Render(" << " + m.tableNames[i] + " >> ")
+		} else {
+			headerContent = headerStyle.Render(" << " + m.tableNames[i] + " >> ")
+		}
+
+		sections = append(sections,
+			centered.Render(headerContent),
+			centered.Render(TableStyle.Render(m.tables[i].View())),
+			"\n\n")
 	}
+
 	content := lipgloss.JoinVertical(lipgloss.Left, sections...)
 	m.mainPort.SetContent(content)
 }
+
+func (m *TeamProfile) Init() tea.Cmd { return nil }
+
+//func (m *TeamProfile) updateViewPortContent() {
+//
+//	centered := CenterStyle(m.mainPort.Width - 4)
+//
+//	sections := []string{
+//		InvisibleTableStyle.Render(m.teamBasicInfo.View()),
+//		"\n\n",
+//		centered.Render(" << SEASON AT A GLANCE >>"),
+//		centered.Render(m.teamSeasonSnapshot.View()),
+//		"\n\n",
+//		centered.Render(" << ROSTER >>"),
+//		centered.Render(m.rosterPort.View()),
+//		"\n\n",
+//		centered.Render("<< MOAR >>"),
+//	}
+//	content := lipgloss.JoinVertical(lipgloss.Left, sections...)
+//	m.mainPort.SetContent(content)
+//}
 
 func (m *TeamProfile) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 	var cmds []tea.Cmd
@@ -175,42 +226,59 @@ func (m *TeamProfile) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			log.Println("could not load team profile:", msg.err)
 			return m, nil
 		}
-		m.teamBasicInfo = msg.teamBasicInfo
-		m.updateViewPortContent()
+		m.tables[0] = msg.teamBasicInfo
+		m.assembleTables()
 		return m, nil
 	case teamSeasonSnapshotFetchedMsg:
 		if msg.err != nil {
 			log.Println("could not load season snapshot:", msg.err)
 			return m, nil
 		}
-		m.teamSeasonSnapshot = msg.teamSeasonSnapshot
-		m.updateViewPortContent()
+		m.tables[1] = msg.teamSeasonSnapshot
+		m.assembleTables()
 		return m, nil
 	case playerIndexFetchedMsg:
 		if msg.err != nil {
 			log.Println("could not load player index:", msg.err)
 			return m, nil
 		}
-		m.rosterPort = msg.roster
-		m.updateViewPortContent()
+		m.tables[2] = msg.roster
+		m.assembleTables()
 		return m, nil
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, Keymap.Tab):
-
+			if len(m.tables) > 1 {
+				m.activeTableIndex = (m.activeTableIndex + 1) % len(m.tables)
+				if m.activeTableIndex == 0 {
+					m.activeTableIndex = 1
+				}
+				m.assembleTables()
+			}
 		case key.Matches(msg, Keymap.Back):
 			ss, cmd, _ := NewSeasonStandings(WindowSize)
 			return ss, cmd
 		case key.Matches(msg, Keymap.Quit):
+			m.quitting = true
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
-		m.mainPort.Width = msg.Width - 2
-		m.mainPort.Height = msg.Height - 2
+		m.mainPort.Width = msg.Width - 4
+		m.mainPort.Height = msg.Height - 8
+		m.width = msg.Width
+		m.height = msg.Height
+		m.assembleTables()
 	}
 
 	m.mainPort, cmd = m.mainPort.Update(msg)
 	cmds = append(cmds, cmd)
+
+	if len(m.tables) > m.activeTableIndex {
+		var tableCmd tea.Cmd
+		m.tables[m.activeTableIndex], tableCmd = m.tables[m.activeTableIndex].Update(msg)
+		cmds = append(cmds, tableCmd)
+		m.assembleTables()
+	}
 
 	return m, tea.Batch(cmds...)
 }
@@ -221,6 +289,14 @@ func (m *TeamProfile) helpView() string {
 }
 
 func (m *TeamProfile) View() string {
+	if m.quitting {
+		return ""
+	}
+
+	if len(m.tables) == 0 {
+		return DocStyle.Render("Loading team profile data...")
+	}
+
 	comboView := lipgloss.JoinVertical(lipgloss.Left, m.mainPort.View(), m.helpView())
 	return DocStyle.Render(comboView)
 }
