@@ -244,13 +244,15 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 			WithRows(msg.homeBoxScoreData).
 			SelectableRows(true).
 			WithMaxTotalWidth(140).
-			Focused(true)
+			Focused(true).
+			WithHorizontalFreezeColumnCount(3)
 
 		awayTable := table.New(msg.boxScoreTableColumns).
 			WithRows(msg.awayBoxScoreData).
 			SelectableRows(true).
 			WithMaxTotalWidth(140).
-			Focused(false)
+			Focused(false).
+			WithHorizontalFreezeColumnCount(3)
 
 		m := &InstantiatedBoxScore{
 			homeTeamBoxScore: homeTable,

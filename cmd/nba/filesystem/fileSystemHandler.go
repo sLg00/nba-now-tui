@@ -56,6 +56,7 @@ func (fs *DefaultFsHandler) FileExists(file string) bool {
 	return false
 }
 
+// TODO: add file age method
 func (fs *DefaultFsHandler) CleanOldFiles(pc []string) error {
 
 	filesRegex := "^(\\d{4}-\\d{2}-\\d{2})_.*$"

@@ -101,5 +101,5 @@ func buildTables[T any](headers []string, rows interface{}, sampleType T) table.
 	return table.New(tableColumns).WithRows(tableRows).
 		SelectableRows(false).
 		WithMaxTotalWidth(WindowSize.Width - 10).WithBaseStyle(TableStyle).
-		Focused(false)
+		Focused(false).WithHorizontalFreezeColumnCount(2)
 }

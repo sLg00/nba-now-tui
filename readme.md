@@ -34,8 +34,6 @@ denotes local time when the games occurred.
 * _(feature)_ Player profile pages (on-demand, when a player is selected from an existing view)
 * _(feature)_ Playoff bracket
 * _(feature)_ News headlines
-* _(feature)_ Support for PreSeason & Playoffs
-* _(basics)_ Sorting on tables
 * _(FE)_ Consistent & distinct styling of elements
 * _(QA)_ Bunch of tests still missing, especially on TUI logic
 * _(FE)_ Error modals and loading bar

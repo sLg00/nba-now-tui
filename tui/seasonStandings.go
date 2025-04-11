@@ -74,8 +74,11 @@ func fetchSeasonStandingsCmd() tea.Cmd {
 		eastTeamsStrings := types.ConvertToStringMatrix(eastTeams)
 		westTeamsStrings := types.ConvertToStringMatrix(westTeams)
 
-		eastTable := buildTables(headers, eastTeamsStrings, types.Team{})
-		westTable := buildTables(headers, westTeamsStrings, types.Team{})
+		eastTable := buildTables(headers, eastTeamsStrings, types.Team{}).
+			SelectableRows(true).
+			Focused(true)
+		westTable := buildTables(headers, westTeamsStrings, types.Team{}).
+			SelectableRows(true)
 
 		return fetchSeasonStandingsMsg{
 			eastTable: eastTable,
