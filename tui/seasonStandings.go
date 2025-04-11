@@ -9,7 +9,6 @@ import (
 	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
 	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"log"
-	"strings"
 )
 
 // SeasonStandings is the main model of the season standings view, containing all the relevant fields
@@ -27,10 +26,9 @@ type SeasonStandings struct {
 
 // fetchSeasonStandingsMsg is a structure to transform the raw data into the season standings tables
 type fetchSeasonStandingsMsg struct {
-	err           error
-	columns       []table.Column
-	eastTeamStats []table.Row
-	westTeamStats []table.Row
+	err       error
+	eastTable table.Model
+	westTable table.Model
 }
 
 // teamProfileDownloadedMsg is returned by te downloadProfile function to note whether the API call
@@ -76,60 +74,12 @@ func fetchSeasonStandingsCmd() tea.Cmd {
 		eastTeamsStrings := types.ConvertToStringMatrix(eastTeams)
 		westTeamsStrings := types.ConvertToStringMatrix(westTeams)
 
-		var (
-			columns  []table.Column
-			column   table.Column
-			eastRows []table.Row
-			eastRow  table.Row
-			westRows []table.Row
-			westRow  table.Row
-		)
-
-		for _, h := range headers {
-			if !strings.Contains(h, "ID") {
-				column = table.NewColumn(h, h, 15)
-				columns = append(columns, column)
-			}
-		}
-
-		for _, r := range eastTeamsStrings {
-			rowData := make(table.RowData)
-			visibleColumnIndex := 0
-			for i, rd := range r {
-				headerName := headers[i]
-				if strings.Contains(headerName, "ID") {
-					rowData[headerName] = rd
-				} else {
-					columnTitle := columns[visibleColumnIndex].Title()
-					rowData[columnTitle] = rd
-					visibleColumnIndex++
-				}
-			}
-			eastRow = table.NewRow(rowData)
-			eastRows = append(eastRows, eastRow)
-		}
-
-		for _, r := range westTeamsStrings {
-			rowData := make(table.RowData)
-			visibleColumnIndex := 0
-			for i, rd := range r {
-				headerName := headers[i]
-				if strings.Contains(headerName, "ID") {
-					rowData[headerName] = rd
-				} else {
-					columnTitle := columns[visibleColumnIndex].Title()
-					rowData[columnTitle] = rd
-					visibleColumnIndex++
-				}
-			}
-			westRow = table.NewRow(rowData)
-			westRows = append(westRows, westRow)
-		}
+		eastTable := buildTables(headers, eastTeamsStrings, types.Team{})
+		westTable := buildTables(headers, westTeamsStrings, types.Team{})
 
 		return fetchSeasonStandingsMsg{
-			columns:       columns,
-			eastTeamStats: eastRows,
-			westTeamStats: westRows}
+			eastTable: eastTable,
+			westTable: westTable}
 	}
 }
 
@@ -144,17 +94,9 @@ func (m SeasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			log.Println("could not fetch season standings:", msg.err)
 			return m, nil
 		}
-		eastTable := table.New(msg.columns).
-			WithRows(msg.eastTeamStats).
-			SelectableRows(true).
-			WithMaxTotalWidth(140).
-			Focused(true)
+		eastTable := msg.eastTable
 
-		westTable := table.New(msg.columns).
-			WithRows(msg.westTeamStats).
-			SelectableRows(true).
-			WithMaxTotalWidth(140)
-
+		westTable := msg.westTable
 		m := &SeasonStandings{eastTeams: eastTable, westTeams: westTable}
 		return m, nil
 	case tea.KeyMsg:
@@ -233,6 +175,11 @@ func (m SeasonStandings) View() string {
 	}
 	renderedEastTable := m.eastTeams.View() + "\n"
 	renderedWestTable := m.westTeams.View() + "\n"
-	comboView := lipgloss.JoinVertical(lipgloss.Left, "\n\n", renderedEastTable, renderedWestTable, m.helpView())
+	comboView := lipgloss.JoinVertical(lipgloss.Left, "\n",
+		"<< EAST >> \n",
+		renderedEastTable,
+		"<< WEST >> \n",
+		renderedWestTable,
+		m.helpView())
 	return DocStyle.Render(comboView)
 }

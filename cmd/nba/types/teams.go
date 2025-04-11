@@ -3,95 +3,95 @@ package types
 type Team struct {
 	LeagueID                string  `json:"LeagueID" isVisible:"false"`
 	SeasonID                string  `json:"SeasonID" isVisible:"false"`
-	TeamID                  int     `json:"TeamID" isVisible:"false"`
-	TeamCity                string  `json:"TeamCity"`
-	TeamName                string  `json:"TeamName"`
-	TeamSlug                string  `json:"TeamSlug"`
-	Conference              string  `json:"Conference"`
-	ConferenceRecord        string  `json:"ConferenceRecord"`
-	PlayoffRank             int     `json:"PlayoffRank"`
-	ClinchIndicator         string  `json:"ClinchIndicator"`
-	Division                string  `json:"Division"`
-	DivisionRecord          string  `json:"DivisionRecord"`
-	DivisionRank            int     `json:"DivisionRank"`
-	Wins                    int     `json:"WINS"`
-	Losses                  int     `json:"LOSSES"`
-	WinPCT                  float64 `json:"WinPCT" percentage:"true"`
-	LeagueRank              int     `json:"LeagueRank"`
-	Record                  string  `json:"Record"`
-	Home                    string  `json:"HOME"`
-	Road                    string  `json:"ROAD"`
-	L10                     string  `json:"L10"`
-	Last10Home              string  `json:"Last10Home"`
-	Last10Road              string  `json:"Last10Road"`
-	OT                      string  `json:"OT"`
-	ThreePTSOrLess          string  `json:"ThreePTSOrLess"`
-	TenPTSOrMore            string  `json:"TenPTSOrMore"`
-	LongHomeStreak          int     `json:"LongHomeStreak"`
-	StrLongHomeStreak       string  `json:"strLongHomeStreak"`
-	LongRoadStreak          int     `json:"LongRoadStreak"`
-	StrLongRoadStreak       string  `json:"strLongRoadStreak"` //
-	LongWinStreak           int     `json:"LongWinStreak"`
-	LongLossStreak          int     `json:"LongLossStreak"`
-	CurrentHomeStreak       int     `json:"CurrentHomeStreak"`
-	StrCurrentHomeStreak    string  `json:"strCurrentHomeStreak"` //
-	CurrentRoadStreak       int     `json:"CurrentRoadStreak"`
-	StrCurrentRoadStreak    string  `json:"strCurrentRoadStreak"`
-	CurrentStreak           int     `json:"CurrentStreak"`
-	StrCurrentStreak        string  `json:"strCurrentStreak"`
-	ConferenceGamesBack     float64 `json:"ConferenceGamesBack"`
-	DivisionGamesBack       float64 `json:"DivisionGamesBack"`
-	ClinchedConferenceTitle int     `json:"ClinchedConferenceTitle"`
-	ClinchedDivisionTitle   int     `json:"ClinchedDivisionTitle"`
-	ClinchedPlayoffBirth    int     `json:"ClinchedPlayoffBirth"`
-	ClinchedPlayIn          int     `json:"ClinchedPlayIn"`
-	EliminatedConference    int     `json:"EliminatedConference"`
-	EliminatedDivision      int     `json:"EliminatedDivision"`
-	AheadAtHalf             string  `json:"AheadAtHalf"`
-	BehindAtHalf            string  `json:"BehindAtHalf"`
-	TiedAtHalf              string  `json:"TiedAtHalf"`
-	AheadAtThird            string  `json:"AheadAtThird"`
-	BehindAtThird           string  `json:"BehindAtThird"`
-	TiedAtThird             string  `json:"TiedAtThird"`
-	Score100PTS             string  `json:"Score100PTS"`
-	OppScore100PTS          string  `json:"OppScore100PTS"`
-	OppOver500              string  `json:"OppOver500"`
-	LeadInFGPCT             string  `json:"LeadInFGPCT"`
-	LeadInReb               string  `json:"LeadInReb"`
-	FewerTurnovers          string  `json:"FewerTurnovers"`
-	PointsPG                float64 `json:"PointsPG"`
-	OppPointsPG             float64 `json:"OppPointsPG"`
-	DiffPointsPG            float64 `json:"DiffPointsPG"`
-	VsEast                  string  `json:"vsEast"`
-	VsAtlantic              string  `json:"vsAtlantic"`
-	VsCentral               string  `json:"vsCentral"`
-	VsSoutheast             string  `json:"vsSoutheast"`
-	VsWest                  string  `json:"vsWest"`
-	VsNorthwest             string  `json:"vsNorthwest"`
-	VsPacific               string  `json:"vsPacific"`
-	VsSouthwest             string  `json:"vsSouthwest"`
-	Jan                     string  `json:"Jan"`
-	Feb                     string  `json:"Feb"`
-	Mar                     string  `json:"Mar"`
-	Apr                     string  `json:"Apr"`
-	May                     string  `json:"May"`
-	Jun                     string  `json:"Jun"`
-	Jul                     string  `json:"Jul"`
-	Aug                     string  `json:"Aug"`
-	Sep                     string  `json:"Sep"`
-	Oct                     string  `json:"Oct"`
-	Nov                     string  `json:"Nov"`
-	Dec                     string  `json:"Dec"`
-	Score80Plus             string  `json:"Score_80_Plus"`
-	OppScore80Plus          string  `json:"Opp_Score_80_Plus"`
-	ScoreBelow80            string  `json:"Score_Below_80"`
-	OppScoreBelow80         string  `json:"Opp_Score_Below_80"`
-	TotalPoints             int     `json:"TotalPoints"`
-	OppTotalPoints          int     `json:"OppTotalPoints"`
-	DiffTotalPoints         int     `json:"DiffTotalPoints"`
-	LeagueGamesBack         float64 `json:"LeagueGamesBack"`
-	PlayoffSeeding          int     `json:"PlayoffSeeding"`
-	ClinchedPostSeason      int     `json:"ClinchedPostSeason"`
+	TeamID                  int     `json:"TeamID" isVisible:"false" isID:"true"`
+	TeamCity                string  `json:"TeamCity" isVisible:"true" display:"City" width:"15"`
+	TeamName                string  `json:"TeamName" isVisible:"true" display:"Name" width:"15"`
+	TeamSlug                string  `json:"TeamSlug" isVisible:"false"`
+	Conference              string  `json:"Conference" isVisible:"false"`
+	ConferenceRecord        string  `json:"ConferenceRecord" isVisible:"true" display:"Conf. Record"`
+	PlayoffRank             int     `json:"PlayoffRank" isVisible:"true" display:"PO Rank"`
+	ClinchIndicator         string  `json:"ClinchIndicator" isVisible:"true" display:"Clinch Indicator"`
+	Division                string  `json:"Division" isVisible:"true" display:"Division"`
+	DivisionRecord          string  `json:"DivisionRecord" isVisible:"true" display:"Division Record"`
+	DivisionRank            int     `json:"DivisionRank" isVisible:"true" display:"Division Rank"`
+	Wins                    int     `json:"WINS" isVisible:"true" display:"Wins"`
+	Losses                  int     `json:"LOSSES" isVisible:"true" display:"Losses"`
+	WinPCT                  float64 `json:"WinPCT" percentage:"true" display:"Win%"`
+	LeagueRank              int     `json:"LeagueRank" isVisible:"true" display:"League Rank"`
+	Record                  string  `json:"Record" isVisible:"true" display:"Record"`
+	Home                    string  `json:"HOME" isVisible:"true" display:"Home"`
+	Road                    string  `json:"ROAD" isVisible:"true" display:"Road"`
+	L10                     string  `json:"L10" isVisible:"true" display:"Last10"`
+	Last10Home              string  `json:"Last10Home" isVisible:"true" display:"Last10Home"`
+	Last10Road              string  `json:"Last10Road" isVisible:"true" display:"Last10Road"`
+	OT                      string  `json:"OT" isVisible:"true" display:"OT"`
+	ThreePTSOrLess          string  `json:"ThreePTSOrLess" isVisible:"false"`
+	TenPTSOrMore            string  `json:"TenPTSOrMore" isVisible:"false"`
+	LongHomeStreak          int     `json:"LongHomeStreak" isVisible:"false"`
+	StrLongHomeStreak       string  `json:"strLongHomeStreak" isVisible:"false"`
+	LongRoadStreak          int     `json:"LongRoadStreak" isVisible:"false"`
+	StrLongRoadStreak       string  `json:"strLongRoadStreak" isVisible:"false"` //
+	LongWinStreak           int     `json:"LongWinStreak" isVisible:"true" display:"LongWinStreak"`
+	LongLossStreak          int     `json:"LongLossStreak" isVisible:"true" display:"LongLossStreak"`
+	CurrentHomeStreak       int     `json:"CurrentHomeStreak" isVisible:"false"`
+	StrCurrentHomeStreak    string  `json:"strCurrentHomeStreak" isVisible:"false"` //
+	CurrentRoadStreak       int     `json:"CurrentRoadStreak" isVisible:"false"`
+	StrCurrentRoadStreak    string  `json:"strCurrentRoadStreak" isVisible:"false"`
+	CurrentStreak           int     `json:"CurrentStreak" isVisible:"true" display:"CurrentStreak"`
+	StrCurrentStreak        string  `json:"strCurrentStreak" isVisible:"false"`
+	ConferenceGamesBack     float64 `json:"ConferenceGamesBack" isVisible:"false"`
+	DivisionGamesBack       float64 `json:"DivisionGamesBack" isVisible:"false"`
+	ClinchedConferenceTitle int     `json:"ClinchedConferenceTitle" isVisible:"true" display:"Clinched Conf.""`
+	ClinchedDivisionTitle   int     `json:"ClinchedDivisionTitle" isVisible:"true" display:"Clinched Div."`
+	ClinchedPlayoffBirth    int     `json:"ClinchedPlayoffBirth" isVisible:"true" display:"Clinched PO"`
+	ClinchedPlayIn          int     `json:"ClinchedPlayIn" isVisible:"true" display:"Clinched PlayIn"`
+	EliminatedConference    int     `json:"EliminatedConference" isVisible:"false"`
+	EliminatedDivision      int     `json:"EliminatedDivision" isVisible:"false"`
+	AheadAtHalf             string  `json:"AheadAtHalf" isVisible:"false"`
+	BehindAtHalf            string  `json:"BehindAtHalf" isVisible:"false"`
+	TiedAtHalf              string  `json:"TiedAtHalf" isVisible:"false"`
+	AheadAtThird            string  `json:"AheadAtThird" isVisible:"false"`
+	BehindAtThird           string  `json:"BehindAtThird" isVisible:"false"`
+	TiedAtThird             string  `json:"TiedAtThird" isVisible:"false"`
+	Score100PTS             string  `json:"Score100PTS" isVisible:"false"`
+	OppScore100PTS          string  `json:"OppScore100PTS" isVisible:"false"`
+	OppOver500              string  `json:"OppOver500" isVisible:"false"`
+	LeadInFGPCT             string  `json:"LeadInFGPCT" isVisible:"false"`
+	LeadInReb               string  `json:"LeadInReb" isVisible:"false"`
+	FewerTurnovers          string  `json:"FewerTurnovers" isVisible:"false"`
+	PointsPG                float64 `json:"PointsPG" isVisible:"true" display:"PPG"`
+	OppPointsPG             float64 `json:"OppPointsPG" isVisible:"true" display:"Opp PPG"`
+	DiffPointsPG            float64 `json:"DiffPointsPG" isVisible:"true" display:"Diff PPG"`
+	VsEast                  string  `json:"vsEast" isVisible:"false"`
+	VsAtlantic              string  `json:"vsAtlantic" isVisible:"false"`
+	VsCentral               string  `json:"vsCentral" isVisible:"false"`
+	VsSoutheast             string  `json:"vsSoutheast" isVisible:"false"`
+	VsWest                  string  `json:"vsWest" isVisible:"false"`
+	VsNorthwest             string  `json:"vsNorthwest" isVisible:"false"`
+	VsPacific               string  `json:"vsPacific" isVisible:"false"`
+	VsSouthwest             string  `json:"vsSouthwest" isVisible:"false"`
+	Jan                     string  `json:"Jan" isVisible:"false"`
+	Feb                     string  `json:"Feb" isVisible:"false"`
+	Mar                     string  `json:"Mar" isVisible:"false"`
+	Apr                     string  `json:"Apr" isVisible:"false"`
+	May                     string  `json:"May" isVisible:"false"`
+	Jun                     string  `json:"Jun" isVisible:"false"`
+	Jul                     string  `json:"Jul" isVisible:"false"`
+	Aug                     string  `json:"Aug" isVisible:"false"`
+	Sep                     string  `json:"Sep" isVisible:"false"`
+	Oct                     string  `json:"Oct" isVisible:"false"`
+	Nov                     string  `json:"Nov" isVisible:"false"`
+	Dec                     string  `json:"Dec" isVisible:"false"`
+	Score80Plus             string  `json:"Score_80_Plus" isVisible:"false"`
+	OppScore80Plus          string  `json:"Opp_Score_80_Plus" isVisible:"false"`
+	ScoreBelow80            string  `json:"Score_Below_80" isVisible:"false"`
+	OppScoreBelow80         string  `json:"Opp_Score_Below_80" isVisible:"false"`
+	TotalPoints             int     `json:"TotalPoints" isVisible:"false"`
+	OppTotalPoints          int     `json:"OppTotalPoints" isVisible:"false"`
+	DiffTotalPoints         int     `json:"DiffTotalPoints" isVisible:"false"`
+	LeagueGamesBack         float64 `json:"LeagueGamesBack" isVisible:"false"`
+	PlayoffSeeding          int     `json:"PlayoffSeeding" isVisible:"true" display:"PlayOff Seeding"`
+	ClinchedPostSeason      int     `json:"ClinchedPostSeason" isVisible:"false"`
 }
 
 type Teams []Team
