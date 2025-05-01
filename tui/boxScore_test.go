@@ -64,7 +64,7 @@ func TestGetColsAndValues(t *testing.T) {
 		"39%",
 	}
 
-	cols, vals := getColsAndValues(player)
+	cols, vals, _ := getColsAndValues(player)
 
 	if !reflect.DeepEqual(cols, expectedCols) {
 		t.Errorf("expected: %v, got: %v", expectedCols, cols)
@@ -87,7 +87,7 @@ func TestExtractStatistics(t *testing.T) {
 	expectedKeys := []string{"Points", "Rebounds", "Assists", "Fg3ptPct"}
 	expectedVals := []string{"33", "18", "7", "39%"}
 
-	keys, vals := extractStatistics(stats)
+	keys, vals, _ := extractStatistics(stats)
 	if !reflect.DeepEqual(expectedKeys, keys) {
 		t.Errorf("expected keys: %v, got: %v", expectedKeys, keys)
 	}
@@ -107,7 +107,7 @@ func TestExtractStatisticsZeroValues(t *testing.T) {
 
 	expectedVals := []string{"0", "0", "0", "0%"}
 
-	_, vals := extractStatistics(stats)
+	_, vals, _ := extractStatistics(stats)
 	if !reflect.DeepEqual(expectedVals, vals) {
 		t.Errorf("expected values: %v, got: %v", expectedVals, vals)
 	}
