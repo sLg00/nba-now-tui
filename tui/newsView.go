@@ -149,6 +149,11 @@ func (m *NewsModel) View() string {
 	if m.quitting {
 		return ""
 	}
+
+	//if m.list.Items() == nil || len(m.list.Items()) == 0 {
+	//	return "Loading..."
+	//}
+
 	renderedNews := m.list.View() + "\n"
 	comboView := DocStyle.Render(renderedNews + m.helpView())
 	return comboView

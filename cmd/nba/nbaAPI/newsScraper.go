@@ -119,7 +119,7 @@ func (nc *NewsClient) Scrape() ([]NewsArticle, error) {
 	seenURLs := make(map[string]bool)
 	for _, match := range matches {
 		if len(match) >= 3 {
-			url := "www.nba.com" + match[1]
+			url := "https://www.nba.com" + match[1]
 			title := cleanHTML(match[2])
 
 			if seenURLs[url] {
@@ -160,7 +160,7 @@ func cleanHTML(html string) string {
 	text = strings.ReplaceAll(text, "&mdash;", "—")
 	text = strings.ReplaceAll(text, "&#8211;", "–")
 	text = strings.ReplaceAll(text, "&#8212;", "—")
-	text = strings.ReplaceAll(text, "&nbsp;", " ")
+	text = strings.ReplaceAll(text, "&nbsp;", " ") // Non-breaking space
 
 	text = strings.TrimSpace(text)
 
