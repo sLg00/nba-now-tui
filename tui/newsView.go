@@ -56,7 +56,7 @@ func NewNewsView(size tea.WindowSizeMsg) (*NewsModel, tea.Cmd, error) {
 	delegate := list.NewDefaultDelegate()
 	newsModel := list.New([]list.Item{}, delegate, 0, 0)
 	newsModel.Title = "Recent News"
-	newsModel.SetShowHelp(true)
+	newsModel.SetShowHelp(false)
 	newsModel.SetShowStatusBar(false)
 	newsModel.SetFilteringEnabled(false)
 	newsModel.SetShowPagination(true)

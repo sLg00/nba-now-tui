@@ -27,16 +27,15 @@ denotes local time when the games occurred.
 * League leaders
 * Season standings
 * Team Profiles (with ASCII logos and team-colors)
+* Daily News headlines (and links) from NBA.com
 
 
 <h3>Shit still missing, yo</h3>
 
 * _(feature)_ Player profile pages (on-demand, when a player is selected from an existing view)
 * _(feature)_ Playoff bracket
-* _(feature)_ News headlines
-* _(FE)_ Consistent & distinct styling of elements
 * _(QA)_ Bunch of tests still missing, especially on TUI logic
-* _(FE)_ Error modals and loading bar
+* _(FE)_ Error modals and loading bars
 
 
 <h4>Not gonna happen</h4>
@@ -73,3 +72,5 @@ methods.
 ![Alt text](/screenshots/sc4.png?raw=true "Team Profile 1")
 
 ![Alt text](/screenshots/sc5.png?raw=true "Team Profile 2")
+
+![Alt text](/screenshots/sc6.png?raw=true "News Headlines")

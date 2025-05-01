@@ -148,11 +148,19 @@ func cleanHTML(html string) string {
 	text := re.ReplaceAllString(html, "")
 
 	text = strings.ReplaceAll(text, "&amp;", "&")
-	text = strings.ReplaceAll(text, "&quot;", "\"")
 	text = strings.ReplaceAll(text, "&lt;", "<")
 	text = strings.ReplaceAll(text, "&gt;", ">")
-	text = strings.ReplaceAll(text, "&nbsp;", " ")
+	text = strings.ReplaceAll(text, "&quot;", "\"")
 	text = strings.ReplaceAll(text, "&#39;", "'")
+	text = strings.ReplaceAll(text, "&#x27;", "'")
+	text = strings.ReplaceAll(text, "&apos;", "'")
+	text = strings.ReplaceAll(text, "&#96;", "`")
+	text = strings.ReplaceAll(text, "&#x60;", "`")
+	text = strings.ReplaceAll(text, "&ndash;", "–")
+	text = strings.ReplaceAll(text, "&mdash;", "—")
+	text = strings.ReplaceAll(text, "&#8211;", "–")
+	text = strings.ReplaceAll(text, "&#8212;", "—")
+	text = strings.ReplaceAll(text, "&nbsp;", " ")
 
 	text = strings.TrimSpace(text)
 
