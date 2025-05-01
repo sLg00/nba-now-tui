@@ -12,6 +12,7 @@ type FileSystemHandler interface {
 	ReadFile(file string) ([]byte, error)
 	FileExists(file string) bool
 	CleanOldFiles(pc []string) error
+	EnsureDirectoryExists(dir string) error
 }
 
 // DefaultFsHandler implements the FileSystemHandler interface
@@ -56,7 +57,7 @@ func (fs *DefaultFsHandler) FileExists(file string) bool {
 	return false
 }
 
-// TODO: add file age method
+// CleanOldFiles TODO: add file age method
 func (fs *DefaultFsHandler) CleanOldFiles(pc []string) error {
 
 	filesRegex := "^(\\d{4}-\\d{2}-\\d{2})_.*$"
@@ -72,5 +73,13 @@ func (fs *DefaultFsHandler) CleanOldFiles(pc []string) error {
 		}
 	}
 
+	return nil
+}
+
+// EnsureDirectoryExists creates a directory if it doesn't exist
+func (fs *DefaultFsHandler) EnsureDirectoryExists(dir string) error {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		return os.MkdirAll(dir, 0755)
+	}
 	return nil
 }

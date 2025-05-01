@@ -26,6 +26,8 @@ type PathComps struct {
 	TeamProfileID   string //id of specific team
 	TeamPlayersPath string //folder to store player records
 	//TeamPlayersFile string //players of a team file
+	NewsCachePath string
+	NewsCacheFile string
 }
 
 func PathFactory(dates types.DateProvider, id string) PathManager {
@@ -53,6 +55,8 @@ func PathFactory(dates types.DateProvider, id string) PathManager {
 		TeamProfilePath: "teamprofiles/",
 		TeamProfileID:   id,
 		TeamPlayersPath: "teamplayers/",
+		NewsCachePath:   "news/",
+		NewsCacheFile:   today + "_news",
 	}
 }
 
@@ -71,6 +75,10 @@ func (p *PathComps) GetFullPath(fileType string, id string) string {
 		return base + p.TeamProfilePath + id
 	case "playerIndex":
 		return base + p.TeamPlayersPath + id
+	case "newsCachePath":
+		return base + p.NewsCachePath
+	case "newsCacheFile":
+		return base + p.NewsCachePath + p.NewsCacheFile
 	default:
 		return base
 	}
@@ -81,5 +89,6 @@ func (p *PathComps) GetBasePaths() []string {
 		p.Home + p.Path,
 		p.Home + p.Path + p.BoxScorePath,
 		p.Home + p.Path + p.TeamPlayersPath,
+		p.Home + p.Path + p.NewsCachePath,
 	}
 }

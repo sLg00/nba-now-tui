@@ -22,6 +22,7 @@ type MockRequestBuilder struct {
 	buildDailyScoresRequests     func() RequestURL
 	buildBoxScoreRequests        func(gameID string) RequestURL
 	buildTeamInfoRequests        func(teamID string) RequestURL
+	buildPlayerIndexRequests     func(teamID string) RequestURL
 }
 
 type MockHTTPClient struct {
@@ -34,6 +35,7 @@ type MockFileSystem struct {
 	readFileFunc      func(path string) ([]byte, error)
 	fileExistsFunc    func(path string) bool
 	cleanOldFilesFunc func(path []string) error
+	dirExistsFunc     func(path string) error
 }
 
 type MockPathManager struct {
@@ -87,6 +89,13 @@ func (m *MockRequestBuilder) BuildTeamInfoRequest(teamID string) RequestURL {
 	return "https://example.com/teaminfo"
 }
 
+func (m *MockRequestBuilder) BuildPlayerIndexRequest(teamID string) RequestURL {
+	if m.buildPlayerIndexRequests != nil {
+		return m.buildPlayerIndexRequests(teamID)
+	}
+	return "https://example.com/playerindex"
+}
+
 func (m *MockDateProvider) GetCurrentDate() (string, error) {
 	return m.currentDate, m.dateError
 }
@@ -128,6 +137,13 @@ func (m *MockFileSystem) FileExists(path string) bool {
 		return m.fileExistsFunc(path)
 	}
 	return false
+}
+
+func (m *MockFileSystem) EnsureDirectoryExists(dir string) error {
+	if m.dirExistsFunc != nil {
+		return m.dirExistsFunc(dir)
+	}
+	return nil
 }
 
 func (m *MockFileSystem) CleanOldFiles(path []string) error {
@@ -309,14 +325,13 @@ func TestClient_MakeRequests(t *testing.T) {
 				writeFileFunc: func(path string, data []byte) error {
 					return tt.writeFileErr
 				},
-
 				cleanOldFilesFunc: func(path []string) error {
 					return tt.cleanFileErr
 				},
-
 				readFileFunc: func(path string) ([]byte, error) {
 					return nil, tt.readFileErr
 				},
+				dirExistsFunc: func(path string) error { return errors.New("dir exists") },
 			}
 
 			mockPaths := &MockPathManager{
@@ -415,6 +430,7 @@ func TestClient_FetchBoxScore(t *testing.T) {
 				writeFileFunc: func(path string, data []byte) error {
 					return tt.writeFileErr
 				},
+				dirExistsFunc: func(path string) error { return errors.New("dir exists") },
 			}
 
 			client := &Client{
