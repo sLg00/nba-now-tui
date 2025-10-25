@@ -40,6 +40,13 @@ type ResponseSet struct {
 	ResultSet  ResultSet   `json:"resultSet"`
 	ResultSets []ResultSet `json:"resultSets"`
 	BoxScore   BoxScore    `json:"boxScoreTraditional"`
+
+	Meta struct {
+		Version int    `json:"version"`
+		Request string `json:"request"`
+		Time    string `json:"time"`
+	} `json:"meta"`
+	Scoreboard *ScoreboardV3Data `json:"scoreboard,omitempty"`
 }
 
 // structToStringSlice is the core function that converts type attributes from Float64 and Int to String,

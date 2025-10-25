@@ -1,7 +1,6 @@
 package converters
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
 	"github.com/sLg00/nba-now-tui/cmd/nba/types"
@@ -11,74 +10,28 @@ import (
 // Then subsequently converts the 'linescore' to GameResult objects, combining home and away team basic stats.
 // The function could be cleanly split into two, but yolo for now.
 func PopulateDailyGameResults(rs types.ResponseSet) (types.DailyGameResults, []string, error) {
-
-	// ResultSets[1] is the "linescore" part of the response, which is used to create a gameCard
-	if len(rs.ResultSets) < 2 || len(rs.ResultSets[1].Headers) == 0 {
-		return nil, nil, fmt.Errorf("no headers or insufficient result sets in response")
-	}
-
-	gameHeaders := make(map[string]types.GameHeader)
-	for _, row := range rs.ResultSets[0].RowSet {
-		if len(row) < 8 {
-			err := fmt.Errorf("not enough header rows in response, expected at least 8 bytes, got %d", len(row))
-			return nil, nil, err
-		}
-		gameHeader := types.GameHeader{
-			GameID:        row[2].(string),
-			GameStatusID:  int(row[3].(float64)),
-			HomeTeamID:    int(row[6].(float64)),
-			VisitorTeamID: int(row[7].(float64)),
-		}
-		gameHeaders[gameHeader.GameID] = gameHeader
-	}
-
-	headers := rs.ResultSets[1].Headers
-	rowSet := rs.ResultSets[1].RowSet
-
-	var lineScores []types.LineScore
-	for _, row := range rowSet {
-		if len(row) != len(headers) {
-			return nil, nil, fmt.Errorf("header row length does not match row length: %v != %v", len(headers), len(row))
-		}
-
-		gameData := make(map[string]interface{})
-		for i, value := range row {
-			gameData[headers[i]] = value
-		}
-
-		jsonData, err := json.Marshal(gameData)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to marshal json data: %v", err)
-		}
-
-		var lineScore types.LineScore
-		err = json.Unmarshal(jsonData, &lineScore)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to unmarshal json data: %v", err)
-		}
-
-		lineScores = append(lineScores, lineScore)
+	if rs.Scoreboard == nil || len(rs.Scoreboard.Games) == 0 {
+		return nil, nil, fmt.Errorf("no games found in scoreboard response")
 	}
 
 	var gameResults types.DailyGameResults
-	for _, gh := range gameHeaders {
-		result := types.GameResult{GameID: gh.GameID, GameStatusID: gh.GameStatusID}
-		for _, ls := range lineScores {
-			if ls.GameID == gh.GameID {
-				if ls.TeamID == gh.HomeTeamID {
-					result.HomeTeamID = ls.TeamID
-					result.HomeTeamAbbreviation = ls.TeamAbbreviation
-					result.HomeTeamPts = ls.Pts
-				} else if ls.TeamID == gh.VisitorTeamID {
-					result.AwayTeamID = ls.TeamID
-					result.AwayTeamAbbreviation = ls.TeamAbbreviation
-					result.AwayTeamPts = ls.Pts
-				}
-			}
+	headers := []string{"GameID", "HomeTeam", "HomeScore", "AwayTeam", "AwayScore", "Status"}
+
+	for _, game := range rs.Scoreboard.Games {
+		result := types.GameResult{
+			GameID:               game.GameID,
+			GameStatusID:         game.GameStatus,
+			HomeTeamID:           game.HomeTeam.TeamID,
+			HomeTeamAbbreviation: game.HomeTeam.TeamTricode,
+			HomeTeamName:         game.HomeTeam.TeamName,
+			HomeTeamPts:          game.HomeTeam.Score,
+			AwayTeamID:           game.AwayTeam.TeamID,
+			AwayTeamAbbreviation: game.AwayTeam.TeamTricode,
+			AwayTeamName:         game.AwayTeam.TeamName,
+			AwayTeamPts:          game.AwayTeam.Score,
 		}
 		gameResults = append(gameResults, result)
 	}
-
 	return gameResults, headers, nil
 }
 

@@ -1,84 +1,5 @@
 package types
 
-type GameHeader struct {
-	GameDateEst                   string `json:"GAME_DATE_EST"`
-	GameSequence                  int    `json:"GAME_SEQUENCE"`
-	GameID                        string `json:"GAME_ID" isVisible:"false"`
-	GameStatusID                  int    `json:"GAME_STATUS_ID" isVisible:"false"`
-	GameStatusText                string `json:"GAME_STATUS_TEXT"`
-	GameCode                      string `json:"GAMECODE" isVisible:"false"`
-	HomeTeamID                    int    `json:"HOME_TEAM_ID" isVisible:"false"`
-	VisitorTeamID                 int    `json:"VISITOR_TEAM_ID" isVisible:"false"`
-	Season                        string `json:"SEASON"`
-	LivePeriod                    int    `json:"LIVE_PERIOD"`
-	LivePcTime                    string `json:"LIVE_PC_TIME"`
-	NatlTvBroadcasterAbbreviation string `json:"NATL_TV_BROADCASTER_ABBREVIATION"`
-	HomeTvBroadcasterAbbreviation string `json:"HOME_TV_BROADCASTER_ABBREVIATION"`
-	AwayTvBroadcasterAbbreviation string `json:"AWAY_TV_BROADCASTER_ABBREVIATION"`
-	LivePeriodTimeBcast           string `json:"LIVE_PERIOD_TIME_BCAST"`
-	ArenaName                     string `json:"ARENA_NAME"`
-	WhStatus                      int    `json:"WH_STATUS"`
-	WNBACommissionerFlag          int    `json:"WNBA_COMMISSIONER_FLAG"`
-}
-
-type LineScore struct {
-	GameDateEst      string  `json:"GAME_DATE_EST"`
-	GameSequence     int     `json:"GAME_SEQUENCE"`
-	GameID           string  `json:"GAME_ID" isVisible:"false"`
-	TeamID           int     `json:"TEAM_ID" isVisible:"false"`
-	TeamAbbreviation string  `json:"TEAM_ABBREVIATION"`
-	TeamCityName     string  `json:"TEAM_CITY_NAME"`
-	TeamName         string  `json:"TEAM_NAME"`
-	TeamWinsLosses   string  `json:"TEAM_WINS_LOSSES"`
-	PtsQtr1          int     `json:"PTS_QTR1"`
-	PtsQtr2          int     `json:"PTS_QTR2"`
-	PtsQtr3          int     `json:"PTS_QTR3"`
-	PtsQtr4          int     `json:"PTS_QTR4"`
-	PtsOt1           int     `json:"PTS_OT1"`
-	PtsOt2           int     `json:"PTS_OT2"`
-	PtsOt3           int     `json:"PTS_OT3"`
-	PtsOt4           int     `json:"PTS_OT4"`
-	PtsOt5           int     `json:"PTS_OT5"`
-	PtsOt6           int     `json:"PTS_OT6"`
-	PtsOt7           int     `json:"PTS_OT7"`
-	PtsOt8           int     `json:"PTS_OT8"`
-	PtsOt9           int     `json:"PTS_OT9"`
-	PtsOt10          int     `json:"PTS_OT10"`
-	Pts              int     `json:"PTS"`
-	FgPct            float64 `json:"FG_PCT" percentage:"true"`
-	FtPct            float64 `json:"FT_PCT" percentage:"true"`
-	Fg3Pct           float64 `json:"FG3_PCT" percentage:"true"`
-	Ast              int     `json:"AST"`
-	Reb              int     `json:"REB"`
-	Tov              int     `json:"TOV"`
-}
-
-type SeriesStandings struct {
-	GameID         string `json:"GAME_ID" isVisible:"false"`
-	HomeTeamID     int    `json:"HOME_TEAM_ID" isVisible:"false"`
-	VisitorTeamID  int    `json:"VISITOR_TEAM_ID" isVisible:"false"`
-	GameDateEst    string `json:"GAME_DATE_EST"`
-	HomeTeamWins   int    `json:"HOME_TEAM_WINS"`
-	HomeTeamLosses int    `json:"HOME_TEAM_LOSSES"`
-	SeriesLeader   string `json:"SERIES_LEADER"`
-}
-
-type LastMeeting struct {
-	GameID                       string `json:"GAME_ID" isVisible:"false"`
-	LastGameID                   string `json:"LAST_GAME_ID" isVisible:"false"`
-	LastGameDateEst              string `json:"LAST_GAME_DATE_EST"`
-	LastGameHomeTeamID           int    `json:"LAST_GAME_HOME_TEAM_ID" isVisible:"false"`
-	LastGameHomeTeamCity         string `json:"LAST_GAME_HOME_TEAM_CITY"`
-	LastGameHomeTeamName         string `json:"LAST_GAME_HOME_TEAM_NAME"`
-	LastGameHomeTeamAbbreviation string `json:"LAST_GAME_HOME_TEAM_ABBREVIATION"`
-	LastGameHomeTeamPoints       int    `json:"LAST_GAME_HOME_TEAM_POINTS"`
-	LastGameVisitorTeamID        int    `json:"LAST_GAME_VISITOR_TEAM_ID" isVisible:"false"`
-	LastGameVisitorTeamCity      string `json:"LAST_GAME_VISITOR_TEAM_CITY"`
-	LastGameVisitorTeamName      string `json:"LAST_GAME_VISITOR_TEAM_NAME"`
-	LastGameVisitorTeamCity1     string `json:"LAST_GAME_VISITOR_TEAM_CITY1"`
-	LastGameVisitorTeamPoints    int    `json:"LAST_GAME_VISITOR_TEAM_POINTS"`
-}
-
 type GameResult struct {
 	GameID               string `isVisible:"false"`
 	HomeTeamID           int    `isVisible:"false"`
@@ -133,6 +54,61 @@ type BoxScore struct {
 	HomeTeamId int    `json:"homeTeamId" isVisible:"false"`
 	HomeTeam   BoxScoreTeam
 	AwayTeam   BoxScoreTeam
+}
+
+// ScoreboardV3Period represents a single period's score in the V3 API
+type ScoreboardV3Period struct {
+	Period     int    `json:"period"`
+	PeriodType string `json:"periodType"`
+	Score      int    `json:"score"`
+}
+
+// ScoreboardV3Team represents team data in the V3 scoreboard API
+type ScoreboardV3Team struct {
+	TeamID            int                  `json:"teamId"`
+	TeamName          string               `json:"teamName"`
+	TeamCity          string               `json:"teamCity"`
+	TeamTricode       string               `json:"teamTricode"`
+	TeamSlug          string               `json:"teamSlug"`
+	Wins              int                  `json:"wins"`
+	Losses            int                  `json:"losses"`
+	Score             int                  `json:"score"`
+	Seed              int                  `json:"seed"`
+	InBonus           *string              `json:"inBonus"`
+	TimeoutsRemaining int                  `json:"timeoutsRemaining"`
+	Periods           []ScoreboardV3Period `json:"periods"`
+}
+
+// ScoreboardV3Game represents a single game in the V3 scoreboard API
+type ScoreboardV3Game struct {
+	GameID            string           `json:"gameId"`
+	GameCode          string           `json:"gameCode"`
+	GameStatus        int              `json:"gameStatus"`
+	GameStatusText    string           `json:"gameStatusText"`
+	Period            int              `json:"period"`
+	GameClock         string           `json:"gameClock"`
+	GameTimeUTC       string           `json:"gameTimeUTC"`
+	GameEt            string           `json:"gameEt"`
+	RegulationPeriods int              `json:"regulationPeriods"`
+	SeriesGameNumber  string           `json:"seriesGameNumber"`
+	GameLabel         string           `json:"gameLabel"`
+	GameSubLabel      string           `json:"gameSubLabel"`
+	SeriesText        string           `json:"seriesText"`
+	IfNecessary       bool             `json:"ifNecessary"`
+	SeriesConference  string           `json:"seriesConference"`
+	PoRoundDesc       string           `json:"poRoundDesc"`
+	GameSubtype       string           `json:"gameSubtype"`
+	IsNeutral         bool             `json:"isNeutral"`
+	HomeTeam          ScoreboardV3Team `json:"homeTeam"`
+	AwayTeam          ScoreboardV3Team `json:"awayTeam"`
+}
+
+// ScoreboardV3Data represents the scoreboard data in the V3 API
+type ScoreboardV3Data struct {
+	GameDate   string             `json:"gameDate"`
+	LeagueID   string             `json:"leagueId"`
+	LeagueName string             `json:"leagueName"`
+	Games      []ScoreboardV3Game `json:"games"`
 }
 
 func (g GameResult) ToStringSlice() []string {
