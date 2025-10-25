@@ -175,7 +175,7 @@ func (p DailyScoresParams) ToValues() url.Values {
 }
 
 func (p DailyScoresParams) Endpoint() string {
-	return "scoreboardv2"
+	return "scoreboardv3"
 }
 
 func (p DailyScoresParams) Validate() error {
