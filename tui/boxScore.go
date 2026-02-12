@@ -308,6 +308,10 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 		if m.height > m.maxHeight {
 			m.maxHeight = m.height
 		}
+
+		pageSize := calculatePageSize(msg.Height, 2)
+		m.homeTeamBoxScore = m.homeTeamBoxScore.WithPageSize(pageSize).WithFooterVisibility(false)
+		m.awayTeamBoxScore = m.awayTeamBoxScore.WithPageSize(pageSize).WithFooterVisibility(false)
 	}
 	m.homeTeamBoxScore, cmd = m.homeTeamBoxScore.Update(msg)
 	m.awayTeamBoxScore, cmd = m.awayTeamBoxScore.Update(msg)
@@ -317,15 +321,18 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 }
 
 func (m InstantiatedBoxScore) helpView() string {
-	return HelpStyle("\n" + HelpFooter() + "\n")
+	return HelpStyle(HelpFooter())
 }
 
 func (m InstantiatedBoxScore) View() string {
 	if m.quitting {
 		return ""
 	}
-	renderedHomeBoxScore := TableStyle.Render(m.homeTeamBoxScore.View()) + "\n"
-	renderedAwayBoxScore := TableStyle.Render(m.awayTeamBoxScore.View()) + "\n"
-	comboView := lipgloss.JoinVertical(lipgloss.Left, "\n", renderedHomeBoxScore, renderedAwayBoxScore, m.helpView())
+	renderedHomeBoxScore := TableStyle.Render(m.homeTeamBoxScore.View())
+	renderedAwayBoxScore := TableStyle.Render(m.awayTeamBoxScore.View())
+	comboView := lipgloss.JoinVertical(lipgloss.Left,
+		renderedHomeBoxScore,
+		renderedAwayBoxScore,
+		m.helpView())
 	return DocStyle.Render(comboView)
 }

@@ -108,7 +108,7 @@ func (m LeagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		}
 
 		pageSize := calculatePageSize(msg.Height, 1)
-		m.leaderboard = m.leaderboard.WithPageSize(pageSize)
+		m.leaderboard = m.leaderboard.WithPageSize(pageSize).WithFooterVisibility(false)
 	}
 
 	m.leaderboard, cmd = m.leaderboard.Update(msg)
@@ -117,15 +117,15 @@ func (m LeagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 }
 
 func (m LeagueLeaders) helpView() string {
-
-	return HelpStyle("\n" + HelpFooter() + "\n")
+	return HelpStyle(HelpFooter())
 }
 
 func (m LeagueLeaders) View() string {
 	if m.quitting {
 		return ""
 	}
-	renderedLeaders := m.leaderboard.View() + "\n"
-	comboView := lipgloss.JoinVertical(lipgloss.Left, "\n", renderedLeaders, m.helpView())
+	comboView := lipgloss.JoinVertical(lipgloss.Left,
+		m.leaderboard.View(),
+		m.helpView())
 	return DocStyle.Render(comboView)
 }

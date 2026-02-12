@@ -4,20 +4,21 @@ import "testing"
 
 func TestCalculatePageSize_SingleTable(t *testing.T) {
 	// Terminal height 40, single table
-	// Available = 40 - 4(margins) - 2(help) - 1(header) - 2(border) - 1(buffer) = 30
+	// baseOverhead = 4(margins) + 1(help) = 5
+	// pageSize = 40 - 5 - 3(headerAndBorder) = 32
 	result := calculatePageSize(40, 1)
-	if result != 30 {
-		t.Errorf("expected 30, got %d", result)
+	if result != 32 {
+		t.Errorf("expected 32, got %d", result)
 	}
 }
 
 func TestCalculatePageSize_DualTable(t *testing.T) {
 	// Terminal height 40, dual tables
-	// Available = 40 - 4(margins) - 2(help) - 2(labels) - 2(buffer) = 30
-	// Per table = (30 - 6(overhead per table)) / 2 = 12
+	// baseOverhead = 5, available = 35
+	// pageSize = (35 - 6) / 2 = 14
 	result := calculatePageSize(40, 2)
-	if result != 12 {
-		t.Errorf("expected 12, got %d", result)
+	if result != 14 {
+		t.Errorf("expected 14, got %d", result)
 	}
 }
 

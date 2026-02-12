@@ -161,8 +161,8 @@ func (m SeasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		}
 
 		pageSize := calculatePageSize(msg.Height, 2)
-		m.eastTeams = m.eastTeams.WithPageSize(pageSize)
-		m.westTeams = m.westTeams.WithPageSize(pageSize)
+		m.eastTeams = m.eastTeams.WithPageSize(pageSize).WithFooterVisibility(false)
+		m.westTeams = m.westTeams.WithPageSize(pageSize).WithFooterVisibility(false)
 	}
 	m.eastTeams, cmd = m.eastTeams.Update(msg)
 	m.westTeams, cmd = m.westTeams.Update(msg)
@@ -172,21 +172,16 @@ func (m SeasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 }
 
 func (m SeasonStandings) helpView() string {
-
-	return HelpStyle("\n" + HelpFooter() + "\n")
+	return HelpStyle(HelpFooter())
 }
 
 func (m SeasonStandings) View() string {
 	if m.quitting {
 		return ""
 	}
-	renderedEastTable := m.eastTeams.View() + "\n"
-	renderedWestTable := m.westTeams.View() + "\n"
-	comboView := lipgloss.JoinVertical(lipgloss.Left, "\n",
-		"<< EAST >> \n",
-		renderedEastTable,
-		"<< WEST >> \n",
-		renderedWestTable,
+	comboView := lipgloss.JoinVertical(lipgloss.Left,
+		m.eastTeams.View(),
+		m.westTeams.View(),
 		m.helpView())
 	return DocStyle.Render(comboView)
 }
