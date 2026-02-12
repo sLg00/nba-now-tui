@@ -29,7 +29,7 @@ type NewsArticle struct {
 
 func NewNewsClient(fs filesystemops.FileSystemHandler, paths pathManager.PathManager) *NewsClient {
 	return &NewsClient{
-		client:     &http.Client{},
+		client:     &http.Client{Timeout: 10 * time.Second},
 		FileSystem: fs,
 		Paths:      paths,
 	}
@@ -69,7 +69,7 @@ func (nc *NewsClient) FetchNews() ([]NewsArticle, error) {
 	articles, err := nc.Scrape()
 	if err != nil {
 		log.Printf("error scraping news: %v", err)
-		return defaultArticles, err
+		return defaultArticles, nil
 	}
 
 	if len(articles) == 0 {
@@ -91,14 +91,20 @@ func (nc *NewsClient) FetchNews() ([]NewsArticle, error) {
 }
 
 func (nc *NewsClient) Scrape() ([]NewsArticle, error) {
-	resp, err := nc.client.Get(nbaNewsURL)
+	req, err := http.NewRequest("GET", nbaNewsURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+
+	resp, err := nc.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to fetch news: %s", resp.StatusCode)
+		return nil, fmt.Errorf("failed to fetch news: %d", resp.StatusCode)
 	}
 
 	log.Println("Reading response body")
