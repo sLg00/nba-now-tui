@@ -159,6 +159,10 @@ func (m SeasonStandings) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		if m.height > m.maxHeight {
 			m.maxHeight = m.height
 		}
+
+		pageSize := calculatePageSize(msg.Height, 2)
+		m.eastTeams = m.eastTeams.WithPageSize(pageSize)
+		m.westTeams = m.westTeams.WithPageSize(pageSize)
 	}
 	m.eastTeams, cmd = m.eastTeams.Update(msg)
 	m.westTeams, cmd = m.westTeams.Update(msg)
