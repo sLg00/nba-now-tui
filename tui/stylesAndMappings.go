@@ -150,3 +150,37 @@ func HelpFooter() string {
 	helpMenu := strings.TrimSpace(builder.String())
 	return helpMenu
 }
+
+// calculatePageSize returns the number of rows a table should display
+// based on terminal height and number of tables in the view.
+// Valid tableCount is 1 or 2. Invalid values (< 1) return the minimum (3).
+func calculatePageSize(terminalHeight, tableCount int) int {
+	const (
+		margins         = 4 // DocStyle margin top + bottom
+		helpFooter      = 2
+		buffer          = 1
+		headerAndBorder = 3 // header(1) + border(2) per table
+		dualLabels      = 2
+	)
+
+	// Guard: invalid tableCount returns minimum
+	if tableCount < 1 || tableCount > 2 {
+		return 3
+	}
+
+	baseOverhead := margins + helpFooter + buffer
+
+	var pageSize int
+	if tableCount == 1 {
+		pageSize = terminalHeight - baseOverhead - headerAndBorder
+	} else {
+		// Dual tables: additional labels + extra buffer
+		available := terminalHeight - baseOverhead - dualLabels - buffer
+		pageSize = (available - (headerAndBorder * tableCount)) / tableCount
+	}
+
+	if pageSize < 3 {
+		return 3
+	}
+	return pageSize
+}
