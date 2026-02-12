@@ -106,6 +106,9 @@ func (m LeagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		if m.height > m.maxHeight {
 			m.maxHeight = m.height
 		}
+
+		pageSize := calculatePageSize(msg.Height, 1)
+		m.leaderboard = m.leaderboard.WithPageSize(pageSize)
 	}
 
 	m.leaderboard, cmd = m.leaderboard.Update(msg)
