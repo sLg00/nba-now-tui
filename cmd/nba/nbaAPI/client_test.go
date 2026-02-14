@@ -594,3 +594,81 @@ func TestNbaRequestBuilder_BuildPlayerGameLogRequest(t *testing.T) {
 		t.Errorf("BuildPlayerGameLogRequest() got %s, want %s", got, want)
 	}
 }
+
+func TestClient_FetchPlayerProfile(t *testing.T) {
+	tests := []struct {
+		name         string
+		httpResponse []byte
+		httpErr      error
+		writeFileErr error
+		fileExists   bool
+		wantErr      bool
+	}{
+		{
+			name:         "successful fetch all 3 endpoints",
+			httpResponse: []byte(`{"data":"success"}`),
+			fileExists:   false,
+			wantErr:      false,
+		},
+		{
+			name:       "cached files skip fetch",
+			fileExists: true,
+			wantErr:    false,
+		},
+		{
+			name:    "http error",
+			httpErr: errors.New("http error"),
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var fetchedPaths []string
+
+			mockHTTP := &MockHTTPClient{
+				getFunc: func(url RequestURL) ([]byte, error) {
+					return tt.httpResponse, tt.httpErr
+				},
+			}
+
+			mockRequestBuilder := &MockRequestBuilder{}
+
+			mockPaths := &MockPathManager{
+				fullPathFunc: func(name, param string) string {
+					return fmt.Sprintf("/tmp/nba/%s_%s", name, param)
+				},
+			}
+
+			mockFS := &MockFileSystem{
+				fileExistsFunc: func(path string) bool {
+					return tt.fileExists
+				},
+				writeFileFunc: func(path string, data []byte) error {
+					fetchedPaths = append(fetchedPaths, path)
+					return tt.writeFileErr
+				},
+			}
+
+			client := &Client{
+				http:       mockHTTP,
+				requests:   mockRequestBuilder,
+				Paths:      mockPaths,
+				FileSystem: mockFS,
+			}
+
+			err := client.FetchPlayerProfile("1628389")
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FetchPlayerProfile() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if !tt.wantErr && !tt.fileExists && len(fetchedPaths) != 3 {
+				t.Errorf("expected 3 files written, got %d", len(fetchedPaths))
+			}
+
+			if tt.fileExists && len(fetchedPaths) != 0 {
+				t.Errorf("expected 0 files written (cached), got %d", len(fetchedPaths))
+			}
+		})
+	}
+}

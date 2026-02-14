@@ -317,6 +317,54 @@ func (c *Client) FetchDailyScoresForDate(date string) error {
 	return nil
 }
 
+// FetchPlayerProfile calls three NBA API endpoints concurrently for a player and writes responses to cache.
+func (c *Client) FetchPlayerProfile(playerID string) error {
+	infoURL := c.requests.BuildPlayerInfoRequest(playerID)
+	careerURL := c.requests.BuildPlayerCareerStatsRequest(playerID)
+	gameLogURL := c.requests.BuildPlayerGameLogRequest(playerID)
+
+	requests := map[string]RequestURL{
+		"playerInfo":        infoURL,
+		"playerCareerStats": careerURL,
+		"playerGameLog":     gameLogURL,
+	}
+
+	dChan := make(chan struct{}, 3)
+	eChan := make(chan error, 3)
+
+	for name, reqURL := range requests {
+		go func(name string, reqURL RequestURL) {
+			defer func() { dChan <- struct{}{} }()
+			path := c.Paths.GetFullPath(name, playerID)
+			if c.FileSystem.FileExists(path) {
+				return
+			}
+			data, err := c.http.Get(reqURL)
+			if err != nil {
+				eChan <- fmt.Errorf("api error for %s: %w", name, err)
+				return
+			}
+			if err = c.FileSystem.WriteFile(path, data); err != nil {
+				eChan <- fmt.Errorf("write error for %s: %w", name, err)
+			}
+		}(name, reqURL)
+	}
+
+	for i := 0; i < 3; i++ {
+		<-dChan
+	}
+	close(eChan)
+
+	var errs []error
+	for err := range eChan {
+		errs = append(errs, err)
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("encountered %d errors fetching player profile", len(errs))
+	}
+	return nil
+}
+
 // FetchTeamProfile calls the NBA API with a teamID and writes the response to a file.
 // That file will be used by LoadTeamInfo to feed basic team info into the TUI
 func (c *Client) FetchTeamProfile(param string) error {
