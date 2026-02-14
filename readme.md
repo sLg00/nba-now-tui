@@ -20,10 +20,12 @@ Execute **./binary** to launch the app. It uses today as default (TZ Us East)
 
 <h3>Available Features</h3>
 
-* Daily game results
-  * Date can be changed in Daily Scores view
-* Box scores
-* League leaders
+* Daily game results - shows game results for any given day, allows to access box scores
+  * Date can be changed in Daily Scores view two ways
+    * <- arrows -> navigation
+    * Hitting Enter on the date field enables manually entering any date in the past
+* Box scores - shows detailed box scores for each game, enables navigating (space + enter) to player profiles
+* League leaders - self explanatory, but also enables navigating (space+enter) to player profiles
 * Season standings
 * Team Profiles (with ASCII logos and team-colors)
 * Player Profiles
