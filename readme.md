@@ -64,7 +64,7 @@ methods.
 
 ![Alt text](/screenshots/sc1.png?raw=true "Main Menu")
 
-![Alt text](/screenshots/sc2.png?raw=true "Daily View")
+![Alt text](/screenshots/sc7.png?raw=true "Daily View")
 
 ![Alt text](/screenshots/sc3.png?raw=true "Box Score")
 
