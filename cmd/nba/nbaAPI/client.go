@@ -26,6 +26,9 @@ type RequestBuilder interface {
 	BuildBoxScoreRequest(gameID string) RequestURL
 	BuildTeamInfoRequest(teamID string) RequestURL
 	BuildPlayerIndexRequest(teamID string) RequestURL
+	BuildPlayerInfoRequest(playerID string) RequestURL
+	BuildPlayerCareerStatsRequest(playerID string) RequestURL
+	BuildPlayerGameLogRequest(playerID string) RequestURL
 }
 
 type nbaRequestBuilder struct {
@@ -149,6 +152,28 @@ func (rb *nbaRequestBuilder) BuildPlayerIndexRequest(teamID string) RequestURL {
 		LeagueID: LeagueID,
 		Season:   season,
 		TeamID:   teamID,
+	}
+	return rb.buildURL(params)
+}
+
+func (rb *nbaRequestBuilder) BuildPlayerInfoRequest(playerID string) RequestURL {
+	params := CommonPlayerInfoParams{PlayerID: playerID}
+	return rb.buildURL(params)
+}
+
+func (rb *nbaRequestBuilder) BuildPlayerCareerStatsRequest(playerID string) RequestURL {
+	params := PlayerProfileV2Params{
+		PlayerID: playerID,
+		PerMode:  "PerGame",
+	}
+	return rb.buildURL(params)
+}
+
+func (rb *nbaRequestBuilder) BuildPlayerGameLogRequest(playerID string) RequestURL {
+	params := PlayerGameLogParams{
+		PlayerID:   playerID,
+		Season:     rb.dates.GetCurrentSeason(),
+		SeasonType: "Regular Season",
 	}
 	return rb.buildURL(params)
 }

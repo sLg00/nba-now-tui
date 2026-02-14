@@ -16,14 +16,17 @@ type MockDateProvider struct {
 }
 
 type MockRequestBuilder struct {
-	buildRequests                func(param string) map[string]RequestURL
-	buildLeagueLeadersRequests   func() RequestURL
-	buildSeasonStandingsRequests func() RequestURL
-	buildDailyScoresRequests     func() RequestURL
+	buildRequests                   func(param string) map[string]RequestURL
+	buildLeagueLeadersRequests      func() RequestURL
+	buildSeasonStandingsRequests    func() RequestURL
+	buildDailyScoresRequests        func() RequestURL
 	buildDailyScoresForDateRequests func(date string) RequestURL
 	buildBoxScoreRequests           func(gameID string) RequestURL
-	buildTeamInfoRequests        func(teamID string) RequestURL
-	buildPlayerIndexRequests     func(teamID string) RequestURL
+	buildTeamInfoRequests           func(teamID string) RequestURL
+	buildPlayerIndexRequests        func(teamID string) RequestURL
+	buildPlayerInfoRequests         func(playerID string) RequestURL
+	buildPlayerCareerStatsRequests  func(playerID string) RequestURL
+	buildPlayerGameLogRequests      func(playerID string) RequestURL
 }
 
 type MockHTTPClient struct {
@@ -102,6 +105,27 @@ func (m *MockRequestBuilder) BuildPlayerIndexRequest(teamID string) RequestURL {
 		return m.buildPlayerIndexRequests(teamID)
 	}
 	return "https://example.com/playerindex"
+}
+
+func (m *MockRequestBuilder) BuildPlayerInfoRequest(playerID string) RequestURL {
+	if m.buildPlayerInfoRequests != nil {
+		return m.buildPlayerInfoRequests(playerID)
+	}
+	return RequestURL("https://example.com/playerinfo?PlayerID=" + playerID)
+}
+
+func (m *MockRequestBuilder) BuildPlayerCareerStatsRequest(playerID string) RequestURL {
+	if m.buildPlayerCareerStatsRequests != nil {
+		return m.buildPlayerCareerStatsRequests(playerID)
+	}
+	return RequestURL("https://example.com/playercareerstats?PlayerID=" + playerID)
+}
+
+func (m *MockRequestBuilder) BuildPlayerGameLogRequest(playerID string) RequestURL {
+	if m.buildPlayerGameLogRequests != nil {
+		return m.buildPlayerGameLogRequests(playerID)
+	}
+	return RequestURL("https://example.com/playergamelog?PlayerID=" + playerID)
 }
 
 func (m *MockDateProvider) GetCurrentDate() (string, error) {
@@ -532,5 +556,41 @@ func TestClient_FetchDailyScoresForDate(t *testing.T) {
 				t.Errorf("FetchDailyScoresForDate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestNbaRequestBuilder_BuildPlayerInfoRequest(t *testing.T) {
+	mockDates := &MockDateProvider{currentSeason: "2024-25"}
+	rb := NewRequestBuilder(BaseURL, mockDates)
+
+	got := string(rb.BuildPlayerInfoRequest("1628389"))
+	want := "https://stats.nba.com/stats/commonplayerinfo?PlayerID=1628389"
+
+	if !urlsEqual(t, want, got) {
+		t.Errorf("BuildPlayerInfoRequest() got %s, want %s", got, want)
+	}
+}
+
+func TestNbaRequestBuilder_BuildPlayerCareerStatsRequest(t *testing.T) {
+	mockDates := &MockDateProvider{currentSeason: "2024-25"}
+	rb := NewRequestBuilder(BaseURL, mockDates)
+
+	got := string(rb.BuildPlayerCareerStatsRequest("1628389"))
+	want := "https://stats.nba.com/stats/playerprofilev2?PerMode=PerGame&PlayerID=1628389"
+
+	if !urlsEqual(t, want, got) {
+		t.Errorf("BuildPlayerCareerStatsRequest() got %s, want %s", got, want)
+	}
+}
+
+func TestNbaRequestBuilder_BuildPlayerGameLogRequest(t *testing.T) {
+	mockDates := &MockDateProvider{currentSeason: "2024-25"}
+	rb := NewRequestBuilder(BaseURL, mockDates)
+
+	got := string(rb.BuildPlayerGameLogRequest("1628389"))
+	want := "https://stats.nba.com/stats/playergamelog?PlayerID=1628389&Season=2024-25&SeasonType=Regular+Season"
+
+	if !urlsEqual(t, want, got) {
+		t.Errorf("BuildPlayerGameLogRequest() got %s, want %s", got, want)
 	}
 }
