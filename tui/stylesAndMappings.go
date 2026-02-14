@@ -1,10 +1,11 @@
 package tui
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"strings"
 )
 
 var (
@@ -43,8 +44,8 @@ var HelpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render
 
 var Keymap = keymap{
 	Back: key.NewBinding(
-		key.WithKeys("backspace"),
-		key.WithHelp("backspace", "back")),
+		key.WithKeys("b"),
+		key.WithHelp("b", "back")),
 	Quit: key.NewBinding(
 		key.WithKeys("q"),
 		key.WithHelp("q", "quit")),
