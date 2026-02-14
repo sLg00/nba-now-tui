@@ -208,6 +208,72 @@ func (p TeamProfileParams) Validate() error {
 	return nil
 }
 
+type CommonPlayerInfoParams struct {
+	PlayerID string
+}
+
+type PlayerProfileV2Params struct {
+	PlayerID string
+	PerMode  PerMode
+}
+
+type PlayerGameLogParams struct {
+	PlayerID   string
+	Season     string
+	SeasonType SeasonType
+}
+
+func (p CommonPlayerInfoParams) ToValues() url.Values {
+	values := url.Values{}
+	values.Set("PlayerID", p.PlayerID)
+	return values
+}
+
+func (p CommonPlayerInfoParams) Endpoint() string { return "commonplayerinfo" }
+
+func (p CommonPlayerInfoParams) Validate() error {
+	if p.PlayerID == "" {
+		return fmt.Errorf("playerID is required")
+	}
+	return nil
+}
+
+func (p PlayerProfileV2Params) ToValues() url.Values {
+	values := url.Values{}
+	values.Set("PlayerID", p.PlayerID)
+	values.Set("PerMode", string(p.PerMode))
+	return values
+}
+
+func (p PlayerProfileV2Params) Endpoint() string { return "playerprofilev2" }
+
+func (p PlayerProfileV2Params) Validate() error {
+	if p.PlayerID == "" {
+		return fmt.Errorf("playerID is required")
+	}
+	return nil
+}
+
+func (p PlayerGameLogParams) ToValues() url.Values {
+	values := url.Values{}
+	values.Set("PlayerID", p.PlayerID)
+	values.Set("Season", p.Season)
+	values.Set("SeasonType", string(p.SeasonType))
+	return values
+}
+
+func (p PlayerGameLogParams) Endpoint() string { return "playergamelog" }
+
+func (p PlayerGameLogParams) Validate() error {
+	if p.PlayerID == "" {
+		return fmt.Errorf("playerID is required")
+	}
+	if p.Season == "" {
+		return fmt.Errorf("season is required")
+	}
+	return nil
+}
+
 func (pi PlayerIndexParams) ToValues() url.Values {
 	values := url.Values{}
 	values.Set("LeagueID", pi.LeagueID)
