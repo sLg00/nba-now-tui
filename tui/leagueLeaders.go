@@ -83,7 +83,7 @@ func (m LeagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			log.Println("could not download player profile:", msg.err)
 			return m, nil
 		}
-		pp, cmd, err := NewPlayerProfile(msg.playerID, msg.backView, WindowSize)
+		pp, cmd, err := NewPlayerProfile(msg.playerID, msg.backView, msg.sourceDate, WindowSize)
 		if err != nil {
 			log.Println("could not load player profile:", err)
 			return m, nil
@@ -101,7 +101,7 @@ func (m LeagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			selectedRows := m.leaderboard.SelectedRows()
 			if len(selectedRows) == 1 {
 				playerID := selectedRows[0].Data["PLAYER_ID"].(string)
-				return m, downloadPlayerProfile(playerID, "leagueLeaders")
+				return m, downloadPlayerProfile(playerID, "leagueLeaders", "")
 			}
 			if len(selectedRows) > 1 || len(selectedRows) < 1 {
 				log.Println("Either 0 rows or more than 1 row were selected")

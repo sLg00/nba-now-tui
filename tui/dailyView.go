@@ -58,10 +58,20 @@ func NewDailyView(size tea.WindowSizeMsg) (*DailyView, tea.Cmd, error) {
 		return &DailyView{}, nil, fmt.Errorf("failed to get current date: %w", err)
 	}
 
-	ds := NewDateSelector(currentDate)
+	return newDailyViewWithDate(currentDate, size), fetchDailyScoresCmd(), nil
+}
+
+func NewDailyViewForDate(date string, size tea.WindowSizeMsg) (*DailyView, tea.Cmd) {
+	dv := newDailyViewWithDate(date, size)
+	dv.loading = true
+	return dv, fetchDailyScoresForDateCmd(date)
+}
+
+func newDailyViewWithDate(date string, size tea.WindowSizeMsg) *DailyView {
+	ds := NewDateSelector(date)
 	ds.SetWidth(size.Width)
 
-	m := &DailyView{
+	return &DailyView{
 		dateSelector: ds,
 		focusIndex:   0,
 		numCols:      3,
@@ -69,8 +79,6 @@ func NewDailyView(size tea.WindowSizeMsg) (*DailyView, tea.Cmd, error) {
 		height:       size.Height,
 		focus:        focusDateSelector,
 	}
-
-	return m, fetchDailyScoresCmd(), nil
 }
 
 func newGameCard(r []table.Row) (table.Model, error) {
@@ -276,7 +284,7 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			rows := focusedCard.GetVisibleRows()
 			if len(rows) > 0 {
 				if status, ok := rows[0].Data["gameStatus"].(int); ok && status > 1 {
-					bx, cmd, err := NewBoxScore(gameID, WindowSize)
+					bx, cmd, err := NewBoxScore(gameID, m.dateSelector.date, WindowSize)
 					if err != nil {
 						log.Println(err)
 						os.Exit(1)

@@ -117,7 +117,7 @@ func TestNewBoxScore(t *testing.T) {
 	ts := helpers.SetupTest()
 	defer ts.CleanUpTest()
 
-	_, _, err := NewBoxScore("shittywok", WindowSize)
+	_, _, err := NewBoxScore("shittywok", "2025-01-01", WindowSize)
 	if err == nil {
 		t.Errorf("NewBoxScore() should have returned an error")
 	}
@@ -130,7 +130,7 @@ func TestViewDisplay(t *testing.T) {
 
 	gameId := "0022400305"
 
-	model, cmd, err := NewBoxScore(gameId, WindowSize)
+	model, cmd, err := NewBoxScore(gameId, "2025-01-01", WindowSize)
 	if err != nil {
 		t.Errorf("NewBoxScore() should not have returned an error")
 	}

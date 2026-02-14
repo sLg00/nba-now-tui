@@ -24,20 +24,22 @@ type PlayerProfile struct {
 	tableNames       []string
 	activeTableIndex int
 	backView         string
+	sourceDate       string
 	teamColor        lipgloss.Color
 	quitting         bool
 }
 
 type playerProfileDownloadedMsg struct {
-	err      error
-	playerID string
-	backView string
+	err        error
+	playerID   string
+	backView   string
+	sourceDate string
 }
 
-func downloadPlayerProfile(playerID string, backView string) tea.Cmd {
+func downloadPlayerProfile(playerID string, backView string, sourceDate string) tea.Cmd {
 	return func() tea.Msg {
 		err := nbaAPI.NewClient().FetchPlayerProfile(playerID)
-		return playerProfileDownloadedMsg{err: err, playerID: playerID, backView: backView}
+		return playerProfileDownloadedMsg{err: err, playerID: playerID, backView: backView, sourceDate: sourceDate}
 	}
 }
 
@@ -57,7 +59,7 @@ type playerGameLogFetchedMsg struct {
 	gameLog table.Model
 }
 
-func NewPlayerProfile(playerID string, backView string, size tea.WindowSizeMsg) (*PlayerProfile, tea.Cmd, error) {
+func NewPlayerProfile(playerID string, backView string, sourceDate string, size tea.WindowSizeMsg) (*PlayerProfile, tea.Cmd, error) {
 	vp := viewport.New(size.Width-4, size.Height-8)
 	vp.Style = TeamViewPortStyle(lipgloss.Color("#FFFFFF"))
 
@@ -69,6 +71,7 @@ func NewPlayerProfile(playerID string, backView string, size tea.WindowSizeMsg) 
 		tableNames:       []string{"LAST 5 GAMES", "CAREER STATS"},
 		activeTableIndex: 0,
 		backView:         backView,
+		sourceDate:       sourceDate,
 		teamColor:        lipgloss.Color("#FFFFFF"),
 		quitting:         false,
 	}
@@ -271,7 +274,7 @@ func (m *PlayerProfile) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, Keymap.Back):
 			switch m.backView {
 			case "boxscore":
-				dv, cmd, _ := NewDailyView(WindowSize)
+				dv, cmd := NewDailyViewForDate(m.sourceDate, WindowSize)
 				return dv, cmd
 			case "leagueLeaders":
 				ll, cmd, _ := NewLeagueLeaders(WindowSize)

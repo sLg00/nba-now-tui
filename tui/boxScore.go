@@ -10,7 +10,6 @@ import (
 	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
 	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 	"log"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -26,6 +25,7 @@ type InstantiatedBoxScore struct {
 	height           int
 	maxWidth         int
 	maxHeight        int
+	sourceDate       string
 }
 
 type boxScoreFetchedMsg struct {
@@ -37,10 +37,11 @@ type boxScoreFetchedMsg struct {
 
 // NewBoxScore is a factory function to instantiate a BoxScore when the BoxScore is opened from the Daily View.
 // It takes gameId and WindowSize as inputs and returns a model, command and error
-func NewBoxScore(gameId string, size tea.WindowSizeMsg) (*InstantiatedBoxScore, tea.Cmd, error) {
+func NewBoxScore(gameId string, sourceDate string, size tea.WindowSizeMsg) (*InstantiatedBoxScore, tea.Cmd, error) {
 	m := &InstantiatedBoxScore{
-		width:  size.Width,
-		height: size.Height,
+		width:      size.Width,
+		height:     size.Height,
+		sourceDate: sourceDate,
 	}
 
 	cl, err := nbaAPI.NewClient().Loader.LoadBoxScore(gameId)
@@ -254,9 +255,8 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 			Focused(false).
 			WithHorizontalFreezeColumnCount(3)
 
-		m := &InstantiatedBoxScore{
-			homeTeamBoxScore: homeTable,
-			awayTeamBoxScore: awayTable}
+		m.homeTeamBoxScore = homeTable
+		m.awayTeamBoxScore = awayTable
 		return m, nil
 
 	case playerProfileDownloadedMsg:
@@ -264,7 +264,7 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 			log.Println("could not download player profile:", msg.err)
 			return m, nil
 		}
-		pp, cmd, err := NewPlayerProfile(msg.playerID, msg.backView, WindowSize)
+		pp, cmd, err := NewPlayerProfile(msg.playerID, msg.backView, msg.sourceDate, WindowSize)
 		if err != nil {
 			log.Println("could not load player profile:", err)
 			return m, nil
@@ -274,11 +274,7 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, Keymap.Back):
-			dv, cmd, err := NewDailyView(WindowSize)
-			if err != nil {
-				log.Println(err)
-				os.Exit(1)
-			}
+			dv, cmd := NewDailyViewForDate(m.sourceDate, WindowSize)
 			return dv, cmd
 		case key.Matches(msg, Keymap.Quit):
 			m.quitting = true
@@ -302,7 +298,7 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 			}
 			if len(selectedRows) == 1 {
 				personId := selectedRows[0].Data["ID"].(string)
-				return m, downloadPlayerProfile(personId, "boxscore")
+				return m, downloadPlayerProfile(personId, "boxscore", m.sourceDate)
 			}
 			if len(selectedRows) > 1 || len(selectedRows) < 1 {
 				log.Println("Either 0 rows or more than 1 row were selected")
