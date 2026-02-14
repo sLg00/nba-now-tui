@@ -1,3 +1,5 @@
+# Status: Done
+
 # Feature Description
 
 - Change the application so that it does not take any arguments
