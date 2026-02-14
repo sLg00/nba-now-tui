@@ -28,6 +28,19 @@ type PlayerProfile struct {
 	quitting         bool
 }
 
+type playerProfileDownloadedMsg struct {
+	err      error
+	playerID string
+	backView string
+}
+
+func downloadPlayerProfile(playerID string, backView string) tea.Cmd {
+	return func() tea.Msg {
+		err := nbaAPI.NewClient().FetchPlayerProfile(playerID)
+		return playerProfileDownloadedMsg{err: err, playerID: playerID, backView: backView}
+	}
+}
+
 type playerBioFetchedMsg struct {
 	err error
 	bio types.PlayerBio
@@ -101,7 +114,7 @@ func fetchPlayerCareerStatsCmd(playerID string) tea.Cmd {
 
 		var currentStats *types.SeasonStats
 		if len(stats) > 0 {
-			currentStats = &stats[len(stats)-1]
+			currentStats = &stats[0]
 		}
 
 		stringMatrix := types.ConvertToStringMatrix(stats)
@@ -143,7 +156,7 @@ func renderStatCard(label, value string, clr lipgloss.Color) string {
 }
 
 func (m *PlayerProfile) renderTopSection() string {
-	if m.bio == nil || m.currentStats == nil {
+	if m.bio == nil {
 		return ""
 	}
 
@@ -154,21 +167,27 @@ func (m *PlayerProfile) renderTopSection() string {
 	info := infoStyle.Render(fmt.Sprintf("%s %s | #%s | %s",
 		m.bio.TeamCity, m.bio.TeamName, m.bio.JerseyNumber, m.bio.Position))
 
-	cards := lipgloss.JoinHorizontal(lipgloss.Center,
-		renderStatCard("GP", strconv.Itoa(m.currentStats.GP), m.teamColor),
-		renderStatCard("PPG", strconv.FormatFloat(m.currentStats.PTS, 'f', 1, 64), m.teamColor),
-		renderStatCard("RPG", strconv.FormatFloat(m.currentStats.REB, 'f', 1, 64), m.teamColor),
-		renderStatCard("APG", strconv.FormatFloat(m.currentStats.AST, 'f', 1, 64), m.teamColor),
-		renderStatCard("SPG", strconv.FormatFloat(m.currentStats.STL, 'f', 1, 64), m.teamColor),
-		renderStatCard("BPG", strconv.FormatFloat(m.currentStats.BLK, 'f', 1, 64), m.teamColor),
-	)
-
 	bioLine := infoStyle.Render(fmt.Sprintf("Height: %s  Weight: %slb  Country: %s  Draft: %s R%s Pick %s  School: %s  Experience: %d Years",
 		m.bio.Height, m.bio.Weight, m.bio.Country,
 		m.bio.DraftYear, m.bio.DraftRound, m.bio.DraftNumber,
 		m.bio.School, m.bio.SeasonExp))
 
-	return lipgloss.JoinVertical(lipgloss.Left, name, info, "", cards, "", bioLine)
+	sections := []string{name, info, ""}
+
+	if m.currentStats != nil {
+		cards := lipgloss.JoinHorizontal(lipgloss.Center,
+			renderStatCard("GP", strconv.Itoa(m.currentStats.GP), m.teamColor),
+			renderStatCard("PPG", strconv.FormatFloat(m.currentStats.PTS, 'f', 1, 64), m.teamColor),
+			renderStatCard("RPG", strconv.FormatFloat(m.currentStats.REB, 'f', 1, 64), m.teamColor),
+			renderStatCard("APG", strconv.FormatFloat(m.currentStats.AST, 'f', 1, 64), m.teamColor),
+			renderStatCard("SPG", strconv.FormatFloat(m.currentStats.STL, 'f', 1, 64), m.teamColor),
+			renderStatCard("BPG", strconv.FormatFloat(m.currentStats.BLK, 'f', 1, 64), m.teamColor),
+		)
+		sections = append(sections, cards, "")
+	}
+
+	sections = append(sections, bioLine)
+	return lipgloss.JoinVertical(lipgloss.Left, sections...)
 }
 
 func (m *PlayerProfile) assembleSections() {
@@ -296,7 +315,7 @@ func (m *PlayerProfile) View() string {
 		return ""
 	}
 
-	if m.bio == nil && m.currentStats == nil {
+	if m.bio == nil {
 		return DocStyle.Render("Loading player profile...")
 	}
 

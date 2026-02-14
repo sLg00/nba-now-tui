@@ -57,6 +57,7 @@ func fetchLeagueLeadersCmd() tea.Cmd {
 
 		playerStatsString := types.ConvertToStringMatrix(playerStats)
 		tableModel := buildTables(headers, playerStatsString, types.Player{}).
+			SelectableRows(true).
 			Focused(true).
 			WithBaseStyle(TableStyle).
 			WithPageSize(20)
@@ -77,6 +78,18 @@ func (m LeagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		m := &LeagueLeaders{leaderboard: msg.table, maxHeight: 25, maxWidth: 125}
 		return m, nil
 
+	case playerProfileDownloadedMsg:
+		if msg.err != nil {
+			log.Println("could not download player profile:", msg.err)
+			return m, nil
+		}
+		pp, cmd, err := NewPlayerProfile(msg.playerID, msg.backView, WindowSize)
+		if err != nil {
+			log.Println("could not load player profile:", err)
+			return m, nil
+		}
+		return pp, cmd
+
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, Keymap.Back):
@@ -88,17 +101,7 @@ func (m LeagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			selectedRows := m.leaderboard.SelectedRows()
 			if len(selectedRows) == 1 {
 				playerID := selectedRows[0].Data["PLAYER_ID"].(string)
-				err := nbaAPI.NewClient().FetchPlayerProfile(playerID)
-				if err != nil {
-					log.Println("failed to fetch player profile:", err)
-					return m, nil
-				}
-				pp, cmd, err := NewPlayerProfile(playerID, "leagueLeaders", WindowSize)
-				if err != nil {
-					log.Println("failed to create player profile:", err)
-					return m, nil
-				}
-				return pp, cmd
+				return m, downloadPlayerProfile(playerID, "leagueLeaders")
 			}
 			if len(selectedRows) > 1 || len(selectedRows) < 1 {
 				log.Println("Either 0 rows or more than 1 row were selected")

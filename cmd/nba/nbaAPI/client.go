@@ -355,12 +355,8 @@ func (c *Client) FetchPlayerProfile(playerID string) error {
 	}
 	close(eChan)
 
-	var errs []error
 	for err := range eChan {
-		errs = append(errs, err)
-	}
-	if len(errs) > 0 {
-		return fmt.Errorf("encountered %d errors fetching player profile", len(errs))
+		log.Printf("player profile fetch warning: %v", err)
 	}
 	return nil
 }

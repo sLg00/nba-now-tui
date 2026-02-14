@@ -4,7 +4,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/sLg00/nba-now-tui/cmd/nba/types"
+	"reflect"
+	"strings"
 )
+
+// structJSONHeaders extracts json tag names from a struct type, preserving field order.
+// This ensures headers align with the output of ToStringSlice/ConvertToStringMatrix.
+func structJSONHeaders(v interface{}) []string {
+	t := reflect.TypeOf(v)
+	var headers []string
+	for i := 0; i < t.NumField(); i++ {
+		tag := t.Field(i).Tag.Get("json")
+		if tag == "" {
+			continue
+		}
+		parts := strings.Split(tag, ",")
+		headers = append(headers, parts[0])
+	}
+	return headers
+}
 
 // PopulatePlayerBio extracts the player bio from the commonplayerinfo API response.
 // The response uses resultSets (plural) with the bio data in the first result set's single row.
@@ -38,7 +56,7 @@ func PopulatePlayerBio(rs types.ResponseSet) (types.PlayerBio, error) {
 	return bio, nil
 }
 
-// PopulateSeasonStats extracts career season stats from the playerprofilev2 API response.
+// PopulateSeasonStats extracts career season stats from the playercareerstats API response.
 // It looks for the result set named "SeasonTotalsRegularSeason".
 func PopulateSeasonStats(rs types.ResponseSet) ([]types.SeasonStats, []string, error) {
 	var targetSet *types.ResultSet
@@ -53,17 +71,17 @@ func PopulateSeasonStats(rs types.ResponseSet) ([]types.SeasonStats, []string, e
 		return nil, nil, fmt.Errorf("SeasonTotalsRegularSeason result set not found")
 	}
 
-	headers := targetSet.Headers
+	apiHeaders := targetSet.Headers
 	var stats []types.SeasonStats
 
 	for _, row := range targetSet.RowSet {
-		if len(row) != len(headers) {
-			return nil, nil, fmt.Errorf("row length mismatch: %d vs %d", len(row), len(headers))
+		if len(row) != len(apiHeaders) {
+			return nil, nil, fmt.Errorf("row length mismatch: %d vs %d", len(row), len(apiHeaders))
 		}
 
 		data := make(map[string]interface{})
 		for i, value := range row {
-			data[headers[i]] = value
+			data[apiHeaders[i]] = value
 		}
 
 		jsonData, err := json.Marshal(data)
@@ -79,7 +97,12 @@ func PopulateSeasonStats(rs types.ResponseSet) ([]types.SeasonStats, []string, e
 		stats = append(stats, season)
 	}
 
-	return stats, headers, nil
+	for i, j := 0, len(stats)-1; i < j; i, j = i+1, j-1 {
+		stats[i], stats[j] = stats[j], stats[i]
+	}
+
+	structHeaders := structJSONHeaders(types.SeasonStats{})
+	return stats, structHeaders, nil
 }
 
 // PopulateGameLog extracts the most recent games from the playergamelog API response.
@@ -89,7 +112,7 @@ func PopulateGameLog(rs types.ResponseSet) ([]types.GameLogEntry, []string, erro
 		return nil, nil, fmt.Errorf("no game log data found")
 	}
 
-	headers := rs.ResultSets[0].Headers
+	apiHeaders := rs.ResultSets[0].Headers
 	rows := rs.ResultSets[0].RowSet
 
 	limit := len(rows)
@@ -99,13 +122,13 @@ func PopulateGameLog(rs types.ResponseSet) ([]types.GameLogEntry, []string, erro
 
 	var entries []types.GameLogEntry
 	for _, row := range rows[:limit] {
-		if len(row) != len(headers) {
-			return nil, nil, fmt.Errorf("row length mismatch: %d vs %d", len(row), len(headers))
+		if len(row) != len(apiHeaders) {
+			return nil, nil, fmt.Errorf("row length mismatch: %d vs %d", len(row), len(apiHeaders))
 		}
 
 		data := make(map[string]interface{})
 		for i, value := range row {
-			data[headers[i]] = value
+			data[apiHeaders[i]] = value
 		}
 
 		jsonData, err := json.Marshal(data)
@@ -121,5 +144,6 @@ func PopulateGameLog(rs types.ResponseSet) ([]types.GameLogEntry, []string, erro
 		entries = append(entries, entry)
 	}
 
-	return entries, headers, nil
+	structHeaders := structJSONHeaders(types.GameLogEntry{})
+	return entries, structHeaders, nil
 }

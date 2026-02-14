@@ -245,7 +245,7 @@ func (p PlayerProfileV2Params) ToValues() url.Values {
 	return values
 }
 
-func (p PlayerProfileV2Params) Endpoint() string { return "playerprofilev2" }
+func (p PlayerProfileV2Params) Endpoint() string { return "playercareerstats" }
 
 func (p PlayerProfileV2Params) Validate() error {
 	if p.PlayerID == "" {

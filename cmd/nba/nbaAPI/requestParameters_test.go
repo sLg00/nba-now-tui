@@ -66,8 +66,8 @@ func TestCommonPlayerInfoParams_ToValues(t *testing.T) {
 
 func TestPlayerProfileV2Params_Endpoint(t *testing.T) {
 	p := PlayerProfileV2Params{PlayerID: "1628389", PerMode: "PerGame"}
-	if got := p.Endpoint(); got != "playerprofilev2" {
-		t.Errorf("Endpoint() = %s, want playerprofilev2", got)
+	if got := p.Endpoint(); got != "playercareerstats" {
+		t.Errorf("Endpoint() = %s, want playercareerstats", got)
 	}
 }
 
