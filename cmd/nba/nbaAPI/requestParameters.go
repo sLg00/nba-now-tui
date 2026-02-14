@@ -3,7 +3,6 @@ package nbaAPI
 import (
 	"fmt"
 	"github.com/sLg00/nba-now-tui/cmd/nba/types"
-	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -30,7 +29,7 @@ type RequestParams interface {
 }
 
 type nbaDateProvider struct {
-	cmdArgs []string
+	date string
 }
 
 type LeagueLeadersParams struct {
@@ -75,47 +74,25 @@ type PlayerIndexParams struct {
 	TeamID   string
 }
 
-func NewDateProvider(args []string) types.DateProvider {
-	return &nbaDateProvider{cmdArgs: args}
+func NewDateProvider() types.DateProvider {
+	eastern, _ := time.LoadLocation("America/New_York")
+	today := time.Now().In(eastern).Format("2006-01-02")
+	return &nbaDateProvider{date: today}
 }
 
-// GetCurrentDate is the implementation to parse the command line arguments to start the app. The value is used in
-// multiple parts of the application. The function returns a date as string and an error
 func (dp *nbaDateProvider) GetCurrentDate() (string, error) {
-	if len(dp.cmdArgs) != 3 {
-		log.Println("Cannot invoke program, date not provided in command line arguments.")
-		err := fmt.Errorf("please use %s -d \"YYYY-MM-DD\"", dp.cmdArgs[0])
-		return "", err
-	}
-	if dp.cmdArgs[1] == "-h" {
-		err := fmt.Errorf("to invoke the program, please use %s -d \"YYYY-DD-MM\" with any date", dp.cmdArgs[0])
-		return "", err
-	}
-	dateStr := dp.cmdArgs[2]
-
-	if _, err := time.Parse("2006-01-02", dateStr); err != nil {
-		return "", fmt.Errorf("date must be in YYYY-MM-DD format")
-	}
-
-	return dateStr, nil
+	return dp.date, nil
 }
 
 // GetCurrentSeason calculates and provides the season date string in the format of YYYY-YY.
 func (dp *nbaDateProvider) GetCurrentSeason() string {
-	date, err := dp.GetCurrentDate()
-	if err != nil {
-		return ""
-	}
-	dateSplit := strings.Split(date, "-")
+	dateSplit := strings.Split(dp.date, "-")
 	year, _ := strconv.Atoi(dateSplit[0])
 	month, _ := strconv.Atoi(dateSplit[1])
 
-	//last season
 	if month < 10 {
 		return fmt.Sprintf("%d-%02d", year-1, year%100)
 	}
-
-	//current season
 	return fmt.Sprintf("%d-%02d", year, (year+1)%100)
 }
 

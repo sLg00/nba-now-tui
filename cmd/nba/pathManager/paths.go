@@ -60,6 +60,27 @@ func PathFactory(dates types.DateProvider, id string) PathManager {
 	}
 }
 
+func PathFactoryForDate(date string) PathManager {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Println(fmt.Errorf("could not determine home directory: %w", err))
+	}
+
+	return &PathComps{
+		Home:            home,
+		Path:            "/.config/nba-tui/",
+		LLFile:          date + "_ll",
+		SSFile:          date + "_ss",
+		DSBFile:         date + "_dsb",
+		BoxScorePath:    "boxscores/",
+		BoxScoreFile:    date + "_",
+		TeamProfilePath: "teamprofiles/",
+		TeamPlayersPath: "teamplayers/",
+		NewsCachePath:   "news/",
+		NewsCacheFile:   date + "_news",
+	}
+}
+
 func (p *PathComps) GetFullPath(fileType string, id string) string {
 	base := p.Home + p.Path
 	switch fileType {

@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 )
 
@@ -23,6 +22,7 @@ type RequestBuilder interface {
 	BuildLeagueLeadersRequest() RequestURL
 	BuildSeasonStandingsRequest() RequestURL
 	BuildDailyScoresRequest() RequestURL
+	BuildDailyScoresRequestForDate(date string) RequestURL
 	BuildBoxScoreRequest(gameID string) RequestURL
 	BuildTeamInfoRequest(teamID string) RequestURL
 	BuildPlayerIndexRequest(teamID string) RequestURL
@@ -112,6 +112,15 @@ func (rb *nbaRequestBuilder) BuildDailyScoresRequest() RequestURL {
 	return rb.buildURL(params)
 }
 
+func (rb *nbaRequestBuilder) BuildDailyScoresRequestForDate(date string) RequestURL {
+	params := DailyScoresParams{
+		DayOffset: "0",
+		GameDate:  date,
+		LeagueID:  LeagueID,
+	}
+	return rb.buildURL(params)
+}
+
 func (rb *nbaRequestBuilder) BuildBoxScoreRequest(gameID string) RequestURL {
 	params := BoxScoreParams{
 		EndPeriod:   "4",
@@ -170,9 +179,9 @@ func (h *HTTPClient) Get(url RequestURL) ([]byte, error) {
 
 // NewClient instantiates a *Client struct with the relevant interface implementations
 func NewClient() *Client {
-	dateProvider := NewDateProvider(os.Args)
+	dateProvider := NewDateProvider()
 	return &Client{
-		Dates:      NewDateProvider(os.Args),
+		Dates:      dateProvider,
 		http:       NewHTTPClient(),
 		requests:   NewRequestBuilder(BaseURL, dateProvider),
 		Paths:      pathManager.PathFactory(dateProvider, ""),
@@ -259,6 +268,27 @@ func (c *Client) FetchBoxScore(param string) error {
 			break
 		}
 	}
+	return nil
+}
+
+func (c *Client) FetchDailyScoresForDate(date string) error {
+	reqURL := c.requests.BuildDailyScoresRequestForDate(date)
+	if reqURL == "" {
+		return fmt.Errorf("failed to build request URL for date %s", date)
+	}
+
+	datePaths := pathManager.PathFactoryForDate(date)
+	path := datePaths.GetFullPath("dailyScores", "")
+
+	data, err := c.http.Get(reqURL)
+	if err != nil {
+		return fmt.Errorf("api error fetching scores for %s: %w", date, err)
+	}
+
+	if err = c.FileSystem.WriteFile(path, data); err != nil {
+		return fmt.Errorf("write error for daily scores %s: %w", date, err)
+	}
+
 	return nil
 }
 

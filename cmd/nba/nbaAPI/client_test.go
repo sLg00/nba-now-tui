@@ -20,7 +20,8 @@ type MockRequestBuilder struct {
 	buildLeagueLeadersRequests   func() RequestURL
 	buildSeasonStandingsRequests func() RequestURL
 	buildDailyScoresRequests     func() RequestURL
-	buildBoxScoreRequests        func(gameID string) RequestURL
+	buildDailyScoresForDateRequests func(date string) RequestURL
+	buildBoxScoreRequests           func(gameID string) RequestURL
 	buildTeamInfoRequests        func(teamID string) RequestURL
 	buildPlayerIndexRequests     func(teamID string) RequestURL
 }
@@ -73,6 +74,13 @@ func (m *MockRequestBuilder) BuildDailyScoresRequest() RequestURL {
 		return m.buildDailyScoresRequests()
 	}
 	return "https://example.com/scores"
+}
+
+func (m *MockRequestBuilder) BuildDailyScoresRequestForDate(date string) RequestURL {
+	if m.buildDailyScoresForDateRequests != nil {
+		return m.buildDailyScoresForDateRequests(date)
+	}
+	return RequestURL("https://example.com/scores?GameDate=" + date)
 }
 
 func (m *MockRequestBuilder) BuildBoxScoreRequest(gameID string) RequestURL {
@@ -472,4 +480,57 @@ func urlsEqual(t *testing.T, got, want string) bool {
 	gotParams := gotURL.Query()
 	wantParams := wantURL.Query()
 	return reflect.DeepEqual(gotParams, wantParams)
+}
+
+func TestClient_FetchDailyScoresForDate(t *testing.T) {
+	tests := []struct {
+		name         string
+		date         string
+		httpResponse []byte
+		httpErr      error
+		writeFileErr error
+		wantErr      bool
+	}{
+		{
+			name:         "successful fetch for specific date",
+			date:         "2025-01-15",
+			httpResponse: []byte(`{"data":"success"}`),
+			wantErr:      false,
+		},
+		{
+			name:    "http error",
+			date:    "2025-01-15",
+			httpErr: errors.New("http error"),
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockHTTP := &MockHTTPClient{
+				getFunc: func(url RequestURL) ([]byte, error) {
+					return tt.httpResponse, tt.httpErr
+				},
+			}
+
+			mockRequestBuilder := &MockRequestBuilder{}
+
+			mockFS := &MockFileSystem{
+				writeFileFunc: func(path string, data []byte) error {
+					return tt.writeFileErr
+				},
+			}
+
+			client := &Client{
+				http:       mockHTTP,
+				requests:   mockRequestBuilder,
+				FileSystem: mockFS,
+			}
+
+			err := client.FetchDailyScoresForDate(tt.date)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FetchDailyScoresForDate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
 }
