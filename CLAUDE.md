@@ -44,6 +44,7 @@ go test -v -run TestName ./...    # Run specific test
 
 ## External Dependencies
 
+- NBA API endpoints reference - https://github.com/swar/nba_api
 - `charmbracelet/bubbletea` - TUI framework (Elm architecture)
 - `charmbracelet/bubbles` - UI components
 - `charmbracelet/lipgloss` - Terminal styling

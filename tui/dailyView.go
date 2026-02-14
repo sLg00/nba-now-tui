@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -69,14 +70,7 @@ func NewDailyView(size tea.WindowSizeMsg) (*DailyView, tea.Cmd, error) {
 		focus:        focusDateSelector,
 	}
 
-	cl, err := client.Loader.LoadDailyScoreboard()
-	_, _, err = converters.PopulateDailyGameResults(cl)
-	if err != nil {
-		return &DailyView{}, nil, fmt.Errorf("failed to populate daily scores: %w\n", err)
-	}
-
-	cmd := fetchDailyScoresCmd()
-	return m, cmd, nil
+	return m, fetchDailyScoresCmd(), nil
 }
 
 func newGameCard(r []table.Row) (table.Model, error) {
@@ -114,20 +108,13 @@ func fetchDailyScoresCmd() tea.Cmd {
 	}
 }
 
-// fetchGameDataCmd first checks the game's status (1,2,3), then queries the NBA API for box score results if
-// the status is greater than 1
-func fetchGameDataCmd(gameID string) tea.Cmd {
+func fetchGameDataCmd(gameID string, gameStatus int) tea.Cmd {
 	return func() tea.Msg {
-		gameStatus, err := converters.CheckGameStatus(gameID)
-		if err != nil {
-			return gameDataFetchedMsg{err: err}
-		}
 		if gameStatus > 1 {
-			err = nbaAPI.NewClient().FetchBoxScore(gameID)
+			err := nbaAPI.NewClient().FetchBoxScore(gameID)
 			return gameDataFetchedMsg{err: err}
 		}
-
-		return gameDataFetchedMsg{err: err}
+		return gameDataFetchedMsg{}
 	}
 }
 
@@ -187,14 +174,11 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		}
 		m.gameCards = nil
 		for _, score := range msg.scores {
-			gameStatus, err := converters.CheckGameStatus(score[0])
-			if err != nil {
-				log.Println("Error while querying game status", err)
-			}
+			gameStatus, _ := strconv.Atoi(score[9])
 			if gameStatus > 0 {
 				rows := []table.Row{
-					table.NewRow(table.RowData{"teams": score[4], "scores": score[3], "gameID": score[0]}),
-					table.NewRow(table.RowData{"teams": score[8], "scores": score[7], "gameID": score[0]}),
+					table.NewRow(table.RowData{"teams": score[4], "scores": score[3], "gameID": score[0], "gameStatus": gameStatus}),
+					table.NewRow(table.RowData{"teams": score[8], "scores": score[7], "gameID": score[0], "gameStatus": gameStatus}),
 				}
 				gameCard, err := newGameCard(rows)
 				if err != nil {
@@ -202,7 +186,7 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 					continue
 				}
 				m.gameCards = append(m.gameCards, gameCard)
-				cmds = append(cmds, fetchGameDataCmd(score[0]))
+				cmds = append(cmds, fetchGameDataCmd(score[0], gameStatus))
 			}
 		}
 		m.focusIndex = 0
@@ -215,14 +199,11 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 		}
 		m.gameCards = nil
 		for _, score := range msg.scores {
-			gameStatus, err := converters.CheckGameStatus(score[0])
-			if err != nil {
-				log.Println("Error while querying game status", err)
-			}
+			gameStatus, _ := strconv.Atoi(score[9])
 			if gameStatus > 0 {
 				rows := []table.Row{
-					table.NewRow(table.RowData{"teams": score[4], "scores": score[3], "gameID": score[0]}),
-					table.NewRow(table.RowData{"teams": score[8], "scores": score[7], "gameID": score[0]}),
+					table.NewRow(table.RowData{"teams": score[4], "scores": score[3], "gameID": score[0], "gameStatus": gameStatus}),
+					table.NewRow(table.RowData{"teams": score[8], "scores": score[7], "gameID": score[0], "gameStatus": gameStatus}),
 				}
 				gameCard, err := newGameCard(rows)
 				if err != nil {
@@ -230,7 +211,7 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 					continue
 				}
 				m.gameCards = append(m.gameCards, gameCard)
-				cmds = append(cmds, fetchGameDataCmd(score[0]))
+				cmds = append(cmds, fetchGameDataCmd(score[0], gameStatus))
 			}
 		}
 		m.focusIndex = 0
@@ -289,18 +270,19 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			gameID, err := m.getGameId()
 			if err != nil {
 				log.Printf("Could not get game id: %v", err)
+				return m, nil
 			}
-			gameStatus, err := converters.CheckGameStatus(gameID)
-			if err != nil {
-				log.Println("Error while querying game status", err)
-			}
-			if gameStatus > 1 {
-				bx, cmd, err := NewBoxScore(gameID, WindowSize)
-				if err != nil {
-					log.Println(err)
-					os.Exit(1)
+			focusedCard := m.gameCards[m.focusIndex]
+			rows := focusedCard.GetVisibleRows()
+			if len(rows) > 0 {
+				if status, ok := rows[0].Data["gameStatus"].(int); ok && status > 1 {
+					bx, cmd, err := NewBoxScore(gameID, WindowSize)
+					if err != nil {
+						log.Println(err)
+						os.Exit(1)
+					}
+					return bx, cmd
 				}
-				return bx, cmd
 			}
 		case key.Matches(msg, Keymap.Up):
 			if m.focusIndex < m.numCols {
