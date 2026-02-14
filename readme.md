@@ -26,12 +26,12 @@ Execute **./binary** to launch the app. It uses today as default (TZ Us East)
 * League leaders
 * Season standings
 * Team Profiles (with ASCII logos and team-colors)
+* Player Profiles
 * Daily News headlines (and links) from NBA.com
 
 
 <h3>Shit still missing, yo</h3>
 
-* _(feature)_ Player profile pages (on-demand, when a player is selected from an existing view)
 * _(feature)_ Playoff bracket
 * _(QA)_ Bunch of tests still missing, especially on TUI logic
 * _(FE)_ Error modals and loading bars
@@ -54,10 +54,6 @@ are deleted on app launch to avoid cluttering the filesystem.
 Why filesystem and not a sqlite db? The database already exists on NBA's side, so this is just about the terminal client and not
 persisting a ton of data.
 
-There is some code repetition in the tui package, because each view utilizes a different model.
-I may explore unifying some of the models and reducing the amount of duplication - especially on the View() and Update()
-methods.
-
 **Currently only tested on Linux, because that's where I use it.** /shrug
 
 <h3>Screenshots</h3>
@@ -73,3 +69,5 @@ methods.
 ![Alt text](/screenshots/sc5.png?raw=true "Team Profile 2")
 
 ![Alt text](/screenshots/sc6.png?raw=true "News Headlines")
+
+![Alt text](/screenshots/sc8.png?raw=true "Player Profile")
