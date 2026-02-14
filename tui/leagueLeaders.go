@@ -88,8 +88,17 @@ func (m LeagueLeaders) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			selectedRows := m.leaderboard.SelectedRows()
 			if len(selectedRows) == 1 {
 				playerID := selectedRows[0].Data["PLAYER_ID"].(string)
-				log.Println(playerID)
-				//TODO: add player profile init logic
+				err := nbaAPI.NewClient().FetchPlayerProfile(playerID)
+				if err != nil {
+					log.Println("failed to fetch player profile:", err)
+					return m, nil
+				}
+				pp, cmd, err := NewPlayerProfile(playerID, "leagueLeaders", WindowSize)
+				if err != nil {
+					log.Println("failed to create player profile:", err)
+					return m, nil
+				}
+				return pp, cmd
 			}
 			if len(selectedRows) > 1 || len(selectedRows) < 1 {
 				log.Println("Either 0 rows or more than 1 row were selected")

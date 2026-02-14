@@ -290,8 +290,17 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 			}
 			if len(selectedRows) == 1 {
 				personId := selectedRows[0].Data["PersonId"].(string)
-				log.Println(personId)
-				//TODO: add player profile view init
+				err := nbaAPI.NewClient().FetchPlayerProfile(personId)
+				if err != nil {
+					log.Println("failed to fetch player profile:", err)
+					return m, nil
+				}
+				pp, cmd, err := NewPlayerProfile(personId, "boxscore", WindowSize)
+				if err != nil {
+					log.Println("failed to create player profile:", err)
+					return m, nil
+				}
+				return pp, cmd
 			}
 			if len(selectedRows) > 1 || len(selectedRows) < 1 {
 				log.Println("Either 0 rows or more than 1 row were selected")
