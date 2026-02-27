@@ -17,12 +17,12 @@ go test -v -run TestName ./...    # Run specific test
 ## Running the App
 
 ```bash
-./bin/nba-now-linux YYYY-MM-DD    # Date argument required (game date in local time)
+./bin/nba-now-linux    # No arguments needed; date is selected interactively via the date picker
 ```
 
 ## Architecture
 
-**TUI Layer** (`tui/`) - Bubble Tea models for each view. Views communicate via messages, not direct calls. Each view implements `Update()` and `View()` methods.
+**TUI Layer** (`tui/`) - Bubble Tea models for each view. Views communicate via messages, not direct calls. Each view implements `Update()` and `View()` methods. Views: Daily Scores, BoxScore, League Leaders, Season Standings, Player Profile. Navigation uses `b` to go back (not backspace).
 
 **API Layer** (`cmd/nba/nbaAPI/`) - Interface-driven design:
 - `HTTPRequester` - HTTP GET with NBA-specific headers
@@ -38,7 +38,7 @@ go test -v -run TestName ./...    # Run specific test
 ## Key Patterns
 
 - **Factory functions** for dependency injection: `NewClient()`, `PathFactory()`, `NewDataLoader()`
-- **Concurrent API calls** via goroutines + channels in `MakeDefaultRequests()` and `FetchTeamProfile()`
+- **Concurrent API calls** via goroutines + channels in `MakeDefaultRequests()`, `FetchTeamProfile()`, and `FetchPlayerProfile()`
 - **Struct tags control rendering** - converters use reflection to read display metadata
 - **Custom Bubble Tea messages** for async operation coordination (e.g., `requestsFinishedMsg`)
 
@@ -53,5 +53,5 @@ go test -v -run TestName ./...    # Run specific test
 
 ## Config Paths
 
-- Cache: `~/.config/nba-tui/` (boxscores/, teamprofiles/, teamplayers/, news/)
+- Cache: `~/.config/nba-tui/` (boxscores/, teamprofiles/, teamplayers/, news/, playerprofiles/)
 - Logs: `~/.config/nba-tui/logs/appLog.log`
