@@ -1,13 +1,12 @@
 package tui
 
 import (
-	"log"
-	"os"
-
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
+	"log"
+	"os"
 )
 
 // Model acts as the main model of the TUI. It's just to build the initial menu
@@ -138,7 +137,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					os.Exit(1)
 				}
 				return ss, cmd
-			case selectedItem.FilterValue() == "[N/A] Recent News":
+			case selectedItem.FilterValue() == "Recent News":
 				nv, cmd, err := NewNewsView(WindowSize)
 				if err != nil {
 					log.Println(err)

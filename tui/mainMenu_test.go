@@ -22,7 +22,7 @@ func TestMenuItemCreation(t *testing.T) {
 		"Daily Scores",
 		"Season Standings",
 		"League Leaders",
-		"[N/A] Recent News",
+		"Recent News",
 		"[N/A] Playoff Bracket",
 	}
 
