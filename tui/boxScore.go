@@ -277,19 +277,24 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 			return m, nil
 		}
 		m.statusMsg = ""
+		pageSize := calculatePageSize(m.height, 2)
 		homeTable := table.New(msg.boxScoreTableColumns).
 			WithRows(msg.homeBoxScoreData).
 			SelectableRows(true).
 			WithMaxTotalWidth(140).
 			Focused(true).
-			WithHorizontalFreezeColumnCount(3)
+			WithHorizontalFreezeColumnCount(3).
+			WithPageSize(pageSize).
+			WithFooterVisibility(false)
 
 		awayTable := table.New(msg.boxScoreTableColumns).
 			WithRows(msg.awayBoxScoreData).
 			SelectableRows(true).
 			WithMaxTotalWidth(140).
 			Focused(false).
-			WithHorizontalFreezeColumnCount(3)
+			WithHorizontalFreezeColumnCount(3).
+			WithPageSize(pageSize).
+			WithFooterVisibility(false)
 
 		m.homeTeamBoxScore = homeTable
 		m.awayTeamBoxScore = awayTable

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
 	"github.com/sLg00/nba-now-tui/cmd/nba/types"
+	"strings"
 )
 
 // PopulateDailyGameResults extracts 'linescores' from the NBA API response for DailyScoreboard.
@@ -56,11 +57,41 @@ func CheckGameStatus(gameID string) (int, error) {
 // to the stats.nba.com response (rs.BoxScore).
 func PopulateBoxScore(rs types.ResponseSet) (types.BoxScore, error) {
 	if rs.LiveGame != nil {
-		return types.BoxScore{
+		boxScore := types.BoxScore{
 			GameID:   rs.LiveGame.GameID,
 			HomeTeam: rs.LiveGame.HomeTeam,
 			AwayTeam: rs.LiveGame.AwayTeam,
-		}, nil
+		}
+		for i := range boxScore.HomeTeam.BoxScorePlayers {
+			boxScore.HomeTeam.BoxScorePlayers[i].Statistics.Minutes = parseISO8601Duration(boxScore.HomeTeam.BoxScorePlayers[i].Statistics.Minutes)
+		}
+		for i := range boxScore.AwayTeam.BoxScorePlayers {
+			boxScore.AwayTeam.BoxScorePlayers[i].Statistics.Minutes = parseISO8601Duration(boxScore.AwayTeam.BoxScorePlayers[i].Statistics.Minutes)
+		}
+		return boxScore, nil
 	}
 	return rs.BoxScore, nil
+}
+
+// parseISO8601Duration converts ISO 8601 duration strings (e.g. "PT13M42.30S") to "M:SS".
+// Returns the input unchanged if it is not in that format.
+func parseISO8601Duration(d string) string {
+	d = strings.TrimPrefix(d, "PT")
+	mIdx := strings.IndexByte(d, 'M')
+	if mIdx < 0 {
+		return d
+	}
+	minutes := d[:mIdx]
+	rest := d[mIdx+1:]
+	sIdx := strings.IndexByte(rest, '.')
+	var seconds string
+	if sIdx >= 0 {
+		seconds = rest[:sIdx]
+	} else {
+		seconds = strings.TrimSuffix(rest, "S")
+	}
+	if len(seconds) == 1 {
+		seconds = "0" + seconds
+	}
+	return minutes + ":" + seconds
 }
