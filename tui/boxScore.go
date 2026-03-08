@@ -28,6 +28,7 @@ type InstantiatedBoxScore struct {
 	sourceDate       string
 	isLive           bool
 	gameID           string
+	statusMsg        string
 }
 
 type boxScoreFetchedMsg struct {
@@ -270,8 +271,12 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 	case boxScoreFetchedMsg:
 		if msg.err != nil {
 			log.Println("error fetching box score:", msg.err)
+			if m.isLive {
+				m.statusMsg = "Game data not yet available. Press 'r' to refresh."
+			}
 			return m, nil
 		}
+		m.statusMsg = ""
 		homeTable := table.New(msg.boxScoreTableColumns).
 			WithRows(msg.homeBoxScoreData).
 			SelectableRows(true).
@@ -373,6 +378,11 @@ func (m InstantiatedBoxScore) helpView() string {
 func (m InstantiatedBoxScore) View() string {
 	if m.quitting {
 		return ""
+	}
+	if m.statusMsg != "" {
+		return DocStyle.Render(lipgloss.JoinVertical(lipgloss.Left,
+			m.statusMsg,
+			m.helpView()))
 	}
 	renderedHomeBoxScore := TableStyle.Render(m.homeTeamBoxScore.View())
 	renderedAwayBoxScore := TableStyle.Render(m.awayTeamBoxScore.View())
