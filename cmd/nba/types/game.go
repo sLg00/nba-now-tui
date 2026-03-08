@@ -111,6 +111,14 @@ type ScoreboardV3Data struct {
 	Games      []ScoreboardV3Game `json:"games"`
 }
 
+// LiveBoxScoreGame wraps the game data from the NBA CDN live boxscore endpoint.
+// Used to unmarshal the "game" key from cdn.nba.com/static/json/liveData/boxscore/boxscore_{gameID}.json
+type LiveBoxScoreGame struct {
+	GameID   string       `json:"gameId"`
+	HomeTeam BoxScoreTeam `json:"homeTeam"`
+	AwayTeam BoxScoreTeam `json:"awayTeam"`
+}
+
 func (g GameResult) ToStringSlice() []string {
 	return structToStringSlice(g)
 }

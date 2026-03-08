@@ -51,10 +51,16 @@ func CheckGameStatus(gameID string) (int, error) {
 	return 0, fmt.Errorf("could not find game with id: %v", gameID)
 }
 
-// PopulateBoxScore takes a gameID (string) as input and returns the required structures to represent
-// the game's box score in a TUI
+// PopulateBoxScore returns the box score from a ResponseSet. For live games it prefers the
+// CDN live data (rs.LiveGame), which carries real-time player stats; finished games fall back
+// to the stats.nba.com response (rs.BoxScore).
 func PopulateBoxScore(rs types.ResponseSet) (types.BoxScore, error) {
-	boxScore := rs.BoxScore
-
-	return boxScore, nil
+	if rs.LiveGame != nil {
+		return types.BoxScore{
+			GameID:   rs.LiveGame.GameID,
+			HomeTeam: rs.LiveGame.HomeTeam,
+			AwayTeam: rs.LiveGame.AwayTeam,
+		}, nil
+	}
+	return rs.BoxScore, nil
 }

@@ -296,22 +296,18 @@ func (c *Client) FetchBoxScore(param string) error {
 	return nil
 }
 
-// FetchLiveBoxScore calls the NBA API for a live game's box score and unconditionally
-// overwrites any cached file. Unlike FetchBoxScore, it does not check FileExists first.
+// FetchLiveBoxScore fetches a live game's box score from the NBA CDN live data feed and
+// unconditionally overwrites any cached file. It bypasses both the FileExists guard and
+// the stats.nba.com endpoint (which returns empty players for in-progress games).
 func (c *Client) FetchLiveBoxScore(gameID string) error {
-	urls := c.requests.BuildRequests(gameID)
-	for name, reqURL := range urls {
-		if name != "boxScore" {
-			continue
-		}
-		path := c.Paths.GetFullPath(name, gameID)
-		data, err := c.http.Get(reqURL)
-		if err != nil {
-			return fmt.Errorf("api error: %w", err)
-		}
-		if err = c.FileSystem.WriteFile(path, data); err != nil {
-			return fmt.Errorf("write error for %s: %w", name, err)
-		}
+	cdnURL := RequestURL(fmt.Sprintf("https://cdn.nba.com/static/json/liveData/boxscore/boxscore_%s.json", gameID))
+	path := c.Paths.GetFullPath("boxScore", gameID)
+	data, err := c.http.Get(cdnURL)
+	if err != nil {
+		return fmt.Errorf("api error: %w", err)
+	}
+	if err = c.FileSystem.WriteFile(path, data); err != nil {
+		return fmt.Errorf("write error for boxScore: %w", err)
 	}
 	return nil
 }

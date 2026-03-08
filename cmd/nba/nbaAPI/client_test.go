@@ -538,19 +538,13 @@ func TestClient_FetchLiveBoxScore(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fetchCalled := false
+			var capturedURL RequestURL
 
 			mockHTTP := &MockHTTPClient{
 				getFunc: func(url RequestURL) ([]byte, error) {
 					fetchCalled = true
+					capturedURL = url
 					return tt.httpResponse, tt.httpErr
-				},
-			}
-
-			mockRequestBuilder := &MockRequestBuilder{
-				buildRequests: func(param string) map[string]RequestURL {
-					return map[string]RequestURL{
-						"boxScore": RequestURL("https://stats.nba.com/stats/boxscoretraditionalv3?GameID=" + tt.gameID),
-					}
 				},
 			}
 
@@ -571,7 +565,6 @@ func TestClient_FetchLiveBoxScore(t *testing.T) {
 
 			client := &Client{
 				http:       mockHTTP,
-				requests:   mockRequestBuilder,
 				Paths:      mockPaths,
 				FileSystem: mockFS,
 			}
@@ -582,6 +575,10 @@ func TestClient_FetchLiveBoxScore(t *testing.T) {
 			}
 			if fetchCalled != tt.wantFetched {
 				t.Errorf("HTTP fetch called = %v, want %v", fetchCalled, tt.wantFetched)
+			}
+			wantURL := RequestURL(fmt.Sprintf("https://cdn.nba.com/static/json/liveData/boxscore/boxscore_%s.json", tt.gameID))
+			if fetchCalled && capturedURL != wantURL {
+				t.Errorf("FetchLiveBoxScore() URL = %v, want %v", capturedURL, wantURL)
 			}
 		})
 	}

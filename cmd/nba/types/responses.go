@@ -27,7 +27,8 @@ type ResponseSet struct {
 	Parameters json.RawMessage `json:"parameters"`
 	ResultSet  ResultSet   `json:"resultSet"`
 	ResultSets []ResultSet `json:"resultSets"`
-	BoxScore   BoxScore    `json:"boxScoreTraditional"`
+	BoxScore   BoxScore          `json:"boxScoreTraditional"`
+	LiveGame   *LiveBoxScoreGame `json:"game,omitempty"`
 
 	Meta struct {
 		Version int    `json:"version"`
