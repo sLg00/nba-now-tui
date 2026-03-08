@@ -1,12 +1,13 @@
 package tui
 
 import (
+	"log"
+	"os"
+
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
-	"log"
-	"os"
 )
 
 // Model acts as the main model of the TUI. It's just to build the initial menu
@@ -51,7 +52,7 @@ func createMenuItems() ([]list.Item, error) {
 			description: "All players sorted by PPG",
 		}, menuItem{
 			index:       3,
-			title:       "[N/A] Recent News",
+			title:       "Recent News",
 			description: "Headlines from around the league",
 		}, menuItem{
 			index:       4,
