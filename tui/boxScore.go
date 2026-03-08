@@ -26,6 +26,8 @@ type InstantiatedBoxScore struct {
 	maxWidth         int
 	maxHeight        int
 	sourceDate       string
+	isLive           bool
+	gameID           string
 }
 
 type boxScoreFetchedMsg struct {
@@ -36,15 +38,28 @@ type boxScoreFetchedMsg struct {
 }
 
 // NewBoxScore is a factory function to instantiate a BoxScore when the BoxScore is opened from the Daily View.
-// It takes gameId and WindowSize as inputs and returns a model, command and error
-func NewBoxScore(gameId string, sourceDate string, size tea.WindowSizeMsg) (*InstantiatedBoxScore, tea.Cmd, error) {
+// gameStatus routes to FetchLiveBoxScore (status 2) or FetchBoxScore (all others).
+func NewBoxScore(gameId string, sourceDate string, gameStatus int, size tea.WindowSizeMsg) (*InstantiatedBoxScore, tea.Cmd, error) {
 	m := &InstantiatedBoxScore{
 		width:      size.Width,
 		height:     size.Height,
 		sourceDate: sourceDate,
+		isLive:     gameStatus == 2,
+		gameID:     gameId,
 	}
 
-	cl, err := nbaAPI.NewClient().Loader.LoadBoxScore(gameId)
+	client := nbaAPI.NewClient()
+	var fetchErr error
+	if gameStatus == 2 {
+		fetchErr = client.FetchLiveBoxScore(gameId)
+	} else {
+		fetchErr = client.FetchBoxScore(gameId)
+	}
+	if fetchErr != nil {
+		return &InstantiatedBoxScore{}, nil, fmt.Errorf("failed to fetch box score: %w", fetchErr)
+	}
+
+	cl, err := client.Loader.LoadBoxScore(gameId)
 	if err != nil {
 		return &InstantiatedBoxScore{}, nil, fmt.Errorf("failed to load box score: %w", err)
 	}
@@ -53,12 +68,21 @@ func NewBoxScore(gameId string, sourceDate string, size tea.WindowSizeMsg) (*Ins
 		return &InstantiatedBoxScore{}, nil, fmt.Errorf("failed to populate box score: %w", err)
 	}
 
-	cmd := fetchBoxSoresCmd(gameId)
-
-	return m, cmd, nil
+	return m, fetchBoxSoresCmd(gameId), nil
 }
 
-// fetchBoxScoresCmd "fetches" and processes the given game data to eventually render a box score
+// refreshLiveBoxScoreCmd forces a fresh fetch for a live game then re-renders the box score.
+func refreshLiveBoxScoreCmd(gameID string) tea.Cmd {
+	return func() tea.Msg {
+		if err := nbaAPI.NewClient().FetchLiveBoxScore(gameID); err != nil {
+			log.Printf("live box score refresh failed: %v", err)
+			return boxScoreFetchedMsg{err: err}
+		}
+		return fetchBoxSoresCmd(gameID)()
+	}
+}
+
+// fetchBoxSoresCmd "fetches" and processes the given game data to eventually render a box score
 func fetchBoxSoresCmd(gameID string) tea.Cmd {
 	return func() tea.Msg {
 		cl, err := nbaAPI.NewClient().Loader.LoadBoxScore(gameID)
@@ -311,6 +335,10 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 				log.Println("Either 0 rows or more than 1 row were selected")
 				//TODO: Display pop-up with User error! :)
 			}
+		case key.Matches(msg, Keymap.Refresh):
+			if m.isLive {
+				return m, refreshLiveBoxScoreCmd(m.gameID)
+			}
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -335,7 +363,11 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 }
 
 func (m InstantiatedBoxScore) helpView() string {
-	return HelpStyle(HelpFooter())
+	help := HelpFooter()
+	if m.isLive {
+		help += " | " + Keymap.Refresh.Help().Key + ": " + Keymap.Refresh.Help().Desc
+	}
+	return HelpStyle(help)
 }
 
 func (m InstantiatedBoxScore) View() string {

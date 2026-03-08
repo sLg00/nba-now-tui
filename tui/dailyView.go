@@ -284,7 +284,7 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			rows := focusedCard.GetVisibleRows()
 			if len(rows) > 0 {
 				if status, ok := rows[0].Data["gameStatus"].(int); ok && status > 1 {
-					bx, cmd, err := NewBoxScore(gameID, m.dateSelector.date, WindowSize)
+					bx, cmd, err := NewBoxScore(gameID, m.dateSelector.date, status, WindowSize)
 					if err != nil {
 						log.Println(err)
 						os.Exit(1)
@@ -349,7 +349,18 @@ func renderDailyView(m DailyView) string {
 				BorderForeground(lipgloss.Color("5"))).
 				WithHeaderVisibility(false)
 		}
-		currentRow = append(currentRow, gameCard.View())
+		cardView := gameCard.View()
+		cardRows := gameCard.GetVisibleRows()
+		if len(cardRows) > 0 {
+			if status, ok := cardRows[0].Data["gameStatus"].(int); ok && status == 2 {
+				liveBadge := lipgloss.NewStyle().
+					Foreground(lipgloss.Color("2")).
+					Bold(true).
+					Render("● LIVE")
+				cardView = liveBadge + "\n" + cardView
+			}
+		}
+		currentRow = append(currentRow, cardView)
 
 		if (i+1)%m.numCols == 0 {
 			rows = append(rows, lipgloss.JoinHorizontal(lipgloss.Top, currentRow...))

@@ -16,15 +16,16 @@ var (
 type errMsg struct{ error }
 
 type keymap struct {
-	Back  key.Binding
-	Quit  key.Binding
-	Enter key.Binding
-	Up    key.Binding
-	Down  key.Binding
-	Left  key.Binding
-	Right key.Binding
-	Tab   key.Binding
-	Space key.Binding
+	Back    key.Binding
+	Quit    key.Binding
+	Enter   key.Binding
+	Up      key.Binding
+	Down    key.Binding
+	Left    key.Binding
+	Right   key.Binding
+	Tab     key.Binding
+	Space   key.Binding
+	Refresh key.Binding
 }
 
 var DocStyle = lipgloss.NewStyle().Margin(2, 2).BorderStyle(lipgloss.HiddenBorder())
@@ -70,6 +71,9 @@ var Keymap = keymap{
 	Space: key.NewBinding(
 		key.WithKeys("space"),
 		key.WithHelp("space", "mark for selection")),
+	Refresh: key.NewBinding(
+		key.WithKeys("r"),
+		key.WithHelp("r", "refresh")),
 }
 
 // CenterStyle takes a variable width and returns a centered style based on that. Used to align content in viewports

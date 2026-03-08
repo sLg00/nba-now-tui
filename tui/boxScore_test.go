@@ -114,7 +114,7 @@ func TestNewBoxScore(t *testing.T) {
 	ts := helpers.SetupTest()
 	defer ts.CleanUpTest()
 
-	_, _, err := NewBoxScore("shittywok", "2025-01-01", WindowSize)
+	_, _, err := NewBoxScore("shittywok", "2025-01-01", 3, WindowSize)
 	if err == nil {
 		t.Errorf("NewBoxScore() should have returned an error")
 	}

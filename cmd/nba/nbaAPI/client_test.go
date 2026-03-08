@@ -506,6 +506,87 @@ func urlsEqual(t *testing.T, got, want string) bool {
 	return reflect.DeepEqual(gotParams, wantParams)
 }
 
+func TestClient_FetchLiveBoxScore(t *testing.T) {
+	tests := []struct {
+		name         string
+		httpResponse []byte
+		httpErr      error
+		writeFileErr error
+		wantErr      bool
+		fileExists   bool
+		gameID       string
+		wantFetched  bool
+	}{
+		{
+			name:         "fetches even when file already exists",
+			httpResponse: []byte(`{"data":"success"}`),
+			fileExists:   true,
+			wantErr:      false,
+			gameID:       "0052300101",
+			wantFetched:  true,
+		},
+		{
+			name:        "http error is returned",
+			httpErr:     errors.New("http error"),
+			fileExists:  true,
+			wantErr:     true,
+			gameID:      "0052300101",
+			wantFetched: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fetchCalled := false
+
+			mockHTTP := &MockHTTPClient{
+				getFunc: func(url RequestURL) ([]byte, error) {
+					fetchCalled = true
+					return tt.httpResponse, tt.httpErr
+				},
+			}
+
+			mockRequestBuilder := &MockRequestBuilder{
+				buildRequests: func(param string) map[string]RequestURL {
+					return map[string]RequestURL{
+						"boxScore": RequestURL("https://stats.nba.com/stats/boxscoretraditionalv3?GameID=" + tt.gameID),
+					}
+				},
+			}
+
+			mockPaths := &MockPathManager{
+				fullPathFunc: func(name, param string) string {
+					return fmt.Sprintf("/tmp/nba/%s", name)
+				},
+			}
+
+			mockFS := &MockFileSystem{
+				fileExistsFunc: func(path string) bool {
+					return tt.fileExists
+				},
+				writeFileFunc: func(path string, data []byte) error {
+					return tt.writeFileErr
+				},
+			}
+
+			client := &Client{
+				http:       mockHTTP,
+				requests:   mockRequestBuilder,
+				Paths:      mockPaths,
+				FileSystem: mockFS,
+			}
+
+			err := client.FetchLiveBoxScore(tt.gameID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FetchLiveBoxScore() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if fetchCalled != tt.wantFetched {
+				t.Errorf("HTTP fetch called = %v, want %v", fetchCalled, tt.wantFetched)
+			}
+		})
+	}
+}
+
 func TestClient_FetchDailyScoresForDate(t *testing.T) {
 	tests := []struct {
 		name         string

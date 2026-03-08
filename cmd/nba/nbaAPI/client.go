@@ -296,6 +296,26 @@ func (c *Client) FetchBoxScore(param string) error {
 	return nil
 }
 
+// FetchLiveBoxScore calls the NBA API for a live game's box score and unconditionally
+// overwrites any cached file. Unlike FetchBoxScore, it does not check FileExists first.
+func (c *Client) FetchLiveBoxScore(gameID string) error {
+	urls := c.requests.BuildRequests(gameID)
+	for name, reqURL := range urls {
+		if name != "boxScore" {
+			continue
+		}
+		path := c.Paths.GetFullPath(name, gameID)
+		data, err := c.http.Get(reqURL)
+		if err != nil {
+			return fmt.Errorf("api error: %w", err)
+		}
+		if err = c.FileSystem.WriteFile(path, data); err != nil {
+			return fmt.Errorf("write error for %s: %w", name, err)
+		}
+	}
+	return nil
+}
+
 func (c *Client) FetchDailyScoresForDate(date string) error {
 	reqURL := c.requests.BuildDailyScoresRequestForDate(date)
 	if reqURL == "" {
