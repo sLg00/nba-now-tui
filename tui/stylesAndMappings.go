@@ -163,7 +163,7 @@ func calculatePageSize(terminalHeight, tableCount int) int {
 	const (
 		margins         = 4 // DocStyle margin top + bottom
 		helpFooter      = 1
-		headerAndBorder = 3 // header(1) + border(2) per table
+		headerAndBorder = 4 // header(1) + separator(1) + TableStyle border top+bottom(2) per table
 	)
 
 	// Guard: invalid tableCount returns minimum
