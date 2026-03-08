@@ -45,6 +45,9 @@ func NewBoxScore(gameId string, sourceDate string, size tea.WindowSizeMsg) (*Ins
 	}
 
 	cl, err := nbaAPI.NewClient().Loader.LoadBoxScore(gameId)
+	if err != nil {
+		return &InstantiatedBoxScore{}, nil, fmt.Errorf("failed to load box score: %w", err)
+	}
 	_, err = converters.PopulateBoxScore(cl)
 	if err != nil {
 		return &InstantiatedBoxScore{}, nil, fmt.Errorf("failed to populate box score: %w", err)
@@ -68,6 +71,10 @@ func fetchBoxSoresCmd(gameID string) tea.Cmd {
 		}
 		homeDataSet := boxScoreData.HomeTeam.BoxScorePlayers
 		awayDataSet := boxScoreData.AwayTeam.BoxScorePlayers
+
+		if len(homeDataSet) == 0 {
+			return boxScoreFetchedMsg{err: fmt.Errorf("no player data in box score")}
+		}
 
 		var column table.Column
 		var columns []table.Column

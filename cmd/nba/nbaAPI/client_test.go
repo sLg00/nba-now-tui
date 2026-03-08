@@ -227,7 +227,7 @@ func TestNbaRequestBuilder_BuildDailyScoresRequest(t *testing.T) {
 		{
 			name: "successful request",
 			date: "2025-02-20",
-			want: "https://stats.nba.com/stats/scoreboardv2" +
+			want: "https://stats.nba.com/stats/scoreboardv3" +
 				"?DayOffset=0&GameDate=2025-02-20&LeagueID=00",
 		},
 		{

@@ -22,18 +22,26 @@ func createMockFiles() ([]string, string, error) {
 	files := []struct {
 		name    string
 		content string
+		old     bool
 	}{
-		{today + "_file", "abc"},
-		{"2024-01-02_file", "xyz"},
-		{"2024-01-03_file", "qwe"},
+		{today + "_file", "abc", false},
+		{"2024-01-02_file", "xyz", true},
+		{"2024-01-03_file", "qwe", true},
 	}
 	var fileResults []string
 	dir, _ := createMockDir()
+	oldTime := time.Now().Add(-96 * time.Hour)
 	for _, file := range files {
 		filePath := filepath.Join(dir, file.name)
 		if err := os.WriteFile(filePath, []byte(file.content), 0644); err != nil {
 			log.Printf("error creating file %s: %v", file.name, err)
 			return nil, "", err
+		}
+		if file.old {
+			if err := os.Chtimes(filePath, oldTime, oldTime); err != nil {
+				log.Printf("error backdating file %s: %v", file.name, err)
+				return nil, "", err
+			}
 		}
 		fileResults = append(fileResults, filePath)
 	}

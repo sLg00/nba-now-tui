@@ -51,8 +51,12 @@ func createMenuItems() ([]list.Item, error) {
 			description: "All players sorted by PPG",
 		}, menuItem{
 			index:       3,
-			title:       "Recent News",
+			title:       "[N/A] Recent News",
 			description: "Headlines from around the league",
+		}, menuItem{
+			index:       4,
+			title:       "[N/A] Playoff Bracket",
+			description: "Current playoff bracket",
 		}}
 	return items, nil
 }
@@ -133,7 +137,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					os.Exit(1)
 				}
 				return ss, cmd
-			case selectedItem.FilterValue() == "Recent News":
+			case selectedItem.FilterValue() == "[N/A] Recent News":
 				nv, cmd, err := NewNewsView(WindowSize)
 				if err != nil {
 					log.Println(err)

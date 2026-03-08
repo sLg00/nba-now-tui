@@ -45,7 +45,7 @@ func PopulateTeamInfo(rs types.ResponseSet) (types.TeamCommonInfo, []string, err
 func PopulateTeamStats(rs types.ResponseSet) (types.Teams, []string, error) {
 	headers := rs.ResultSets[0].Headers
 	if len(headers) == 0 {
-		return types.Teams{}, nil, fmt.Errorf("could not unmarshall team stats: no heads returned")
+		return nil, nil, fmt.Errorf("could not unmarshall team stats: no heads returned")
 	}
 
 	var teams types.Teams

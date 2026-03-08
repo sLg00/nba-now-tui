@@ -8,31 +8,21 @@ import (
 
 func mockUnmarshallDailyGameResults(_ string) (types.ResponseSet, error) {
 	return types.ResponseSet{
-		ResultSets: []types.ResultSet{
-			{
-				Name: "GameHeader", // Simulate the first set as metadata
-				Headers: []string{
-					"GAME_DATE_EST",
-					"GAME_SEQUENCE",
-					"GAME_ID",
-					"GAME_STATUS_ID",
-					"GAME_STATUS_TEXT",
-					"GAMECODE",
-					"HOME_TEAM_ID",
-					"VISITOR_TEAM_ID",
-				},
-				RowSet: [][]interface{}{
-					{"2024-12-01T00:00:00", float64(1), "001", float64(3), "Final", "20241201/NYKMIA", float64(1011), float64(1012)},
-				},
-			},
-			{
-				Name: "LineScore", // Second set as linescores
-				Headers: []string{
-					"GAME_ID", "TEAM_ID", "TEAM_ABBREVIATION", "PTS",
-				},
-				RowSet: [][]interface{}{
-					{"001", float64(1011), "NYK", float64(101)},
-					{"001", float64(1012), "MIA", float64(99)},
+		Scoreboard: &types.ScoreboardV3Data{
+			Games: []types.ScoreboardV3Game{
+				{
+					GameID:     "001",
+					GameStatus: 3,
+					HomeTeam: types.ScoreboardV3Team{
+						TeamID:      1011,
+						TeamTricode: "NYK",
+						Score:       101,
+					},
+					AwayTeam: types.ScoreboardV3Team{
+						TeamID:      1012,
+						TeamTricode: "MIA",
+						Score:       99,
+					},
 				},
 			},
 		},
@@ -85,8 +75,8 @@ func TestPopulateDailyGameResults(t *testing.T) {
 		t.Errorf("Unexpected away team data %v", results[0])
 	}
 
-	if len(headers) != 4 {
-		t.Errorf("Expected 4 headers, got %v", len(headers))
+	if len(headers) != 6 {
+		t.Errorf("Expected 6 headers, got %v", len(headers))
 	}
 
 }

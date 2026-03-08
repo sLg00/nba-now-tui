@@ -73,8 +73,9 @@ func TestPopulateSeasonStats(t *testing.T) {
 		t.Error("expected non-empty headers")
 	}
 
-	if stats[0].SeasonID != "2022-23" {
-		t.Errorf("expected first season '2022-23', got '%s'", stats[0].SeasonID)
+	// PopulateSeasonStats reverses order so newest season is first
+	if stats[0].SeasonID != "2024-25" {
+		t.Errorf("expected first season '2024-25', got '%s'", stats[0].SeasonID)
 	}
 
 	if stats[2].TeamAbbr != "MIA" {
