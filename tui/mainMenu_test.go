@@ -23,7 +23,7 @@ func TestMenuItemCreation(t *testing.T) {
 		"Season Standings",
 		"League Leaders",
 		"Recent News",
-		"[N/A] Playoff Bracket",
+		"Playoff Bracket",
 	}
 
 	for i, item := range items {
@@ -83,6 +83,19 @@ func TestMenuItemSelection(t *testing.T) {
 	if _, ok := newModel.(Model); ok {
 		t.Error("expected different model type after selection")
 	}
+}
+
+func TestCreateMenuItems_IncludesPlayoffBracket(t *testing.T) {
+	items, err := createMenuItems()
+	if err != nil {
+		t.Fatalf("createMenuItems() error: %v", err)
+	}
+	for _, item := range items {
+		if item.FilterValue() == "Playoff Bracket" {
+			return
+		}
+	}
+	t.Error("createMenuItems() missing 'Playoff Bracket' item")
 }
 
 func TestMenuDisplay(t *testing.T) {

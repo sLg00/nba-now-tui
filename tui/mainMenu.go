@@ -55,8 +55,8 @@ func createMenuItems() ([]list.Item, error) {
 			description: "Headlines from around the league",
 		}, menuItem{
 			index:       4,
-			title:       "[N/A] Playoff Bracket",
-			description: "Current playoff bracket",
+			title:       "Playoff Bracket",
+			description: "Postseason bracket and series history",
 		}}
 	return items, nil
 }
@@ -144,6 +144,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					os.Exit(1)
 				}
 				return nv, cmd
+			case selectedItem.FilterValue() == "Playoff Bracket":
+				pb, cmd, err := NewPlayoffBracket(nbaAPI.NewClient().Dates.GetCurrentSeason(), 0, WindowSize)
+				if err != nil {
+					log.Println(err)
+					os.Exit(1)
+				}
+				return pb, cmd
 			}
 		case key.Matches(msg, Keymap.Quit):
 			m.quitting = true
