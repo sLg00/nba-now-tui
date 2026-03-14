@@ -128,6 +128,14 @@ func (m *MockRequestBuilder) BuildPlayerGameLogRequest(playerID string) RequestU
 	return RequestURL("https://example.com/playergamelog?PlayerID=" + playerID)
 }
 
+func (m *MockRequestBuilder) BuildLeagueSeriesStandingsRequest(season string) RequestURL {
+	return RequestURL("https://example.com/leagueSeriesStandings?Season=" + season)
+}
+
+func (m *MockRequestBuilder) BuildCommonPlayoffSeriesRequest(season string) RequestURL {
+	return RequestURL("https://example.com/commonPlayoffSeries?Season=" + season)
+}
+
 func (m *MockDateProvider) GetCurrentDate() (string, error) {
 	return m.currentDate, m.dateError
 }
@@ -750,5 +758,67 @@ func TestClient_FetchPlayerProfile(t *testing.T) {
 				t.Errorf("expected 0 files written (cached), got %d", len(fetchedPaths))
 			}
 		})
+	}
+}
+
+func TestFetchPlayoffBracket_SkipsIfCached(t *testing.T) {
+	httpCalled := false
+	mockHTTP := &MockHTTPClient{
+		getFunc: func(url RequestURL) ([]byte, error) {
+			httpCalled = true
+			return []byte(`{}`), nil
+		},
+	}
+	mockFS := &MockFileSystem{
+		fileExistsFunc: func(path string) bool { return true },
+		writeFileFunc:  func(path string, data []byte) error { return nil },
+		dirExistsFunc:  func(path string) error { return nil },
+	}
+	mockPaths := &MockPathManager{
+		fullPathFunc: func(name, param string) string { return "/tmp/" + name },
+	}
+	client := &Client{
+		http:       mockHTTP,
+		requests:   &MockRequestBuilder{},
+		Paths:      mockPaths,
+		FileSystem: mockFS,
+	}
+	err := client.FetchPlayoffBracket("2023-24")
+	if err != nil {
+		t.Fatalf("FetchPlayoffBracket() unexpected error: %v", err)
+	}
+	if httpCalled {
+		t.Error("expected http.Get NOT to be called when file is cached")
+	}
+}
+
+func TestFetchCommonPlayoffSeries_SkipsIfCached(t *testing.T) {
+	httpCalled := false
+	mockHTTP := &MockHTTPClient{
+		getFunc: func(url RequestURL) ([]byte, error) {
+			httpCalled = true
+			return []byte(`{}`), nil
+		},
+	}
+	mockFS := &MockFileSystem{
+		fileExistsFunc: func(path string) bool { return true },
+		writeFileFunc:  func(path string, data []byte) error { return nil },
+		dirExistsFunc:  func(path string) error { return nil },
+	}
+	mockPaths := &MockPathManager{
+		fullPathFunc: func(name, param string) string { return "/tmp/" + name },
+	}
+	client := &Client{
+		http:       mockHTTP,
+		requests:   &MockRequestBuilder{},
+		Paths:      mockPaths,
+		FileSystem: mockFS,
+	}
+	err := client.FetchCommonPlayoffSeries("2023-24")
+	if err != nil {
+		t.Fatalf("FetchCommonPlayoffSeries() unexpected error: %v", err)
+	}
+	if httpCalled {
+		t.Error("expected http.Get NOT to be called when file is cached")
 	}
 }

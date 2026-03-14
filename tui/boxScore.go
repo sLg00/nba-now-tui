@@ -31,6 +31,9 @@ type InstantiatedBoxScore struct {
 	statusMsg        string
 	homeTeamName     string
 	awayTeamName     string
+	backView         string
+	playoffSeason    string
+	bracketCursor    int
 }
 
 type boxScoreFetchedMsg struct {
@@ -42,15 +45,20 @@ type boxScoreFetchedMsg struct {
 	awayTeamName         string
 }
 
-// NewBoxScore is a factory function to instantiate a BoxScore when the BoxScore is opened from the Daily View.
+// NewBoxScore is a factory function to instantiate a BoxScore.
 // gameStatus routes to FetchLiveBoxScore (status 2) or FetchBoxScore (all others).
-func NewBoxScore(gameId string, sourceDate string, gameStatus int, size tea.WindowSizeMsg) (*InstantiatedBoxScore, tea.Cmd, error) {
+// backView controls where 'b' navigates: "dailyView" or "playoffBracket".
+// playoffSeason and bracketCursor are used when backView == "playoffBracket".
+func NewBoxScore(gameId string, sourceDate string, gameStatus int, backView string, playoffSeason string, bracketCursor int, size tea.WindowSizeMsg) (*InstantiatedBoxScore, tea.Cmd, error) {
 	m := &InstantiatedBoxScore{
-		width:      size.Width,
-		height:     size.Height,
-		sourceDate: sourceDate,
-		isLive:     gameStatus == 2,
-		gameID:     gameId,
+		width:         size.Width,
+		height:        size.Height,
+		sourceDate:    sourceDate,
+		isLive:        gameStatus == 2,
+		gameID:        gameId,
+		backView:      backView,
+		playoffSeason: playoffSeason,
+		bracketCursor: bracketCursor,
 	}
 
 	client := nbaAPI.NewClient()
@@ -323,6 +331,14 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, Keymap.Back):
+			if m.backView == "playoffBracket" {
+				pb, cmd, err := NewPlayoffBracket(m.playoffSeason, m.bracketCursor, WindowSize)
+				if err != nil {
+					log.Println(err)
+					return InitMenu()
+				}
+				return pb, cmd
+			}
 			dv, cmd := NewDailyViewForDate(m.sourceDate, WindowSize)
 			return dv, cmd
 		case key.Matches(msg, Keymap.Quit):

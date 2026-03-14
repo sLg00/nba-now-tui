@@ -51,3 +51,44 @@ func TestGetBasePaths_IncludesPlayerProfiles(t *testing.T) {
 		t.Error("GetBasePaths() should include playerprofiles/ path")
 	}
 }
+
+func TestGetFullPath_PlayoffBracket(t *testing.T) {
+	p := &PathComps{
+		Home:         "/home/user",
+		Path:         "/.config/nba-tui/",
+		PlayoffsPath: "playoffs/",
+	}
+	got := p.GetFullPath("playoffBracket", "2023-24")
+	want := "/home/user/.config/nba-tui/playoffs/2023-24_bracket"
+	if got != want {
+		t.Errorf("GetFullPath(playoffBracket) = %s, want %s", got, want)
+	}
+}
+
+func TestGetFullPath_PlayoffSeriesGames(t *testing.T) {
+	p := &PathComps{
+		Home:         "/home/user",
+		Path:         "/.config/nba-tui/",
+		PlayoffsPath: "playoffs/",
+	}
+	got := p.GetFullPath("playoffSeriesGames", "0042300401")
+	want := "/home/user/.config/nba-tui/playoffs/0042300401_games"
+	if got != want {
+		t.Errorf("GetFullPath(playoffSeriesGames) = %s, want %s", got, want)
+	}
+}
+
+func TestGetBasePaths_IncludesPlayoffs(t *testing.T) {
+	p := &PathComps{
+		Home:         "/home/user",
+		Path:         "/.config/nba-tui/",
+		PlayoffsPath: "playoffs/",
+	}
+	paths := p.GetBasePaths()
+	for _, path := range paths {
+		if path == "/home/user/.config/nba-tui/playoffs/" {
+			return
+		}
+	}
+	t.Error("GetBasePaths() does not include playoffs path")
+}

@@ -284,7 +284,7 @@ func (m DailyView) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd) {
 			rows := focusedCard.GetVisibleRows()
 			if len(rows) > 0 {
 				if status, ok := rows[0].Data["gameStatus"].(int); ok && status > 1 {
-					bx, cmd, err := NewBoxScore(gameID, m.dateSelector.date, status, WindowSize)
+					bx, cmd, err := NewBoxScore(gameID, m.dateSelector.date, status, "dailyView", "", 0, WindowSize)
 					if err != nil {
 						log.Println(err)
 						os.Exit(1)
