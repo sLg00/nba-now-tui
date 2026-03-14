@@ -151,20 +151,18 @@ func (m PlayoffBracket) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, Keymap.Quit):
 			m.quitting = true
 			return m, tea.Quit
-		case key.Matches(msg, Keymap.Enter):
-			idx := cursorIndexForColRow(m.cursorCol, m.cursorRow)
-			if idx < len(m.bracket.Series) {
-				series := m.bracket.Series[idx]
-				if series.Status != "pre" {
-					ps, cmd, err := NewPlayoffSeries(series, idx, m.season, WindowSize)
-					if err != nil {
-						log.Println(err)
-						return m, nil
-					}
-					return ps, cmd
-				}
+		case key.Matches(msg, Keymap.Tab):
+			if m.seasonSelector.focused {
+				m.seasonSelector.Blur()
+			} else {
+				m.seasonSelector.Focus()
 			}
 		case key.Matches(msg, Keymap.Left):
+			if m.seasonSelector.focused {
+				var ssCmd tea.Cmd
+				m.seasonSelector, ssCmd = m.seasonSelector.Update(msg)
+				return m, ssCmd
+			}
 			if m.cursorCol > 0 {
 				m.cursorCol--
 				maxRow := colSeriesCount[m.cursorCol] - 1
@@ -173,6 +171,11 @@ func (m PlayoffBracket) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		case key.Matches(msg, Keymap.Right):
+			if m.seasonSelector.focused {
+				var ssCmd tea.Cmd
+				m.seasonSelector, ssCmd = m.seasonSelector.Update(msg)
+				return m, ssCmd
+			}
 			if m.cursorCol < 6 {
 				m.cursorCol++
 				maxRow := colSeriesCount[m.cursorCol] - 1
@@ -188,10 +191,19 @@ func (m PlayoffBracket) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursorRow < colSeriesCount[m.cursorCol]-1 {
 				m.cursorRow++
 			}
-		default:
-			var ssCmd tea.Cmd
-			m.seasonSelector, ssCmd = m.seasonSelector.Update(msg)
-			return m, ssCmd
+		case key.Matches(msg, Keymap.Enter):
+			idx := cursorIndexForColRow(m.cursorCol, m.cursorRow)
+			if idx < len(m.bracket.Series) {
+				series := m.bracket.Series[idx]
+				if series.Status != "pre" {
+					ps, cmd, err := NewPlayoffSeries(series, idx, m.season, WindowSize)
+					if err != nil {
+						log.Println(err)
+						return m, nil
+					}
+					return ps, cmd
+				}
+			}
 		}
 
 	case tea.WindowSizeMsg:

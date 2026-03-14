@@ -27,7 +27,7 @@ func NewSeasonSelector(currentSeason string) SeasonSelector {
 	return SeasonSelector{
 		season:  currentSeason,
 		ceiling: currentSeason,
-		focused: true,
+		focused: false,
 	}
 }
 
@@ -89,10 +89,17 @@ func (ss SeasonSelector) Update(msg tea.Msg) (SeasonSelector, tea.Cmd) {
 
 func (ss SeasonSelector) View() string {
 	seasonStyle := lipgloss.NewStyle().Bold(true)
+	arrowStyle := lipgloss.NewStyle()
 	if ss.focused {
 		seasonStyle = seasonStyle.Foreground(lipgloss.Color("5"))
+		arrowStyle = arrowStyle.Foreground(lipgloss.Color("5"))
+	} else {
+		arrowStyle = arrowStyle.Foreground(lipgloss.Color("241"))
 	}
-	arrowStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
+	hint := lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render("  [tab]")
 	display := arrowStyle.Render("◀") + "  " + seasonStyle.Render(ss.season) + "  " + arrowStyle.Render("▶")
+	if !ss.focused {
+		display += hint
+	}
 	return lipgloss.NewStyle().Width(ss.width).Align(lipgloss.Center).Render(display)
 }
