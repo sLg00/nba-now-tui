@@ -29,6 +29,8 @@ type InstantiatedBoxScore struct {
 	isLive           bool
 	gameID           string
 	statusMsg        string
+	homeTeamName     string
+	awayTeamName     string
 }
 
 type boxScoreFetchedMsg struct {
@@ -36,6 +38,8 @@ type boxScoreFetchedMsg struct {
 	boxScoreTableColumns []table.Column
 	homeBoxScoreData     []table.Row
 	awayBoxScoreData     []table.Row
+	homeTeamName         string
+	awayTeamName         string
 }
 
 // NewBoxScore is a factory function to instantiate a BoxScore when the BoxScore is opened from the Daily View.
@@ -146,6 +150,8 @@ func fetchBoxSoresCmd(gameID string) tea.Cmd {
 			boxScoreTableColumns: columns,
 			homeBoxScoreData:     homeRows,
 			awayBoxScoreData:     awayRows,
+			homeTeamName:         boxScoreData.HomeTeam.TeamName,
+			awayTeamName:         boxScoreData.AwayTeam.TeamName,
 		}
 	}
 }
@@ -298,6 +304,8 @@ func (m InstantiatedBoxScore) Update(msg tea.Msg) (model tea.Model, cmd tea.Cmd)
 
 		m.homeTeamBoxScore = homeTable
 		m.awayTeamBoxScore = awayTable
+		m.homeTeamName = msg.homeTeamName
+		m.awayTeamName = msg.awayTeamName
 		return m, nil
 
 	case playerProfileDownloadedMsg:
@@ -389,8 +397,19 @@ func (m InstantiatedBoxScore) View() string {
 			m.statusMsg,
 			m.helpView()))
 	}
-	renderedHomeBoxScore := TableStyle.Render(m.homeTeamBoxScore.View())
-	renderedAwayBoxScore := TableStyle.Render(m.awayTeamBoxScore.View())
+	homeColor := TeamColor(m.homeTeamName)
+	awayColor := TeamColor(m.awayTeamName)
+
+	homeLabel := lipgloss.NewStyle().Foreground(homeColor).Bold(true).Render(m.homeTeamName)
+	awayLabel := lipgloss.NewStyle().Foreground(awayColor).Bold(true).Render(m.awayTeamName)
+
+	renderedHomeBoxScore := lipgloss.JoinVertical(lipgloss.Left,
+		homeLabel,
+		TeamTableBorderStyle(homeColor).Render(m.homeTeamBoxScore.View()))
+	renderedAwayBoxScore := lipgloss.JoinVertical(lipgloss.Left,
+		awayLabel,
+		TeamTableBorderStyle(awayColor).Render(m.awayTeamBoxScore.View()))
+
 	comboView := lipgloss.JoinVertical(lipgloss.Left,
 		renderedHomeBoxScore,
 		renderedAwayBoxScore,

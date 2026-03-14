@@ -124,6 +124,13 @@ func TeamColor(s string) lipgloss.Color {
 	return lipgloss.Color("#FFFFFF")
 }
 
+// TeamTableBorderStyle returns a lipgloss style with the team's border color, for wrapping tables.
+func TeamTableBorderStyle(clr lipgloss.Color) lipgloss.Style {
+	return lipgloss.NewStyle().
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(clr)
+}
+
 // TeamViewPortStyle just returns the style with the corresponding team color
 func TeamViewPortStyle(clr lipgloss.Color) lipgloss.Style {
 	return lipgloss.NewStyle().
