@@ -1,7 +1,13 @@
 package tui
 
 import (
+	"log"
+
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/sLg00/nba-now-tui/cmd/converters"
+	"github.com/sLg00/nba-now-tui/cmd/nba/nbaAPI"
 	"github.com/sLg00/nba-now-tui/cmd/nba/types"
 )
 
@@ -69,18 +75,153 @@ type bracketFetchedMsg struct {
 }
 
 // NewPlayoffBracket creates the playoff bracket view for the given season,
-// restoring cursor to restoreCursorIdx (series index from cursor table).
-// Full implementation is in Task 11; this stub satisfies the compiler.
+// restoring cursor to restoreCursorIdx (series index per cursor table).
 func NewPlayoffBracket(season string, restoreCursorIdx int, size tea.WindowSizeMsg) (*PlayoffBracket, tea.Cmd, error) {
-	return nil, nil, nil
+	currentSeason := nbaAPI.NewClient().Dates.GetCurrentSeason()
+	ss := NewSeasonSelector(currentSeason)
+	ss.season = season
+	ss.SetWidth(size.Width)
+
+	m := &PlayoffBracket{
+		seasonSelector: ss,
+		season:         season,
+		loading:        true,
+		width:          size.Width,
+		height:         size.Height,
+	}
+	m.cursorCol, m.cursorRow = colRowForIndex(restoreCursorIdx)
+
+	return m, fetchPlayoffBracketCmd(season), nil
+}
+
+func fetchPlayoffBracketCmd(season string) tea.Cmd {
+	return func() tea.Msg {
+		cl := nbaAPI.NewClient()
+		err := cl.FetchPlayoffBracket(season)
+		if err != nil {
+			log.Printf("playoff bracket API unavailable for %s, using standings projection: %v", season, err)
+			rs, err := cl.Loader.LoadSeasonStandings()
+			if err != nil {
+				return bracketFetchedMsg{err: err}
+			}
+			teams, _, err := converters.PopulateTeamStats(rs)
+			if err != nil {
+				return bracketFetchedMsg{err: err}
+			}
+			east, west := teams.SplitStandingsPerConference()
+			bracket := converters.ProjectedBracketFromStandings(east, west, season)
+			return bracketFetchedMsg{bracket: bracket}
+		}
+
+		rs, err := cl.Loader.LoadPlayoffBracket(season)
+		if err != nil {
+			return bracketFetchedMsg{err: err}
+		}
+		bracket, err := converters.PopulatePlayoffBracket(rs, season)
+		return bracketFetchedMsg{bracket: bracket, err: err}
+	}
 }
 
 func (m PlayoffBracket) Init() tea.Cmd { return nil }
 
 func (m PlayoffBracket) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case bracketFetchedMsg:
+		m.loading = false
+		if msg.err != nil {
+			log.Println("error fetching playoff bracket:", msg.err)
+			return m, nil
+		}
+		m.bracket = msg.bracket
+		return m, nil
+
+	case seasonChangedMsg:
+		m.season = msg.season
+		m.loading = true
+		m.cursorCol, m.cursorRow = 0, 0
+		return m, fetchPlayoffBracketCmd(msg.season)
+
+	case tea.KeyMsg:
+		if m.loading {
+			return m, nil
+		}
+		switch {
+		case key.Matches(msg, Keymap.Back):
+			return InitMenu()
+		case key.Matches(msg, Keymap.Quit):
+			m.quitting = true
+			return m, tea.Quit
+		case key.Matches(msg, Keymap.Enter):
+			idx := cursorIndexForColRow(m.cursorCol, m.cursorRow)
+			if idx < len(m.bracket.Series) {
+				series := m.bracket.Series[idx]
+				if series.Status != "pre" {
+					ps, cmd, err := NewPlayoffSeries(series, idx, m.season, WindowSize)
+					if err != nil {
+						log.Println(err)
+						return m, nil
+					}
+					return ps, cmd
+				}
+			}
+		case key.Matches(msg, Keymap.Left):
+			if m.cursorCol > 0 {
+				m.cursorCol--
+				maxRow := colSeriesCount[m.cursorCol] - 1
+				if m.cursorRow > maxRow {
+					m.cursorRow = maxRow
+				}
+			}
+		case key.Matches(msg, Keymap.Right):
+			if m.cursorCol < 6 {
+				m.cursorCol++
+				maxRow := colSeriesCount[m.cursorCol] - 1
+				if m.cursorRow > maxRow {
+					m.cursorRow = maxRow
+				}
+			}
+		case key.Matches(msg, Keymap.Up):
+			if m.cursorRow > 0 {
+				m.cursorRow--
+			}
+		case key.Matches(msg, Keymap.Down):
+			if m.cursorRow < colSeriesCount[m.cursorCol]-1 {
+				m.cursorRow++
+			}
+		default:
+			var ssCmd tea.Cmd
+			m.seasonSelector, ssCmd = m.seasonSelector.Update(msg)
+			return m, ssCmd
+		}
+
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		m.seasonSelector.SetWidth(msg.Width)
+	}
 	return m, nil
 }
 
 func (m PlayoffBracket) View() string {
-	return ""
+	if m.quitting {
+		return ""
+	}
+	if m.loading {
+		content := m.seasonSelector.View() + "\n\nLoading bracket..."
+		return lipgloss.NewStyle().Width(m.width).Height(m.height).
+			Align(lipgloss.Center, lipgloss.Center).Render(content)
+	}
+
+	cursorIdx := cursorIndexForColRow(m.cursorCol, m.cursorRow)
+	br := newBracketRenderer(m.bracket.Series, cursorIdx)
+	bracket := br.Render()
+
+	content := lipgloss.JoinVertical(lipgloss.Left,
+		m.seasonSelector.View(),
+		"",
+		bracket,
+		"",
+		HelpStyle(HelpFooter()),
+	)
+	return DocStyle.Render(content)
 }
