@@ -379,6 +379,38 @@ func (c *Client) FetchPlayerProfile(playerID string) error {
 	return nil
 }
 
+func (c *Client) FetchPlayoffBracket(season string) error {
+	reqURL := c.requests.BuildLeagueSeriesStandingsRequest(season)
+	if reqURL == "" {
+		return fmt.Errorf("failed to build playoff bracket request for season %s", season)
+	}
+	path := c.Paths.GetFullPath("playoffBracket", season)
+	if c.FileSystem.FileExists(path) {
+		return nil
+	}
+	data, err := c.http.Get(reqURL)
+	if err != nil {
+		return fmt.Errorf("api error fetching playoff bracket: %w", err)
+	}
+	return c.FileSystem.WriteFile(path, data)
+}
+
+func (c *Client) FetchCommonPlayoffSeries(season string) error {
+	reqURL := c.requests.BuildCommonPlayoffSeriesRequest(season)
+	if reqURL == "" {
+		return fmt.Errorf("failed to build playoff series request for season %s", season)
+	}
+	path := c.Paths.GetFullPath("playoffSeriesGames", season)
+	if c.FileSystem.FileExists(path) {
+		return nil
+	}
+	data, err := c.http.Get(reqURL)
+	if err != nil {
+		return fmt.Errorf("api error fetching playoff series: %w", err)
+	}
+	return c.FileSystem.WriteFile(path, data)
+}
+
 // FetchTeamProfile calls the NBA API with a teamID and writes the response to a file.
 // That file will be used by LoadTeamInfo to feed basic team info into the TUI
 func (c *Client) FetchTeamProfile(param string) error {
