@@ -128,6 +128,14 @@ func (m *MockRequestBuilder) BuildPlayerGameLogRequest(playerID string) RequestU
 	return RequestURL("https://example.com/playergamelog?PlayerID=" + playerID)
 }
 
+func (m *MockRequestBuilder) BuildLeagueSeriesStandingsRequest(season string) RequestURL {
+	return RequestURL("https://example.com/leagueSeriesStandings?Season=" + season)
+}
+
+func (m *MockRequestBuilder) BuildCommonPlayoffSeriesRequest(season string) RequestURL {
+	return RequestURL("https://example.com/commonPlayoffSeries?Season=" + season)
+}
+
 func (m *MockDateProvider) GetCurrentDate() (string, error) {
 	return m.currentDate, m.dateError
 }

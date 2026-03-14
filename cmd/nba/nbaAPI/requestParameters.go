@@ -298,3 +298,67 @@ func (pi PlayerIndexParams) Validate() error {
 	}
 	return nil
 }
+
+type LeagueSeriesStandingsParams struct {
+	LeagueID   string
+	Season     string
+	SeasonType SeasonType
+}
+
+func (p LeagueSeriesStandingsParams) ToValues() url.Values {
+	values := url.Values{}
+	values.Set("LeagueID", p.LeagueID)
+	values.Set("Season", p.Season)
+	values.Set("SeasonType", string(p.SeasonType))
+	return values
+}
+
+func (p LeagueSeriesStandingsParams) Endpoint() string { return "leagueSeriesStandings" }
+
+func (p LeagueSeriesStandingsParams) Validate() error {
+	if p.LeagueID == "" {
+		return fmt.Errorf("leagueID is required")
+	}
+	if p.Season == "" {
+		return fmt.Errorf("season is required")
+	}
+	return nil
+}
+
+type CommonPlayoffSeriesParams struct {
+	LeagueID string
+	Season   string
+}
+
+func (p CommonPlayoffSeriesParams) ToValues() url.Values {
+	values := url.Values{}
+	values.Set("LeagueID", p.LeagueID)
+	values.Set("Season", p.Season)
+	return values
+}
+
+func (p CommonPlayoffSeriesParams) Endpoint() string { return "commonPlayoffSeries" }
+
+func (p CommonPlayoffSeriesParams) Validate() error {
+	if p.Season == "" {
+		return fmt.Errorf("season is required")
+	}
+	return nil
+}
+
+func (rb *nbaRequestBuilder) BuildLeagueSeriesStandingsRequest(season string) RequestURL {
+	params := LeagueSeriesStandingsParams{
+		LeagueID:   LeagueID,
+		Season:     season,
+		SeasonType: "Playoffs",
+	}
+	return rb.buildURL(params)
+}
+
+func (rb *nbaRequestBuilder) BuildCommonPlayoffSeriesRequest(season string) RequestURL {
+	params := CommonPlayoffSeriesParams{
+		LeagueID: LeagueID,
+		Season:   season,
+	}
+	return rb.buildURL(params)
+}

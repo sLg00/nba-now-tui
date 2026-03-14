@@ -133,3 +133,42 @@ func TestPlayerGameLogParams_ToValues(t *testing.T) {
 		t.Errorf("ToValues().Get(SeasonType) = %s, want Regular Season", got)
 	}
 }
+
+func TestLeagueSeriesStandingsParams_Endpoint(t *testing.T) {
+	p := LeagueSeriesStandingsParams{LeagueID: "00", Season: "2023-24", SeasonType: "Playoffs"}
+	if got := p.Endpoint(); got != "leagueSeriesStandings" {
+		t.Errorf("Endpoint() = %s, want leagueSeriesStandings", got)
+	}
+}
+
+func TestLeagueSeriesStandingsParams_Validate(t *testing.T) {
+	p := LeagueSeriesStandingsParams{}
+	if err := p.Validate(); err == nil {
+		t.Error("Validate() expected error for missing Season")
+	}
+	p.Season = "2023-24"
+	p.LeagueID = "00"
+	p.SeasonType = "Playoffs"
+	if err := p.Validate(); err != nil {
+		t.Errorf("Validate() unexpected error: %v", err)
+	}
+}
+
+func TestCommonPlayoffSeriesParams_Endpoint(t *testing.T) {
+	p := CommonPlayoffSeriesParams{LeagueID: "00", Season: "2023-24"}
+	if got := p.Endpoint(); got != "commonPlayoffSeries" {
+		t.Errorf("Endpoint() = %s, want commonPlayoffSeries", got)
+	}
+}
+
+func TestCommonPlayoffSeriesParams_Validate(t *testing.T) {
+	p := CommonPlayoffSeriesParams{}
+	if err := p.Validate(); err == nil {
+		t.Error("Validate() expected error for missing Season")
+	}
+	p.Season = "2023-24"
+	p.LeagueID = "00"
+	if err := p.Validate(); err != nil {
+		t.Errorf("Validate() unexpected error: %v", err)
+	}
+}

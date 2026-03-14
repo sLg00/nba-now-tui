@@ -29,6 +29,8 @@ type RequestBuilder interface {
 	BuildPlayerInfoRequest(playerID string) RequestURL
 	BuildPlayerCareerStatsRequest(playerID string) RequestURL
 	BuildPlayerGameLogRequest(playerID string) RequestURL
+	BuildLeagueSeriesStandingsRequest(season string) RequestURL
+	BuildCommonPlayoffSeriesRequest(season string) RequestURL
 }
 
 type nbaRequestBuilder struct {
