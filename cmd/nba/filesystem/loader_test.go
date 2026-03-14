@@ -113,3 +113,53 @@ func TestLoadPlayerGameLog(t *testing.T) {
 		t.Errorf("expected name PlayerGameLog, got %s", rs.ResultSets[0].Name)
 	}
 }
+
+func TestLoadPlayoffBracket_ReturnsResponseSet(t *testing.T) {
+	fixture := `{"resultSets":[{"name":"SeriesStandings","headers":["SeriesID"],"rowSet":[["0042300401"]]}]}`
+	paths := &mockPathManager{
+		fullPathFunc: func(name, param string) string {
+			if name != "playoffBracket" {
+				t.Errorf("unexpected path name: %s", name)
+			}
+			return "/tmp/test_playoff_bracket"
+		},
+	}
+	fs := &mockFsHandler{
+		readFileFunc: func(path string) ([]byte, error) {
+			return []byte(fixture), nil
+		},
+	}
+	dl := NewDataLoader(fs, paths)
+	rs, err := dl.LoadPlayoffBracket("2023-24")
+	if err != nil {
+		t.Fatalf("LoadPlayoffBracket() error: %v", err)
+	}
+	if len(rs.ResultSets) == 0 {
+		t.Fatal("LoadPlayoffBracket() returned empty ResultSets")
+	}
+}
+
+func TestLoadCommonPlayoffSeries_ReturnsResponseSet(t *testing.T) {
+	fixture := `{"resultSets":[{"name":"CommonPlayoffSeries","headers":["GAME_ID"],"rowSet":[["0042300401"]]}]}`
+	paths := &mockPathManager{
+		fullPathFunc: func(name, param string) string {
+			if name != "playoffSeriesGames" {
+				t.Errorf("unexpected path name: %s", name)
+			}
+			return "/tmp/test_playoff_series"
+		},
+	}
+	fs := &mockFsHandler{
+		readFileFunc: func(path string) ([]byte, error) {
+			return []byte(fixture), nil
+		},
+	}
+	dl := NewDataLoader(fs, paths)
+	rs, err := dl.LoadCommonPlayoffSeries("2023-24")
+	if err != nil {
+		t.Fatalf("LoadCommonPlayoffSeries() error: %v", err)
+	}
+	if len(rs.ResultSets) == 0 {
+		t.Fatal("LoadCommonPlayoffSeries() returned empty ResultSets")
+	}
+}
