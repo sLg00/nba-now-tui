@@ -12,27 +12,27 @@ import (
 )
 
 // Column layout (left to right):
-// 0=East R1 (4 series), 1=East Semis (2), 2=East Finals (1),
-// 3=Finals (1), 4=West Finals (1), 5=West Semis (2), 6=West R1 (4)
+// 0=West R1 (4 series), 1=West Semis (2), 2=West Finals (1),
+// 3=Finals (1), 4=East Finals (1), 5=East Semis (2), 6=East R1 (4)
 var colSeriesCount = [7]int{4, 2, 1, 1, 1, 2, 4}
 
 // cursorIndexForColRow maps (column, row) to a series index in PlayoffBracket.Series
 func cursorIndexForColRow(col, row int) int {
 	switch col {
 	case 0:
-		return row
+		return 11 + row // West R1
 	case 1:
-		return 4 + row
+		return 9 + row // West Semis
 	case 2:
-		return 6
+		return 8 // West Finals
 	case 3:
-		return 7
+		return 7 // NBA Finals
 	case 4:
-		return 8
+		return 6 // East Finals
 	case 5:
-		return 9 + row
+		return 4 + row // East Semis
 	case 6:
-		return 11 + row
+		return row // East R1
 	}
 	return 0
 }
@@ -40,20 +40,20 @@ func cursorIndexForColRow(col, row int) int {
 // colRowForIndex is the inverse of cursorIndexForColRow
 func colRowForIndex(idx int) (col, row int) {
 	switch {
-	case idx <= 3:
-		return 0, idx
-	case idx <= 5:
-		return 1, idx - 4
-	case idx == 6:
-		return 2, 0
-	case idx == 7:
-		return 3, 0
-	case idx == 8:
+	case idx <= 3: // East R1
+		return 6, idx
+	case idx <= 5: // East Semis
+		return 5, idx - 4
+	case idx == 6: // East Finals
 		return 4, 0
-	case idx <= 10:
-		return 5, idx - 9
-	default:
-		return 6, idx - 11
+	case idx == 7: // NBA Finals
+		return 3, 0
+	case idx == 8: // West Finals
+		return 2, 0
+	case idx <= 10: // West Semis
+		return 1, idx - 9
+	default: // West R1
+		return 0, idx - 11
 	}
 }
 
@@ -226,7 +226,7 @@ func (m PlayoffBracket) View() string {
 	}
 
 	cursorIdx := cursorIndexForColRow(m.cursorCol, m.cursorRow)
-	br := newBracketRenderer(m.bracket.Series, cursorIdx)
+	br := newBracketTableRenderer(m.bracket.Series, cursorIdx)
 	bracket := br.Render()
 
 	content := lipgloss.JoinVertical(lipgloss.Left,

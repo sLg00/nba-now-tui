@@ -26,17 +26,17 @@ func TestPlayoffBracket_CursorNavigation(t *testing.T) {
 	loaded, _ := pb.Update(bracketFetchedMsg{})
 	ready := loaded.(PlayoffBracket)
 
-	// Move right from East R1 (col 0) to East Semis (col 1)
-	model, _ := ready.Update(tea.KeyMsg{Type: tea.KeyRight})
+	// Move left from East R1 (col 6) to East Semis (col 5)
+	model, _ := ready.Update(tea.KeyMsg{Type: tea.KeyLeft})
 	updated := model.(PlayoffBracket)
-	if updated.cursorCol != 1 {
-		t.Errorf("after Right from col 0, cursorCol = %d, want 1", updated.cursorCol)
+	if updated.cursorCol != 5 {
+		t.Errorf("after Left from col 6, cursorCol = %d, want 5", updated.cursorCol)
 	}
 
-	// Move left back
-	model, _ = updated.Update(tea.KeyMsg{Type: tea.KeyLeft})
+	// Move right back
+	model, _ = updated.Update(tea.KeyMsg{Type: tea.KeyRight})
 	back := model.(PlayoffBracket)
-	if back.cursorCol != 0 {
-		t.Errorf("after Left from col 1, cursorCol = %d, want 0", back.cursorCol)
+	if back.cursorCol != 6 {
+		t.Errorf("after Right from col 5, cursorCol = %d, want 6", back.cursorCol)
 	}
 }
