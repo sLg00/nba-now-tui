@@ -153,6 +153,12 @@ func PopulatePlayoffBracket(rs types.ResponseSet, season string) (types.PlayoffB
 	for i := range roundTeams {
 		roundTeams[i] = make(map[string]bool)
 	}
+	// NBA SERIES_ID is a 9-character string, e.g. "004230010":
+	//   [0-1] "00"   constant prefix
+	//   [2-5] "4230" 4-digit season year (century prefix + 2-digit year)
+	//   [6]   "0"    separator
+	//   [7]   "1"    round number (1=R1, 2=Semis, 3=Conf Finals, 4=Finals)
+	//   [8]   "0"    series index within that round (0=first series, etc.)
 	for sid, se := range seriesMap {
 		if len(sid) < 9 {
 			continue
@@ -227,8 +233,9 @@ func playoffSeriesStatus(round, maxGame int, topID, botID string, roundTeams [5]
 }
 
 // playoffCursorIndex maps (round, NBA series index) to the bracket cursor index.
-// Round 1: East series 0-3, West series 4-7. Within each conference: 0=1v8, 1=2v7, 2=3v6, 3=4v5.
-// Bracket cursor order within East R1: 0=1v8, 1=4v5, 2=3v6, 3=2v7.
+// Round 1: East seriesIdx 0-3, West seriesIdx 4-7.
+// NBA API R1 seriesIdx meaning: 0=1v8, 1=2v7, 2=3v6, 3=4v5.
+// Bracket cursor order within East R1: 0=1v8, 1=4v5, 2=3v6, 3=2v7 (reordered for visual layout).
 func playoffCursorIndex(round, seriesIdx int) int {
 	switch round {
 	case 1:
