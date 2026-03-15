@@ -97,28 +97,29 @@ func NewPlayoffBracket(season string, restoreCursorIdx int, size tea.WindowSizeM
 func fetchPlayoffBracketCmd(season string) tea.Cmd {
 	return func() tea.Msg {
 		cl := nbaAPI.NewClient()
-		err := cl.FetchPlayoffBracket(season)
-		if err != nil {
-			log.Printf("playoff bracket API unavailable for %s, using standings projection: %v", season, err)
-			rs, err := cl.Loader.LoadSeasonStandings()
-			if err != nil {
-				return bracketFetchedMsg{err: err}
-			}
-			teams, _, err := converters.PopulateTeamStats(rs)
-			if err != nil {
-				return bracketFetchedMsg{err: err}
-			}
-			east, west := teams.SplitStandingsPerConference()
-			bracket := converters.ProjectedBracketFromStandings(east, west, season)
+
+		if err := cl.FetchCommonPlayoffSeries(season); err != nil {
+			log.Printf("fetchPlayoffBracket: FetchCommonPlayoffSeries(%s) failed: %v", season, err)
+		} else if rs, err := cl.Loader.LoadCommonPlayoffSeries(season); err != nil {
+			log.Printf("fetchPlayoffBracket: LoadCommonPlayoffSeries(%s) failed: %v", season, err)
+		} else if bracket, err := converters.PopulatePlayoffBracket(rs, season); err != nil {
+			log.Printf("fetchPlayoffBracket: PopulatePlayoffBracket(%s) failed: %v", season, err)
+		} else {
 			return bracketFetchedMsg{bracket: bracket}
 		}
 
-		rs, err := cl.Loader.LoadPlayoffBracket(season)
+		// Fallback: project bracket from current standings.
+		log.Printf("fetchPlayoffBracket: using standings projection for %s", season)
+		rs, err := cl.Loader.LoadSeasonStandings()
 		if err != nil {
 			return bracketFetchedMsg{err: err}
 		}
-		bracket, err := converters.PopulatePlayoffBracket(rs, season)
-		return bracketFetchedMsg{bracket: bracket, err: err}
+		teams, _, err := converters.PopulateTeamStats(rs)
+		if err != nil {
+			return bracketFetchedMsg{err: err}
+		}
+		east, west := teams.SplitStandingsPerConference()
+		return bracketFetchedMsg{bracket: converters.ProjectedBracketFromStandings(east, west, season)}
 	}
 }
 
