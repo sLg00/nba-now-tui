@@ -30,13 +30,8 @@ Execute **./binary** to launch the app. It uses today as default (TZ Us East)
 * Team Profiles (with ASCII logos and team-colors)
 * Player Profiles
 * Daily News headlines (and links) from NBA.com
-
-
-<h3>Shit still missing, yo</h3>
-
-* _(feature)_ Playoff bracket
-* _(QA)_ Bunch of tests still missing, especially on TUI logic
-* _(FE)_ Error modals and loading bars
+* Live games
+* Playoff bracket
 
 
 <h4>Not gonna happen</h4>
@@ -73,3 +68,5 @@ persisting a ton of data.
 ![Alt text](/screenshots/sc6.png?raw=true "News Headlines")
 
 ![Alt text](/screenshots/sc8.png?raw=true "Player Profile")
+
+![Alt text](/screenshots/sc9.png?raw=true "Live Games")
